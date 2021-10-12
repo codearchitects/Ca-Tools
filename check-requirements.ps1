@@ -1,0 +1,132 @@
+Class Requirement {
+  [string]$Requirement
+  [string]$Status
+  [string]$Version
+}
+
+Class EnvRequirement {
+  [string]$EnvironmentVariable
+  [string]$Status
+}
+
+[EnvRequirement[]]$envRequirements = @()
+[Requirement[]]$requirements = @()
+[string[]]$pathRequired = @(
+  "C:\\windows\\system32",
+  "C:\\windows\\system32\\wbem",
+  "C:\\windows",
+  "C:\\windows\\system32\\windowspowershell\\v1.0"
+)
+
+function CheckValueInEnvPath([string]$value) {
+  $envPath = $env:PATH += ";"
+  return (($envPath).ToLower() -match ("$value;").ToLower()) -or (($envPath).ToLower() -match ("$value\\;").ToLower());
+}
+
+function GetRequirementObj($name, $version, $minVersion) {
+  $requirement = New-Object Requirement
+  $requirement.Requirement = $name
+  if ($version -eq $false) {
+    $requirement.Status = "KO (Not Found)"
+    $requirement.Version = $null
+  } elseif([version]$version -le [version]$minVersion) {
+    $requirement.Status = "KO (min version: $($minVersion.ToString()))"
+    $requirement.Version = $version.ToString()
+  } else {
+    $requirement.Status = "OK"
+    $requirement.Version = $version
+  }
+  return $requirement
+}
+
+function GetEnvPathRequirementObj($name) {
+  $requirement = New-Object EnvRequirement
+  $requirement.EnvironmentVariable = "PATH: $name"
+  if (CheckValueInEnvPath $name) {
+    $requirement.Status = "OK"
+  } else {
+    $requirement.Status = "Value in Env Var PATH Not Found"
+  }
+  return $requirement
+}
+
+[version]$minCodeVersion = "1.60.0"
+[version]$minVSVersion = "16.8.0"
+[version]$minGitVersion = "2.27.0"
+[version]$minNodeVersion = "14.0.0"
+[version]$minDotnetVersion = "3.1.0"
+
+[version]$codeVersion
+[version]$VSVersion
+[version]$gitVersion
+[version]$nodeVersion
+[version]$dotnetVersion
+
+# vs code
+try {
+  $codeVersion = (code --version)[0]
+}
+catch {
+  $codeVersion = $false
+}
+
+# VS
+try {
+  [version[]]$VSVersions = &"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -property catalog_productDisplayVersion
+  $VSVersion = ($VSVersions | Sort-Object -Descending)[0]
+}
+catch {
+  $VSVersion = $false
+}
+
+# git
+try {
+  $gitVersion = (git --version).replace("git version","").replace(".windows","").Trim()
+}
+catch {
+  $gitVersion = $false
+}
+
+# node.js
+try {
+  $nodeVersion = (node --version).replace("v","")
+}
+catch {
+  $nodeVersion = $false
+}
+
+# dotnet
+try {
+  $dotnetVersion = (dotnet --version)
+}
+catch {
+  $dotnetVersion = $false
+}
+
+# Azure DevOps
+$azureDevOpsAvailable = (Test-NetConnection devops.codearchitects.com -port 444).TcpTestSucceeded
+if ($azureDevOpsAvailable) {
+  $azDevOpsStatus = "Reachable"
+} else {
+  $azDevOpsStatus = "Unreachable"
+}
+$azDevOpsRequirement = New-Object Requirement
+$azDevOpsRequirement.Requirement = "Code Architects Azure DevOps Server"
+$azDevOpsRequirement.Status = $azDevOpsStatus
+
+# table
+$requirements += (GetRequirementObj -requirements $requirements -name "Visual Studio" -version $VSVersion -minVersion $minVSVersion)
+$requirements += (GetRequirementObj -requirements $requirements -name "Visual Studio Code" -version $codeVersion -minVersion $minCodeVersion)
+$requirements += (GetRequirementObj -requirements $requirements -name "Git" -version $gitVersion -minVersion $minGitVersion)
+$requirements += (GetRequirementObj -requirements $requirements -name "Node.js" -version $nodeVersion -minVersion $minNodeVersion)
+$requirements += (GetRequirementObj -requirements $requirements -name "DotNet Core" -version $dotnetVersion -minVersion $minDotnetVersion)
+$requirements += $azDevOpsRequirement
+$pathRequired | ForEach-Object {
+  $envRequirements += GetEnvPathRequirementObj $_
+}
+
+Write-Host "Software Requirements"
+$requirements | Format-Table
+
+Write-Host "Environment Variables Requirements"
+$envRequirements | Format-Table
