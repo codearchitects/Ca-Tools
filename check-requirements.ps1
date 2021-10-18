@@ -106,9 +106,19 @@ catch {
 # Azure DevOps
 $azureDevOpsAvailable = (Test-NetConnection devops.codearchitects.com -port 444).TcpTestSucceeded
 if ($azureDevOpsAvailable) {
-  $azDevOpsStatus = "Reachable"
+  try {
+    Invoke-WebRequest https://devops.codearchitects.com:444/
+  } catch {
+    $status = $_.Exception.Response.StatusCode.value__
+  }
+
+  if ($status -eq 401) {
+    $azDevOpsStatus = "Reachable"
+  } else {
+    $azDevOpsStatus = "Unreachable"
+  }
 } else {
-  $azDevOpsStatus = "Unreachable"
+  $azDevOpsStatus = "Unreachable (telnet)"
 }
 $azDevOpsRequirement = New-Object Requirement
 $azDevOpsRequirement.Requirement = "Code Architects Azure DevOps Server"
