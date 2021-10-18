@@ -55,6 +55,7 @@ function GetEnvPathRequirementObj($name) {
 [version]$minGitVersion = "2.27.0"
 [version]$minNodeVersion = "14.0.0"
 [version]$minDotnetVersion = "3.1.0"
+[version]$minDockerVersion = "20.0.0"
 
 [version]$codeVersion
 [version]$VSVersion
@@ -103,6 +104,14 @@ catch {
   $dotnetVersion = $false
 }
 
+# docker
+try {
+  $dockerVersion = (docker --version).replace(",", "").replace("Docker version", "").replace("build", "").Trim().Split(" ")[0]
+}
+catch {
+  $dockerVersion = $false
+}
+
 # Azure DevOps
 $azureDevOpsAvailable = (Test-NetConnection devops.codearchitects.com -port 444).TcpTestSucceeded
 if ($azureDevOpsAvailable) {
@@ -130,6 +139,7 @@ $requirements += (GetRequirementObj -requirements $requirements -name "Visual St
 $requirements += (GetRequirementObj -requirements $requirements -name "Git" -version $gitVersion -minVersion $minGitVersion)
 $requirements += (GetRequirementObj -requirements $requirements -name "Node.js" -version $nodeVersion -minVersion $minNodeVersion)
 $requirements += (GetRequirementObj -requirements $requirements -name "DotNet Core" -version $dotnetVersion -minVersion $minDotnetVersion)
+$requirements += (GetRequirementObj -requirements $requirements -name "Docker" -version $dockerVersion -minVersion $mindockerVersion)
 $requirements += $azDevOpsRequirement
 $pathRequired | ForEach-Object {
   $envRequirements += GetEnvPathRequirementObj $_
