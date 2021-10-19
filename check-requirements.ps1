@@ -1,3 +1,4 @@
+$global:ProgressPreference = "SilentlyContinue"
 Class Requirement {
   [string]$Requirement
   [string]$Status
@@ -23,13 +24,16 @@ function CheckValueInEnvPath([string]$value) {
   return (($envPath).ToLower() -match ("$value;").ToLower()) -or (($envPath).ToLower() -match ("$value\\;").ToLower());
 }
 
-function GetRequirementObj($name, $version, $minVersion) {
+function GetRequirementObj($name, $version, $minVersion, [version]$maxVersion = "$([int]::MaxValue).$([int]::MaxValue).$([int]::MaxValue)") {
   $requirement = New-Object Requirement
   $requirement.Requirement = $name
   if ($version -eq $false) {
     $requirement.Status = "KO (Not Found)"
     $requirement.Version = $null
   } elseif([version]$version -le [version]$minVersion) {
+    $requirement.Status = "KO (min version: $($minVersion.ToString()))"
+    $requirement.Version = $version.ToString()
+  } elseif ([version]$version -gt $maxVersion) {
     $requirement.Status = "KO (min version: $($minVersion.ToString()))"
     $requirement.Version = $version.ToString()
   } else {
@@ -54,6 +58,8 @@ function GetEnvPathRequirementObj($name) {
 [version]$minVSVersion = "16.8.0"
 [version]$minGitVersion = "2.27.0"
 [version]$minNodeVersion = "14.0.0"
+[version]$minNpmVersion = "6.0.0"
+[version]$maxNpmVersion = "7.0.0"
 [version]$minDotnetVersion = "3.1.0"
 [version]$minDockerVersion = "20.0.0"
 
@@ -96,6 +102,14 @@ catch {
   $nodeVersion = $false
 }
 
+# npm
+try {
+  $npmVersion = npm --version
+}
+catch {
+  $npmVersion = $false
+}
+
 # dotnet
 try {
   $dotnetVersion = (dotnet --version)
@@ -124,10 +138,10 @@ if ($azureDevOpsAvailable) {
   if ($status -eq 401) {
     $azDevOpsStatus = "Reachable"
   } else {
-    $azDevOpsStatus = "Unreachable"
+    $azDevOpsStatus = "Unreachable with HTTPS protocol"
   }
 } else {
-  $azDevOpsStatus = "Unreachable (telnet)"
+  $azDevOpsStatus = "Unreachable with TCP protocol"
 }
 $azDevOpsRequirement = New-Object Requirement
 $azDevOpsRequirement.Requirement = "Code Architects Azure DevOps Server"
@@ -140,6 +154,7 @@ $requirements += (GetRequirementObj -requirements $requirements -name "Git" -ver
 $requirements += (GetRequirementObj -requirements $requirements -name "Node.js" -version $nodeVersion -minVersion $minNodeVersion)
 $requirements += (GetRequirementObj -requirements $requirements -name "DotNet Core" -version $dotnetVersion -minVersion $minDotnetVersion)
 $requirements += (GetRequirementObj -requirements $requirements -name "Docker" -version $dockerVersion -minVersion $mindockerVersion)
+$requirements += (GetRequirementObj -requirements $requirements -name "npm" -version $npmVersion -minVersion $minNpmVersion -maxVersion $maxNpmVersion)
 $requirements += $azDevOpsRequirement
 $pathRequired | ForEach-Object {
   $envRequirements += GetEnvPathRequirementObj $_
