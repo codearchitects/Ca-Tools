@@ -5,7 +5,7 @@ param(
 ./check-requirements.ps1
 
 $setupCaToolsMsi = "Setup_CaTools.msi"
-$setupPlatformExe = "setup-ca-platform-odc.exe"
+$setupPlatformExe = "setup-ca-platform.exe"
 $CaToolsPath = "C:\Program Files\Ca-Tools"
 $testScarPath = "C:\dev\ca-scar-test"
 $setupPlatformExePath = Join-Path $CaToolsPath $setupPlatformExe
@@ -30,7 +30,7 @@ if ($Silent.IsPresent) {
 Write-Host "Ca-Tools Installed"
 
 Write-Host "Installing Ca-Platform"
-& $setupPlatformExePath
+& $setupPlatformExePath -s
 
 Write-Host "Reload Env var Path"
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
