@@ -24,17 +24,17 @@ function CheckValueInEnvPath([string]$value) {
   return (($envPath).ToLower() -match ("$value;").ToLower()) -or (($envPath).ToLower() -match ("$value\\;").ToLower());
 }
 
-function GetRequirementObj($name, $version, $minVersion, [version]$maxVersion = "$([int]::MaxValue).$([int]::MaxValue).$([int]::MaxValue)") {
+function GetRequirementObj($name, [version]$version, [version]$minVersion, [version]$maxVersion = "$([int]::MaxValue).$([int]::MaxValue).$([int]::MaxValue)") {
   $requirement = New-Object Requirement
   $requirement.Requirement = $name
   if ($version -eq $false) {
     $requirement.Status = "KO (Not Found)"
     $requirement.Version = $null
-  } elseif([version]$version -le [version]$minVersion) {
+  } elseif($version -lt $minVersion) {
     $requirement.Status = "KO (min version: $($minVersion.ToString()))"
     $requirement.Version = $version.ToString()
-  } elseif ([version]$version -gt $maxVersion) {
-    $requirement.Status = "KO (min version: $($minVersion.ToString()))"
+  } elseif ($version -gt $maxVersion) {
+    $requirement.Status = "KO (max version: $($maxVersion.ToString()))"
     $requirement.Version = $version.ToString()
   } else {
     $requirement.Status = "OK"
