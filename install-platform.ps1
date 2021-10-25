@@ -7,7 +7,7 @@ param(
 $setupCaToolsMsi = "Setup_CaTools.msi"
 $setupPlatformExe = "setup-ca-platform.exe"
 $CaToolsPath = "C:\Program Files\Ca-Tools"
-$testScarPath = "C:\dev\ca-scar-test"
+$testScarPath = "C:\dev\scarface"
 $setupPlatformExePath = Join-Path $CaToolsPath $setupPlatformExe
 $setupCaToolsMsiPath = Join-Path ${PWD} $setupCaToolsMsi
 
