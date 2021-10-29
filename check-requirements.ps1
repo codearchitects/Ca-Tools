@@ -125,6 +125,17 @@ try {
 catch {
   $dockerVersion = $false
 }
+# Administrator permission
+$adminPermission = ((Get-LocalGroupMember Administrators).Name | Select-String $(whoami)).Count
+if ($adminPermission -gt 0) {
+  $adminPermissionPresent = "OK"
+} else {
+  $adminPermissionPresent = "NO"
+}
+
+$adminRequirement = New-Object Requirement
+$adminRequirement.Requirement = "Administrator Permission"
+$adminRequirement.Status = $adminPermissionPresent
 
 # Azure DevOps
 $azureDevOpsAvailable = (Test-NetConnection devops.codearchitects.com -port 444).TcpTestSucceeded
@@ -155,6 +166,7 @@ $requirements += (GetRequirementObj -requirements $requirements -name "Node.js" 
 $requirements += (GetRequirementObj -requirements $requirements -name "DotNet Core" -version $dotnetVersion -minVersion $minDotnetVersion)
 $requirements += (GetRequirementObj -requirements $requirements -name "Docker" -version $dockerVersion -minVersion $mindockerVersion)
 $requirements += (GetRequirementObj -requirements $requirements -name "npm" -version $npmVersion -minVersion $minNpmVersion -maxVersion $maxNpmVersion)
+$requirements += $adminRequirement
 $requirements += $azDevOpsRequirement
 $pathRequired | ForEach-Object {
   $envRequirements += GetEnvPathRequirementObj $_
