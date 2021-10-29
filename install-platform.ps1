@@ -4,6 +4,11 @@ param(
 )
 ./check-requirements.ps1
 
+if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+  Write-Warning "PLEASE OPEN POWERSHELL AS ADMINISTRATOR!!!"
+  return
+}
+
 $setupCaToolsMsi = "Setup_CaTools.msi"
 $setupPlatformExe = "setup-ca-platform.exe"
 $CaToolsPath = "C:\Program Files\Ca-Tools"
