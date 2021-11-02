@@ -15,6 +15,20 @@ $CaToolsPath = "C:\Program Files\Ca-Tools"
 $testScarPath = "C:\dev\scarface"
 $setupPlatformExePath = Join-Path $CaToolsPath $setupPlatformExe
 $setupCaToolsMsiPath = Join-Path ${PWD} $setupCaToolsMsi
+$Recommendations = @(
+  "Mikael.Angular-BeastCode",
+  "steoates.autoimport",
+  "HookyQR.beautify",
+  "donjayamanne.githistory",
+  "christian-kohler.path-intellisense",
+  "vscode-icons-team.vscode-icons",
+  "redhat.vscode-yaml",
+  "ms-vscode.vscode-typescript-tslint-plugin",
+  "msjsdiag.debugger-for-chrome",
+  "spmeesseman.vscode-taskexplorer",
+  "Gruntfuggly.triggertaskonsave",
+  "angular.ng-template"
+)
 
 if(-not (Test-Path $setupCaToolsMsiPath)) {
   Write-Host "Download $setupCaToolsMsi"
@@ -49,4 +63,8 @@ if ($ScarVersion -ne "") {
 }
 
 Set-Location $testScarPath
+
+foreach ($item in $Recommendations) {
+  code --install-extension $item --force
+}
 ca scar
