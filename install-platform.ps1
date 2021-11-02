@@ -60,6 +60,6 @@ if ($ScarVersion -ne "") {
 Set-Location $testScarPath
 
 foreach ($item in $Recommendations) {
-  code --install-extension $item
+  code --install-extension $item --force
 }
 ca scar
