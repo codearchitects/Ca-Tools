@@ -128,7 +128,7 @@ catch {
 
 # Administrator permission
 try {
-  (Get-LocalGroupMember Administrators).Name | ForEach-Object { if ($_.ToLower() -eq $(whoami)) {$isAdmin = $true} }
+  (Get-LocalGroupMember Administrators).Name | ForEach-Object { if ($_.ToLower() -eq $(whoami).ToLower()) {$isAdmin = $true} }
   if ($isAdmin) {
     $adminPermissionPresent = "OK"
   } else {
