@@ -125,12 +125,18 @@ try {
 catch {
   $dockerVersion = $false
 }
+
 # Administrator permission
-$adminPermission = ((Get-LocalGroupMember Administrators).Name | Select-String $(whoami)).Count
-if ($adminPermission -gt 0) {
-  $adminPermissionPresent = "OK"
-} else {
-  $adminPermissionPresent = "NO"
+try {
+  $adminPermission = ((Get-LocalGroupMember Administrators).Name | Select-String $(whoami)).Count
+  if ($adminPermission -gt 0) {
+    $adminPermissionPresent = "OK"
+  } else {
+    $adminPermissionPresent = "NO"
+  }
+}
+catch {
+  $adminPermissionPresent = "UNKNOWN"
 }
 
 $adminRequirement = New-Object Requirement
