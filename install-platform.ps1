@@ -2,7 +2,12 @@ param(
   [switch]$Silent,
   [string]$ScarVersion = ""
 )
-./check-requirements.ps1
+. ./check-requirements.ps1
+
+if ($FoundError) { 
+  Write-Host "Stop install-platform.ps1! Meet all requirements or contact Technical Operators" -ForegroundColor Red
+  return
+}
 
 if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
   Write-Warning "PLEASE OPEN POWERSHELL AS ADMINISTRATOR!!!"

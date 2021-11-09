@@ -49,7 +49,7 @@ function GetEnvPathRequirementObj($name) {
   if (CheckValueInEnvPath $name) {
     $requirement.Status = "OK"
   } else {
-    $requirement.Status = "Value in Env Var PATH Not Found"
+    $requirement.Status = "KO (Value in Env Var PATH Not Found)"
   }
   return $requirement
 }
@@ -132,11 +132,11 @@ try {
   if ($isAdmin) {
     $adminPermissionPresent = "OK"
   } else {
-    $adminPermissionPresent = "NO"
+    $adminPermissionPresent = "KO (No admin permission)"
   }
 }
 catch {
-  $adminPermissionPresent = "UNKNOWN"
+  $adminPermissionPresent = "KO (Unknown)"
 }
 
 $adminRequirement = New-Object Requirement
@@ -153,12 +153,12 @@ if ($azureDevOpsAvailable) {
   }
 
   if ($status -eq 401) {
-    $azDevOpsStatus = "Reachable"
+    $azDevOpsStatus = "OK (Reachable)"
   } else {
-    $azDevOpsStatus = "Unreachable with HTTPS protocol"
+    $azDevOpsStatus = "KO (Unreachable with HTTPS protocol)"
   }
 } else {
-  $azDevOpsStatus = "Unreachable with TCP protocol"
+  $azDevOpsStatus = "KO (Unreachable with TCP protocol)"
 }
 $azDevOpsRequirement = New-Object Requirement
 $azDevOpsRequirement.Requirement = "Code Architects Azure DevOps Server"
@@ -183,3 +183,7 @@ $requirements | Format-Table
 
 Write-Host "Environment Variables Requirements"
 $envRequirements | Format-Table
+
+
+$requirements | ForEach-Object { if($_.Status -like "KO*") { $FoundError = $true } }
+$envRequirements | ForEach-Object { if($_.Status -like "KO*") { $FoundError = $true } }
