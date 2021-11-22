@@ -20,6 +20,7 @@ $CaToolsPath = "C:\Program Files\Ca-Tools"
 $testScarPath = "C:\dev\scarface"
 $setupPlatformExePath = Join-Path $CaToolsPath $setupPlatformExe
 $setupCaToolsMsiPath = Join-Path ${PWD} $setupCaToolsMsi
+$errorLogsPath = "$HOME\.ca\errors_log.txt"
 $Recommendations = @(
   "Mikael.Angular-BeastCode",
   "steoates.autoimport",
@@ -54,7 +55,15 @@ if ($Silent.IsPresent) {
 Write-Host "Ca-Tools Installed"
 
 Write-Host "Installing Ca-Platform"
-& $setupPlatformExePath -s
+& $setupPlatformExePath -s > $HOME\Desktop\errors_log.txt 2>&1
+$NumberOfErrors = (Get-Content $errorLogsPath | Select-String "Error").Count
+if ($NumberOfErrors -ne 0) {
+  Write-Host "There're some error, check the log file in the path $errorLogsPath" -ForegroundColor Red -BackgroundColor Black
+  return
+} else {
+  Write-Host "There aren't errors" -ForegroundColor Green
+  return
+}
 
 Write-Host "Reload Env var Path"
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
