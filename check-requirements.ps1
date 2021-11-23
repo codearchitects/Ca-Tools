@@ -126,9 +126,75 @@ catch {
   $dockerVersion = $false
 }
 
+# Microsoft-Windows-Subsystem-Linux
+try {
+  $wslWindowsFeature = (dism /online /get-featureinfo /featurename:Microsoft-Windows-Subsystem-Linux) | Select-String "Enabled"
+  if ($wslWindowsFeature) {
+    $wslEnableStatus = "OK"
+  } else {
+    $wslEnableStatus = "KO (Not enabled)"
+  }
+}
+catch {
+  $wslEnableStatus = "KO (Not Found)"
+}
+
+$wslRequirement = New-Object Requirement
+$wslRequirement.Requirement = "Windows Subsystem Linux"
+$wslRequirement.Status = $wslEnableStatus
+
+# VirtualMachinePlatform
+try {
+  $vmpWindowsFeature = (dism /online /get-featureinfo /featurename:VirtualMachinePlatform) | Select-String "Enabled"
+  if ($vmpWindowsFeature) {
+    $vmpEnableStatus = "OK"
+  } else {
+    $vmpEnableStatus = "KO (Not enabled)"
+  }
+}
+catch {
+  $vmpEnableStatus = "KO (Not Found)"
+}
+
+$vmpRequirement = New-Object Requirement
+$vmpRequirement.Requirement = "Virtual Machine Platform"
+$vmpRequirement.Status = $vmpEnableStatus
+
+# WSL2 Update
+try {
+  if (([System.Text.Encoding]::Unicode.GetString([System.Text.Encoding]::Default.GetBytes(($(wsl --status)).Split("`r`n"))) | Where-Object { $_ -like "*Kernel version*" })) {
+    $wslUpdateStatus = "OK"
+  } else {
+    $wslUpdateStatus = "KO (Not Found)"
+  }
+}
+catch {
+  $wslUpdateStatus = "KO (Not Found)"
+}
+
+$wslUpdateRequirement = New-Object Requirement
+$wslUpdateRequirement.Requirement = "Wsl Update"
+$wslUpdateRequirement.Status = $wslUpdateStatus
+
+# Linux Distribution
+try {
+  if (-not ([System.Text.Encoding]::Unicode.GetString([System.Text.Encoding]::Default.GetBytes(($(wsl -l -v)))) | Where-Object { $_ -like "*no installed distribution*" })) {
+    $linuxDistroStatus = "OK"
+  } else {
+    $linuxDistroStatus = "KO (Not Found)"
+  }
+}
+catch {
+  $linuxDistroStatus = "KO (Not Found)"
+}
+
+$linuxDistroRequirement = New-Object Requirement
+$linuxDistroRequirement.Requirement = "Linux Distribution"
+$linuxDistroRequirement.Status = $linuxDistroStatus
+
 # Administrator permission
 try {
-  (Get-LocalGroupMember Administrators).Name | ForEach-Object { if ($_.ToLower() -eq $(whoami).ToLower()) {$isAdmin = $true} }
+  (Get-LocalGroupMember Administrators).Name | ForEach-Object { if ($_.ToLower() -like "*$($(whoami).ToLower())") {$isAdmin = $true} }
   if ($isAdmin) {
     $adminPermissionPresent = "OK"
   } else {
@@ -165,13 +231,17 @@ $azDevOpsRequirement.Requirement = "Code Architects Azure DevOps Server"
 $azDevOpsRequirement.Status = $azDevOpsStatus
 
 # table
-$requirements += (GetRequirementObj -requirements $requirements -name "Visual Studio" -version $VSVersion -minVersion $minVSVersion)
-$requirements += (GetRequirementObj -requirements $requirements -name "Visual Studio Code" -version $codeVersion -minVersion $minCodeVersion)
 $requirements += (GetRequirementObj -requirements $requirements -name "Git" -version $gitVersion -minVersion $minGitVersion)
 $requirements += (GetRequirementObj -requirements $requirements -name "Node.js" -version $nodeVersion -minVersion $minNodeVersion)
-$requirements += (GetRequirementObj -requirements $requirements -name "DotNet Core" -version $dotnetVersion -minVersion $minDotnetVersion)
-$requirements += (GetRequirementObj -requirements $requirements -name "Docker" -version $dockerVersion -minVersion $mindockerVersion)
 $requirements += (GetRequirementObj -requirements $requirements -name "npm" -version $npmVersion -minVersion $minNpmVersion -maxVersion $maxNpmVersion)
+$requirements += (GetRequirementObj -requirements $requirements -name "DotNet Core" -version $dotnetVersion -minVersion $minDotnetVersion)
+$requirements += (GetRequirementObj -requirements $requirements -name "Visual Studio Code" -version $codeVersion -minVersion $minCodeVersion)
+$requirements += (GetRequirementObj -requirements $requirements -name "Visual Studio" -version $VSVersion -minVersion $minVSVersion)
+$requirements += $wslRequirement
+$requirements += $vmpRequirement
+$requirements += $wslUpdateRequirement
+$requirements += $linuxDistroRequirement
+$requirements += (GetRequirementObj -requirements $requirements -name "Docker" -version $dockerVersion -minVersion $mindockerVersion)
 $requirements += $adminRequirement
 $requirements += $azDevOpsRequirement
 $pathRequired | ForEach-Object {
