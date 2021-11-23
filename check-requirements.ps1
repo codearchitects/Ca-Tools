@@ -178,7 +178,7 @@ $wslUpdateRequirement.Status = $wslUpdateStatus
 
 # Linux Distribution
 try {
-  if (-not ([System.Text.Encoding]::Unicode.GetString([System.Text.Encoding]::Default.GetBytes(($(wsl -l -v)))) | Where-Object { $_ -like "*no installed distribution*" })) {
+  if (-not ([System.Text.Encoding]::Unicode.GetString([System.Text.Encoding]::Default.GetBytes(($(wsl -l -v)))) | Where-Object { $_ -like "*distribution*" })) {
     $linuxDistroStatus = "OK"
   } else {
     $linuxDistroStatus = "KO (Not Found)"
