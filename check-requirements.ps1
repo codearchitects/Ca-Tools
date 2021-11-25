@@ -230,6 +230,9 @@ $azDevOpsRequirement = New-Object Requirement
 $azDevOpsRequirement.Requirement = "Code Architects Azure DevOps Server"
 $azDevOpsRequirement.Status = $azDevOpsStatus
 
+# If is running the script on Virtual Machine and Docker isn't installed, then show message on gui-install-platform.ps1
+$IsVirtualMachine = ((Get-CimInstance win32_computersystem).model -eq 'VMware Virtual Platform' -or ((Get-CimInstance win32_computersystem).model -eq 'Virtual Machine')) -and (-not $dockerVersion)
+
 # table
 $requirements += (GetRequirementObj -requirements $requirements -name "Git" -version $gitVersion -minVersion $minGitVersion)
 $requirements += (GetRequirementObj -requirements $requirements -name "Node.js" -version $nodeVersion -minVersion $minNodeVersion)
@@ -257,11 +260,12 @@ $envRequirements | Format-Table
 
 $requirements | ForEach-Object { if($_.Status -like "KO*") { $FoundError = $true } }
 $envRequirements | ForEach-Object { if($_.Status -like "KO*") { $FoundError = $true } }
+
 # SIG # Begin signature block
 # MIIk2wYJKoZIhvcNAQcCoIIkzDCCJMgCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUbP1Trt1tWkECDTuNAoT/H2g0
-# l76ggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUoY9qgSK1G7R+urfFyh3H/gUe
+# F+mggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -430,29 +434,29 @@ $envRequirements | ForEach-Object { if($_.Status -like "KO*") { $FoundError = $t
 # ZWQxJDAiBgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQQIQDue4N8WI
 # aRr2ZZle0AzJjDAJBgUrDgMCGgUAoIGEMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3
 # AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEW
-# BBR/zxpH7a/VCGaOJrEgTZCLFjHztjAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
-# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAI+BRtd6mkgbpIl/gLHrhc5Z
-# twTOwbcbAs37ujvhC/ZUjDJMVbKJJm8iBfxa/Exo2hoM/Nx+DWzHJ6rzlc/ZrJxt
-# e9UFZIXuHJqnOg1uNCsqmhCJ3uB65xMcFdvOUcw949sYPQefu4pOPXcf2LG4sMLt
-# CBy8PTAlWBQkQE9TyS50YwP57t1C1NhwdmxpK251B6t01+P3xrg28hNjdCYiwS4q
-# 8XsaVpWgSz+u+pznc8PJmXITOS2C/8T3vzUjDX5KuqBCav6UiDj0W7pyrlxPH+dk
-# /708IJUpCAVcL04dsj7kXyItKYqoRel+kaeO0acSX6ZKpJR2cfykMyJK0C7D7huh
+# BBRMIT8mERQ88A/AP6vf8ZgQkgEU9jAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
+# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAH10XvpDWjbuNQcgvpOjX0F1
+# lbstZ6O/l0gtM1bkPWJmmkzd4wxL94DF/qNPAliTFU9HTEl1HGg7dRmQ6eEtghFQ
+# qWmwo4ZAvxAZ27WSAVOuNy/zYx5zer8sUIbm/53k2VtwLYspzeKg48yQSf55UugL
+# jvP5Ov74M8f3DV/atnPILeIPa0ZZY1RbNnZkPLAYklVwITsMcgYOPW673AMUCqjW
+# LCf5rcZHkGtL1CgHtQJsZlfOkAtkz4xZds8qsk+5mf7KbDVcMnCNJHxPkVwBwxO/
+# 8FOj9iHuJraYdUO5rmRV+fpnVi+wEFztFYVAqxKRDYXxvyAvCUlJy0KoTYzhIeKh
 # ggNMMIIDSAYJKoZIhvcNAQkGMYIDOTCCAzUCAQEwgZIwfTELMAkGA1UEBhMCR0Ix
 # GzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEY
 # MBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSUwIwYDVQQDExxTZWN0aWdvIFJTQSBU
 # aW1lIFN0YW1waW5nIENBAhEAjHegAI/00bDGPZ86SIONazANBglghkgBZQMEAgIF
 # AKB5MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTIx
-# MTEyMzE0MzY0OVowPwYJKoZIhvcNAQkEMTIEMM4hVQGRy6HmqKAKsJu0ktPsksaf
-# UjexyUxvvu7dELaomLjRylmRFnfBHgW/K+KfUzANBgkqhkiG9w0BAQEFAASCAgBa
-# TqHw0GX/Kf5zbHtL24ryVSuzRpex1od9IxN/hPSjI+tV01AciT4qF1rEN3VA/61T
-# Vkd4jlHYzmTi+/ImSNgoKOLVCRQcNS1iLMYd05IJjwI5fWIObS6ZTjWocFtOajxw
-# AvIlgYhS0CbOJheUYnbDNi/mgw/AzkFjkxyI1EofiL91UNBydxrdCuNXv/aXlc8M
-# H9UHWWBsMcZFYzRGqjWv77buJCI0th9NlNIM6uQtLLK2TvGWGIVNugkUqynQZIFi
-# ptCLQJDo676fjwnwa7lu9qLT9n4cdppyXzjHVwB1t1ep9R7EvFSJYR7oRrzzmGnr
-# 2olVYMwhZjbk47nWlfnxvCPns4pV1CmDvttSCZ9D4M+5jShsKfL4GvQp6Lm+xzdU
-# tgZRIHmDBNqeETLs27crhNCgS6MD8c++z439jNWk6Vptv666Ied0NjGfMkQ7osUm
-# e1NeOlJ7cXUKrSRKz6CPXFBTWLPqkLTLL0ChBuHYpdhOQHCOShwEj2aq4EftKwjp
-# 1NCgy9QDEqCXp/Dublp7mmqczS1XPo1MeYI7v2dFuxNUW2zV5HEfcx3dz+/swfj+
-# fzuMYrEFsrUA8fwq8nNGIBxo+vlzrJy+6waQOyEjsOaQhHnmkbo/2uiQYqenGG3C
-# ENPRnZzBdex/18N6EXq9x2brFX819xQnvp3NBQdtFw==
+# MTEyNTE1MjYyMFowPwYJKoZIhvcNAQkEMTIEMHrrKpiBwi+81ZtzrE6ZJrODdTED
+# VQKta/Lh5TPfrNDrYO83pNyVn4Ac6h2jOxmCizANBgkqhkiG9w0BAQEFAASCAgAC
+# v6n0LAukWMW2rzP4u+vzA68OYUMCnAhsS8vg92pCLAN1/gJgZDbY/xAnJM3suK6x
+# 0p6TwnhaxL/Ein6/0pNaSm2sZpnX+QCBMxD4rCclZWsLvdm0z/s0czZmrGfm0GDZ
+# fu2BT5naHDKCX9CxwNbYWibbSc9WnCgssHzmuTgQ/1OG0Lj06FUGdPLvaE6Slcwx
+# fsH+jqSymr2M6at+ws8ZQja2JsGfrosY3YIDkG0NWJuB/2J7Ars4jHBKfU9CjfJ5
+# RfMEOT9bBPBuYpTts3gNwJ3dU1R+k5EoVLIY5TGVJdlXCcWbaudwk9TmVTqbgAEg
+# wT+bis2KbCor6LorIU2e2kT6kE8hmBQEuBZjGxJkz48AkL17bFy0ZvpXP9+YodrP
+# zYNluBOhPst5IAJOikHxH5L7OZeltNAfctTVzgv4gdgBM9pSZ1Occhyp52BzQAjB
+# bWG0DNgL4uxirY0ZawQio2moT0sB/lpjK7aMk4sTT4oDETX7gMey05nXm75e/Bhv
+# VgT1vsyb2wpU2dX5GG2zaTQfYsJJGq2l0lOVwMy3aDm1Xsv65imJC6q9hsujfMPT
+# pXSrXqBQJgxMnVkXShOryfGTq27YHCi2rMo+YKNdjwTyM+AZ9IxG5BLSm0OELAy2
+# YoKkjAntXOFcx8IK5tlCJGAB8tu2Mo1F5/z97xQksw==
 # SIG # End signature block

@@ -280,6 +280,9 @@ function CheckRequirements {
     $Description.AppendText("$($item.Status)`t$($item.Version)`t$($item.Requirement)`r`n")
     if ($item.Status -like "*KO*") {
       $script:RequirementsNotMet += $item
+      if ($item.Requirement -eq "Visual Studio Code") {
+        $script:VisualStudioCodeAutoExtension = $true
+      }
     }
   }
 
@@ -482,7 +485,8 @@ $CurrentRequirement
 $StatusInstallation = 0
 # Increases every time a requirments is downloaded and installed correctly
 $IndexRequirement = 0
-
+# Check if Visual Studio Code is already installed
+$VisualStudioCodeAutoExtension = $false
 
 #---------------------------------------------------------[Logic]--------------------------------------------------------
 <# DownloadAndInstallRequirement
@@ -694,6 +698,9 @@ function InstallCaPlatform {
 Install the recommendated extensions for Visual Studio Code automatically
 #>
 function InstallVSCodeExtensions {
+  if (-not $VisualStudioCodeAutoExtension) {
+    $Description.Text = "Visual Studio Code is already installed.`r`n"
+  }
   $Description.AppendText("`r`nInstalling VSCode extensions`r`n")
   foreach ($item in $RecommendationsVSCode) {
     Start-Process code -ArgumentList "--install-extension $item --force" -WindowStyle hidden -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrorLogfile -Wait
@@ -704,6 +711,7 @@ function InstallVSCodeExtensions {
 	  $Description.ScrollToCaret()
   }
   $Description.AppendText("`r`nInstallation of VSCode extensions completed`r`n")
+  $script:VisualStudioCodeAutoExtension = $true
 }
 
 <# ExecuteCaScar
@@ -745,8 +753,9 @@ function NextScreen {
     0 {
       if ($IndexRequirement -lt $RequirementsNotMet.Count) {
         ShowDownloadAndInstallRequirementScreen
-      } 
-      else {
+      } elseif(-not $VisualStudioCodeAutoExtension) {
+        InstallVSCodeExtensions
+      } else {
         ShowMainScreen
       }
     }
@@ -804,11 +813,12 @@ else {
 
 # Shows the GUI
 [void]$InstallForm.ShowDialog()
+
 # SIG # Begin signature block
 # MIIk2wYJKoZIhvcNAQcCoIIkzDCCJMgCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUVo9+cfr6RUR9sLujDSZIeCch
-# twyggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUSXcq+1sNvS4M3imLo32E198j
+# pv2ggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -977,29 +987,29 @@ else {
 # ZWQxJDAiBgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQQIQDue4N8WI
 # aRr2ZZle0AzJjDAJBgUrDgMCGgUAoIGEMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3
 # AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEW
-# BBQ1DjnyPWW3n3b02raIkxAK5/CiFDAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
-# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAJwDwRf8iibgbpAzXzuNnD4C
-# LUGV7GJxdoremlcvS9pR+Wdp3w9SilcuCi+aks6nEXQIumSWbLviesXZPYq+Fs5i
-# DuovSGHqD9To215SqqvLL5KfYppKrz0SlH0vf3OU/Cnaccu2deHbp07k4alBY5q1
-# jwYhj7+7EKKZpJUyANyLkGtGTGPjw8lndeL15d6kfu6FwUpsV1x0iZwAPa70jmWe
-# AAjfhGZ1rZ/73rU+yPBLGvPszrMXXUIyvOFGnocF/CP/8B6+WOGIT389cQsrPVw2
-# KZtZVtxw7bCa6SC2Rw9Ynwxg8ankVEuc6GmPf2iKo0YOPHgs9399Z3a+Rykldn+h
+# BBTCIoV0zDqlxHfXuCAjS4+/A0+SejAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
+# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAH2pWjpJ4dshYRNOcc6VKRRv
+# GyndZQIuNZ5MHqY26ey6YCvZ05pKnniqrZEW0Iaaaot0GOioHfYtU9LfkvRL6kpc
+# G+54U6J7/jAFNKzeOE3lwhlU0B/k1iCAnwCKXirOGgwEsFXEzOFe6wq79WXTy9u9
+# 3pqwrNMmcHYK5kKqGhd6X9VYWNm9DWvBesAT+lxtAuCSlB6XF88xkvC9gpSPoo9J
+# Biaaj3nbtjMknqhAwgGlhlu2S7JdqVs9lkn0lwv14dVXBHyGhkNU4x1UUErbAMYO
+# i8y6BHiVIuTE/ruVBVjdOhtNT5fgkUPRkxffMaj8SHjnIJqRuOI/ZNP0MiJzsOOh
 # ggNMMIIDSAYJKoZIhvcNAQkGMYIDOTCCAzUCAQEwgZIwfTELMAkGA1UEBhMCR0Ix
 # GzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEY
 # MBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSUwIwYDVQQDExxTZWN0aWdvIFJTQSBU
 # aW1lIFN0YW1waW5nIENBAhEAjHegAI/00bDGPZ86SIONazANBglghkgBZQMEAgIF
 # AKB5MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTIx
-# MTEyNTExNTAxNlowPwYJKoZIhvcNAQkEMTIEMClUOSmY4jDm+t/J17s8dBd4lh9I
-# nbrw6aCx7O5yL8LeENrJfhXcOBICndZLMKe5JzANBgkqhkiG9w0BAQEFAASCAgBJ
-# 5pSdT4O/7eAb2YSa6G18+TOYhKEjvC5jz6hePvQUiRuqlaS3/a7rVnbMJELt79Hz
-# qYEK6KILEH7JY0ShEfY9ZDs3o4UfR1qLudRz7oAD0uDThYdLQsRb/5X2EvJsSxpd
-# Emnek3vxVwzjWYpKmGZQkRtUVmXlwQKRz2OP9oux1aXOTZBPNGrSNElp7wuJDbtH
-# r3mIO1S3R/sThT8EKg4+4a/EQtMxJ3NVd46OeIrq2EH5lOPgIh60/x2wHWwCY8vw
-# q4uTS0x2y6ttefVB6Y7mT73cmIW5B1lYuGjSiCMje5UnZ7wMvqs5B0hEWS5drd0o
-# VnFZ/rrb8RHMFDm+JlCk9QyQ97ikaxidXLaAe+wR2E2ytCnZwhW4bhItA3NLvHAS
-# kK6lSgwY4aEuI9Qy1wcVl7dApF7g2BzPM5vFn8hu5wjW0cBCp6P0AhbqfSPnWr+t
-# APUN62cym+WNNymgTQ8yQ5F/C0Xf37Jz2qZcc5UlfxlUWCWlm9Zyuu6i1mofi+rh
-# Czh8UfLM28ch13npgK2DthjSh9SXQxA3VDuA8YyPG3cB598yCf1bl5/Zp6UOXUeJ
-# VPR/kb/X282mg+VsQZkeXU3YMw+Qwhd7zxBAvh9FfxiGpAXHQeRLoDvvKrTS0yUV
-# gfgiefrOJZl0tucd7d8PmSoDYh8bG5LPaahD4/tFWQ==
+# MTEyNTE1MjYyN1owPwYJKoZIhvcNAQkEMTIEMDqAj/QrtavKjE/aOKfy7eYwbRHe
+# +pwDqXdAwn/ds0v+55WA1HiARe3aJkdTEQ+uPDANBgkqhkiG9w0BAQEFAASCAgBm
+# /J61rKsc2Ven+Vgqayw0MesvWrBQzLPrYslh82lfECXB1K960pkkQKKlyQA6pvVG
+# ud6Cf7M+RSzE8HpvPqU20ii11IlHhV2OmLAodt8pxbFq1wBDwL6npWpdrAOZY6Xl
+# 9NajCoOCgdrKhz/6eNIbiZ4NLKgvQWgqWfh9CuWn3fOdOJtp2Rn8I93/2AhmxjG3
+# FT8YEbwiXXcI4uDNVOJ1MVC2O7T4hq9HjeaVft+X46DpwhOHJXHwPUCegEN/fD7n
+# //usJGYWtAJTbObhhvqD0EydOjaQzcFZNLq+MNVONClFaoT6bfeGVNHOzxmOZdCX
+# NOkV+8i088gKTsCnprN9s9Re6sSRWKSsV17LEsHb7hR80Y+EwSsLMK+UPQpnrJMs
+# IvNiOABsSgaQNbMZc5VpkpgOscYn4yGgdRojyRBW2NPku7XgulBbt3jRt0VnfdVX
+# 4JprfRzOcVYGNDEr5TGqGpYCTDwAWMdChVsH6m2yZiC1LrnGVttmNvEK+6PfuEbl
+# 1l9fC+9CyZn3kzBU5FyZCCTv6e9OSIpQqxlS/wLgoA95xy0AwnlRSQ1umhFRvV4Y
+# EmcMUBR6SI1R5OPffhOwmliHxqe+Bp1oLN34Gpa8rmXCY7l54fmzVk932MWYEX/3
+# LOKyWUcxi9qHy7b4CqJpQgHbmTt/Qnw286I+DcPgCw==
 # SIG # End signature block
