@@ -110,6 +110,26 @@ $AcceptButton.Font                = 'Microsoft Sans Serif,10'
 $AcceptButton.ForeColor           = "#ffffff"
 $AcceptButton.Visible             = $false
 
+$RestartButton                     = New-Object System.Windows.Forms.Button
+$RestartButton.BackColor           = "#ff7b00"
+$RestartButton.Text                = "Restart"
+$RestartButton.Width               = 90
+$RestartButton.Height              = 30
+$RestartButton.Location            = New-Object System.Drawing.Point(450,330)
+$RestartButton.Font                = 'Microsoft Sans Serif,10'
+$RestartButton.ForeColor           = "#ffffff"
+$RestartButton.Visible             = $false
+
+$LogoutButton                     = New-Object System.Windows.Forms.Button
+$LogoutButton.BackColor           = "#ff7b00"
+$LogoutButton.Text                = "Logout"
+$LogoutButton.Width               = 90
+$LogoutButton.Height              = 30
+$LogoutButton.Location            = New-Object System.Drawing.Point(450,330)
+$LogoutButton.Font                = 'Microsoft Sans Serif,10'
+$LogoutButton.ForeColor           = "#ffffff"
+$LogoutButton.Visible             = $false
+
 $DeclineButton                   = New-Object System.Windows.Forms.Button
 $DeclineButton.BackColor         = "#ffffff"
 $DeclineButton.Text              = "Decline"
@@ -143,7 +163,9 @@ $NextButton,
 $CancelButton,
 $DoneButton,
 $AcceptButton,
-$DeclineButton))
+$DeclineButton,
+$RestartButton,
+$LogoutButton))
 
 #---------------------------------------------------------[Functions]--------------------------------------------------------
 <# ShowDoneButton
@@ -154,7 +176,35 @@ function ShowDoneButton {
   $NextButton.Visible = $false
   $DeclineButton.Visible = $false
   $AcceptButton.Visible = $false
+  $RestartButton.Visible = $false
+  $LogoutButton.Visible = $false
   $DoneButton.Visible = $true
+}
+
+<# ShowRestartButton
+Hide all the buttons and shows the Restart button
+#>
+function ShowRestartButton {
+  $CancelButton.Visible = $false
+  $NextButton.Visible = $false
+  $DeclineButton.Visible = $false
+  $AcceptButton.Visible = $false
+  $DoneButton.Visible = $false
+  $LogoutButton.Visible = $false
+  $RestartButton.Visible = $true
+}
+
+<# ShowLogoutButton
+Hide all the buttons and shows the Logout button
+#>
+function ShowLogoutButton {
+  $CancelButton.Visible = $false
+  $NextButton.Visible = $false
+  $DeclineButton.Visible = $false
+  $AcceptButton.Visible = $false
+  $DoneButton.Visible = $false
+  $RestartButton.Visible = $false
+  $LogoutButton.Visible = $true
 }
 
 <# ShowAcceptDeclineButton
@@ -217,17 +267,24 @@ If a requirement isn't met than store it inside the variable $RequirementsNotMet
 function CheckRequirements {
   . ./check-requirements.ps1
 
+  if ($IsVirtualMachine) {
+    $Description.Text = "You are using a Virtual Machine. Remeber to enable the Nested Virtualization on your Host machine with the following command:`r`n"
+    $Description.AppendText('Set-VMProcessor -VMName <VMName> -ExposeVirtualizationExtensions $true')
+    $Description.AppendText("`r`nRemeber to turn off the Virtual Machine and to replace <VMName> with the name of your Virtual Machine.`r`n`r`n")
+  }
+
   $Title.Text = "Check Requirements"
-  $Description.Text = "SOFTWARE REQUIREMENTS`r`n------------------------------------------------------------------------------------`r`n"
-  $Description.Text += "Status`tVersion`tRequirements`r`n"
+  $Description.AppendText("SOFTWARE REQUIREMENTS`r`n------------------------------------------------------------------------------------`r`n")
+  $Description.AppendText("Status`tVersion`tRequirements`r`n")
   foreach ($item in $requirements) {
     $Description.AppendText("$($item.Status)`t$($item.Version)`t$($item.Requirement)`r`n")
     if ($item.Status -like "*KO*") {
       $script:RequirementsNotMet += $item
     }
   }
-  $Description.Text += "`r`nENVIRONMENT VARIABLES REQUIREMENTS`r`n------------------------------------------------------------------------------------`r`n"
-  $Description.Text += "Status`tEnvironment Requirements`r`n"
+
+  $Description.AppendText("`r`nENVIRONMENT VARIABLES REQUIREMENTS`r`n------------------------------------------------------------------------------------`r`n")
+  $Description.AppendText("Status`tEnvironment Requirements`r`n")
   foreach ($item in $envRequirements) {
     $Description.AppendText("$($item.Status)`t$($item.EnvironmentVariable)`r`n")
     if ($item.Status -like "*KO*") {
@@ -235,9 +292,6 @@ function CheckRequirements {
     }
   }
 
-  if ($EnvironmentRequirementsNotMet.Count -ne 0) {
-    # $Description.Text += "`r`nMeet all environment requirements or contact Technical Operators"
-  }
 }
 
 <# CheckNpmVersion
@@ -314,7 +368,7 @@ function CreateRecommendationsVS {
   return $Result
 }
 
-<# Generate random code
+<# GenerateRandomCode
 Generate a random code to name the .exe and .msi
 #>
 function GenerateRandomCode {
@@ -530,12 +584,13 @@ function DownloadAndInstallRequirement($Requirement) {
   }
   RemoveInstallers
   $script:IndexRequirement++
-  if ($Requirement.Requirement -ne "Virtual Machine Platform") {
+  if ($Requirement.Requirement -eq "Virtual Machine Platform") {
+    ShowRestartButton
+  } elseif ($Requirement.Requirement -eq "Docker") {
+    ShowLogoutButton
+  } else {
     ReloadEnvPath
     HideAcceptDeclineButton
-  }
-  else {
-    ShowDoneButton
   }
 }
 
@@ -690,7 +745,7 @@ function NextScreen {
     0 {
       if ($IndexRequirement -lt $RequirementsNotMet.Count) {
         ShowDownloadAndInstallRequirementScreen
-      }
+      } 
       else {
         ShowMainScreen
       }
@@ -729,6 +784,8 @@ $LoginButton.Add_Click({ LoginNpm })
 $DoneButton.Add_Click({ $InstallForm.Close() })
 $AcceptButton.Add_Click({ AcceptInstallRequirement $CurrentRequirement })
 $DeclineButton.Add_Click({ DeclineInstallRequirement $CurrentRequirement })
+$RestartButton.Add_Click({ Restart-Computer })
+$LogoutButton.Add_Click({ logoff.exe })
 
 Get-NetAdapter | ForEach-Object { if (($_.Name -eq "Ethernet" -or $_.Name -eq "Wi-Fi") -and $_.Status -eq "Up") { $InternetStatus = $true } }
 if (-not $InternetStatus) {
