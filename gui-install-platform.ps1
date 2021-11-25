@@ -256,14 +256,11 @@ function CheckNpmVersion {
 Checks if the user has already logged in with npm
 #>
 function CheckNpmLogin {
-  CreateLogfiles
-  $CheckNpmLoginPath = "$($HOME)\check-npm-login.log"
   Start-Process npm -ArgumentList "view @ca/cli" -WindowStyle hidden -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrorLogfile -Wait
-  Get-Content $OutLogfile, $ErrorLogfile | Set-Content $CheckNpmLoginPath
+  Get-Content $OutLogfile, $ErrorLogfile | Set-Content $CheckNpmLoginLogfile
   Start-Process npm -ArgumentList "view @ca-codegen/core" -WindowStyle hidden -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrorLogfile -Wait
-  Get-Content $OutLogfile, $ErrorLogfile | Add-Content $CheckNpmLoginPath
-  $ErrorsNpm = Get-Content $CheckNpmLoginPath | Where-Object { $_ -like "*ERR!*" -or $_ -like "*error*" }
-  Remove-Item $CheckNpmLoginPath
+  Get-Content $OutLogfile, $ErrorLogfile | Add-Content $CheckNpmLoginLogfile
+  $ErrorsNpm = Get-Content $CheckNpmLoginLogfile | Where-Object { $_ -like "*ERR!*" -or $_ -like "*error*" }
   return ($ErrorsNpm.Count -eq 0)
 }
 
@@ -280,7 +277,14 @@ It needs as param a requirement.
 It will be the one to be downloaded and installed on the machine, with the function DownloadAndInstallRequirement.
 #>
 function AcceptInstallRequirement($Requirement) {
-  $Description.Text = "You have accepted.`r`nIt will start to download and install $($Requirement.Requirement) automatically"
+  switch ($Requirement.Status) {
+    "KO (Not Found)" {
+      $Description.Text = "You have accepted.`r`nIt will start to download and install $($Requirement.Requirement) automatically"
+    }
+    "KO (Not enabled)" {
+      $Description.Text = "You have accepted.`r`nIt will start to enable $($Requirement.Requirement) automatically"
+    }
+  }
   DownloadAndInstallRequirement $Requirement
 }
 
@@ -289,7 +293,14 @@ It needs as param a requirement, which will be printed on the GUI.
 At the and it will show the done button to close the installation. 
 #>
 function DeclineInstallRequirement($Requirement) {
-  $Description.Text = "You have declined.`r`nDownload $($Requirement.Requirement) manually to proceed with the installation."
+  switch ($Requirement.Status) {
+    "KO (Not Found)" {
+      $Description.Text = "You have declined.`r`nDownload $($Requirement.Requirement) manually to proceed with the installation."
+    }
+    "KO (Not enabled)" {
+      $Description.Text = "You have declined.`r`nEnable $($Requirement.Requirement) manually to proceed with the installation."
+    }
+  }
   ShowDoneButton
 }
 
@@ -329,6 +340,18 @@ function CreateLogfiles {
   if (-not(Test-Path $CaScarErrorLogfile)) {
     New-Item -Path $CaScarErrorLogfile -Force | Out-Null
   }
+  if (-not(Test-Path $NpmLoginResultLogfile)) {
+    New-Item -Path $NpmLoginResultLogfile -Force | Out-Null
+  }
+  if (-not(Test-Path $NpmUpdateVersionLogfile)) {
+    New-Item -Path $NpmUpdateVersionLogfile -Force | Out-Null
+  }
+  if (-not(Test-Path $DockerInstallLogfile)) {
+    New-Item -Path $DockerInstallLogfile -Force | Out-Null
+  }
+  if (-not(Test-Path $CheckNpmLoginLogfile)) {
+    New-Item -Path $CheckNpmLoginLogfile -Force | Out-Null
+  }
 }
 
 function RemoveInstallers {
@@ -361,11 +384,15 @@ $DotNetDownloadLink = "https://download.visualstudio.microsoft.com/download/pr/0
 $DockerDownloadLink = "https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe"
 # Variables Save Log
 $CurrentDate = (Get-Date -Format yyyyMMdd-hhmm).ToString()
-$FullLogfile = "$($HOME)\.ca\install_ca_platform_$($CurrentDate).log"
 $OutLogfile = "$($HOME)\.ca\install_ca_platform_$($CurrentDate).out"
 $ErrorLogfile = "$($HOME)\.ca\install_ca_platform_$($CurrentDate).err"
+$FullLogfile = "$($HOME)\.ca\install_ca_platform_$($CurrentDate).log"
 $CaScarErrorLogfile = "$($HOME)\.ca\ca_scar_errors_$($CurrentDate).log"
-$VSCodeExtentionsLogfile = "$($HOME)\vscode_extensions_$($CurrentDate).txt"
+$VSCodeExtentionsLogfile = "$($HOME)\.ca\vscode_extensions_$($CurrentDate).log"
+$NpmLoginResultLogfile = "$($HOME)\.ca\npm_login_result_$($CurrentDate).log"
+$NpmUpdateVersionLogfile = "$($HOME)\.ca\npm_update_version_$($CurrentDate).log"
+$DockerInstallLogfile = "$($HOME)\.ca\docker_install_$($CurrentDate).log"
+$CheckNpmLoginLogfile = "$($HOME)\.ca\check_npm_login_$($CurrentDate).log"
 # Variables Login npm
 $NpmRegistry = "https://devops.codearchitects.com:444/Code%20Architects/_packaging/ca-npm/npm/registry/"
 $NpmScope = "@ca"
@@ -425,6 +452,7 @@ function DownloadAndInstallRequirement($Requirement) {
       $Description.AppendText("`r`nInstalling Visual Studio Code x64...")
       Start-Process "$VisualStudioCodeExePath" -ArgumentList "/VERYSILENT /NORESTART" -Wait
       $Description.AppendText("`r`nInstall of Visual Studio Code x64 complete.")
+      ReloadEnvPath
       InstallVSCodeExtensions
     }
     "Git" {
@@ -481,7 +509,8 @@ function DownloadAndInstallRequirement($Requirement) {
       Invoke-RestMethod $DockerDownloadLink -OutFile "$DockerExePath"
       $Description.AppendText("`r`nDownload of Docker Desktop complete.")
       $Description.AppendText("`r`nInstalling Docker Desktop...")
-      Start-Process "$DockerExePath" -ArgumentList "install --quiet" -Wait # Redirect Err and Out
+      Start-Process "$DockerExePath" -ArgumentList "install --quiet" -WindowStyle hidden -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrorLogfile -Wait
+      Get-Content $ErrorLogfile, $OutLogfile | Set-Content $DockerInstallLogfile
       $Description.AppendText("`r`nInstall of Docker Desktop complete.")
       $Description.AppendText("`r`nLog out to complete the installation.")
     }
@@ -489,7 +518,8 @@ function DownloadAndInstallRequirement($Requirement) {
       $NpmVersion = CheckNpmVersion
       if ($NpmVersion -lt 6.0.0 -or $NpmVersion -gt 7.0.0) {
         $Description.AppendText("`r`nCurrent version of npm is $NpmVersion.`r`nChanging the version of npm to 6.14.15...")
-        npm i -g npm@6
+        Start-Process npm -ArgumentList "i -g npm@6" -WindowStyle hidden -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrorLogfile -Wait
+        Get-Content $ErrorLogfile, $OutLogfile | Set-Content $NpmUpdateVersionLogfile
         $NewNpmVersion = npm --version
         $Description.AppendText("`r`nVersion of npm updated to $NewNpmVersion")
       }
@@ -572,10 +602,11 @@ function LoginNpm {
   $UsernameTextBox.Visible = $false
   $TokenLabel.Visible = $false
   $TokenTextBox.Visible = $false
-  #TODO cambiare & con Start-Process
-  & npm-login.ps1 -user $UsernameTextBox.Text -token $TokenTextBox.Text -registry $NpmRegistry -scope $NpmScope *> $HOME\NpmLoginMessage.txt
-  $NpmLoginMessage = Get-Content $HOME\NpmLoginMessage.txt
-  Remove-Item $HOME\NpmLoginMessage.txt
+  #Start-Process powershell.exe -ArgumentList "npm-login.ps1 -user $($UsernameTextBox.Text) -token $($TokenTextBox.Text) -registry $NpmRegistry -scope $NpmScope" -WindowStyle hidden -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrorLogfile -Wait
+  # Non setta correttamente .npmrc
+  & npm-login.ps1 -user $UsernameTextBox.Text -token $TokenTextBox.Text -registry $NpmRegistry -scope $NpmScope *> $NpmLoginResultLogfile
+  Get-Content $ErrorLogfile, $OutLogfile | Set-Content $NpmLoginResultLogfile
+  $NpmLoginMessage = Get-Content $NpmLoginResultLogfile
   $Description.Lines = $NpmLoginMessage
   npm config set @ca-codegen:registry $NpmRegistry
   $LoginButton.Visible = $false
@@ -589,10 +620,8 @@ Installs the ca-platform, it will print errors if they are found
 function InstallCaPlatform {
   $Title.Text = "Install Ca-Platform"
   $Description.Text = "Installing Ca-Platform... (It will take a few minutes)"
-  CreateLogfiles
   Start-Process $setupPlatformExePath -ArgumentList "-s" -WindowStyle hidden -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrorLogfile -Wait
   Get-Content $OutLogfile, $ErrorLogfile | Set-Content $FullLogfile
-
   $ArrayErrors = Get-Content $FullLogfile | Where-Object { $_ -like "*Error*" -or $_ -like "*ERR!*" }
   if ($ArrayErrors.Count -ne 0) {
     $Description.Text += "`r`nERRORS FOUND:"
@@ -611,7 +640,6 @@ Install the recommendated extensions for Visual Studio Code automatically
 #>
 function InstallVSCodeExtensions {
   $Description.AppendText("`r`nInstalling VSCode extensions`r`n")
-  CreateLogfiles
   foreach ($item in $RecommendationsVSCode) {
     Start-Process code -ArgumentList "--install-extension $item --force" -WindowStyle hidden -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrorLogfile -Wait
     Get-Content $OutLogfile, $ErrorLogfile | Add-Content $VSCodeExtentionsLogfile
@@ -638,7 +666,6 @@ function ExecuteCaScar {
   }
   
   Set-Location $testScarPath
-  CreateLogfiles
   Start-Process $HOME\AppData\Roaming\npm\ca.cmd -ArgumentList "scar" #-WindowStyle hidden -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrorLogfile -Wait
   $script:StatusInstallation++
   # New-Item $CaScarErrorLogfile
@@ -715,16 +742,16 @@ if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
 }
 else {
   CheckRequirements
+  CreateLogfiles
 }
 
 # Shows the GUI
 [void]$InstallForm.ShowDialog()
-
 # SIG # Begin signature block
 # MIIk2wYJKoZIhvcNAQcCoIIkzDCCJMgCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUyBnLRvZxX7z0gT0bLajR8P7p
-# guGggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUVo9+cfr6RUR9sLujDSZIeCch
+# twyggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -893,29 +920,29 @@ else {
 # ZWQxJDAiBgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQQIQDue4N8WI
 # aRr2ZZle0AzJjDAJBgUrDgMCGgUAoIGEMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3
 # AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEW
-# BBS38zlc+AfM6WuQPABmAB26FL8PhjAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
-# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAJ+RUB7EH/qtdHnvLiuMSS4o
-# E9VlwJTVcNjRpCoVeHNqIo5kWQNYmAoJpSL4DnL3+FlPAd8S2A+O2zDrlzQbAwaN
-# LQwji3TBCo5ADOayIFFld5u6hgWnbClRy0kBqpsK9HlkQQZEJGqpdqOOkyRBlPo2
-# dSyEvh0n0Z4rfAoOYAq2by9/PmKo4ax67GUC8yjmWF7HuwnTiMDP51wpSoRyZHYz
-# MWJNAvNYgUr4zBT/nokdRG45lt5bNaR9sz6ZVetwrVH4ond7gu2A38lhIgECmhKs
-# E58QVCJP6Uv+MWynGBDQKTZBPoYaxVZUbqV2+zddUYkkVEunM360nYKeT1ASK7Ch
+# BBQ1DjnyPWW3n3b02raIkxAK5/CiFDAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
+# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAJwDwRf8iibgbpAzXzuNnD4C
+# LUGV7GJxdoremlcvS9pR+Wdp3w9SilcuCi+aks6nEXQIumSWbLviesXZPYq+Fs5i
+# DuovSGHqD9To215SqqvLL5KfYppKrz0SlH0vf3OU/Cnaccu2deHbp07k4alBY5q1
+# jwYhj7+7EKKZpJUyANyLkGtGTGPjw8lndeL15d6kfu6FwUpsV1x0iZwAPa70jmWe
+# AAjfhGZ1rZ/73rU+yPBLGvPszrMXXUIyvOFGnocF/CP/8B6+WOGIT389cQsrPVw2
+# KZtZVtxw7bCa6SC2Rw9Ynwxg8ankVEuc6GmPf2iKo0YOPHgs9399Z3a+Rykldn+h
 # ggNMMIIDSAYJKoZIhvcNAQkGMYIDOTCCAzUCAQEwgZIwfTELMAkGA1UEBhMCR0Ix
 # GzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEY
 # MBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSUwIwYDVQQDExxTZWN0aWdvIFJTQSBU
 # aW1lIFN0YW1waW5nIENBAhEAjHegAI/00bDGPZ86SIONazANBglghkgBZQMEAgIF
 # AKB5MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTIx
-# MTEyMzExNTc1N1owPwYJKoZIhvcNAQkEMTIEMORT3Y//mNLZKvelurxCAVMSZ6TE
-# snIenB59YAMzju10ohi8scbv8IBZiTXXBss/OTANBgkqhkiG9w0BAQEFAASCAgCL
-# DSdOhzR3PEi8LAXt1Hf8GWyOtFO8ciJ8tWvk/qBngBIE2s/pQ/Mu1cpG8WnJ0f6w
-# sHzVb3mrTBL+2riqVe9jZ2gPi2b9b6S9tpWb7KWUSAJpgRR2twpChRjr+lme7/TK
-# iOfCUMMXY5JF6VMQHQUk1Z/hCMxjbc9+IJ7TAJBSv+nS0JNILLF/NLWyUf0ujwas
-# HALGa/OKXv0b/18P1XoP3wB31lX7fQ2X3dySU69TL6UjDqppkozS2LHnEEh7WVD9
-# 0XbaSGQd1ZVK3Gj5fTGAHDmAlUOsmPjLzPv2UQqenT+gC5a+AfDsFssCCXAz1La8
-# ZosiSUZZ/RaUCvhLEMsJX2uhoAXv/JCKzcO5lZdb2xSzD/b4WQ8doWhF3QInNI2D
-# egiq8sSE0AeHZ1RdSi/GEHI+Ypgu/hC8W+JQ2Fojc4eGm1112u/npN7FmTKlDyIN
-# ZuEjeiWD8wI5eHZcYw0YhMZA54PmYjSEBTz5CBOEcMB7I7VgfVDSJUwiH+BZfxAA
-# Fq4KZGrCibwiK4YcPFf3r1Bihp47efKucQSmzZ0KnaefDkSLmsKSG+eAbw9Hff/5
-# HKt8mviFq7UxSsqs1+ShjoMkgNPiRyYqpw7Vogk8ghmkLMFsoRRphhT2dnDgjhAG
-# nyXpjvA/pUSqbDxlNb7+GDvuuyr9LbyLJinpNEXDyw==
+# MTEyNTExNTAxNlowPwYJKoZIhvcNAQkEMTIEMClUOSmY4jDm+t/J17s8dBd4lh9I
+# nbrw6aCx7O5yL8LeENrJfhXcOBICndZLMKe5JzANBgkqhkiG9w0BAQEFAASCAgBJ
+# 5pSdT4O/7eAb2YSa6G18+TOYhKEjvC5jz6hePvQUiRuqlaS3/a7rVnbMJELt79Hz
+# qYEK6KILEH7JY0ShEfY9ZDs3o4UfR1qLudRz7oAD0uDThYdLQsRb/5X2EvJsSxpd
+# Emnek3vxVwzjWYpKmGZQkRtUVmXlwQKRz2OP9oux1aXOTZBPNGrSNElp7wuJDbtH
+# r3mIO1S3R/sThT8EKg4+4a/EQtMxJ3NVd46OeIrq2EH5lOPgIh60/x2wHWwCY8vw
+# q4uTS0x2y6ttefVB6Y7mT73cmIW5B1lYuGjSiCMje5UnZ7wMvqs5B0hEWS5drd0o
+# VnFZ/rrb8RHMFDm+JlCk9QyQ97ikaxidXLaAe+wR2E2ytCnZwhW4bhItA3NLvHAS
+# kK6lSgwY4aEuI9Qy1wcVl7dApF7g2BzPM5vFn8hu5wjW0cBCp6P0AhbqfSPnWr+t
+# APUN62cym+WNNymgTQ8yQ5F/C0Xf37Jz2qZcc5UlfxlUWCWlm9Zyuu6i1mofi+rh
+# Czh8UfLM28ch13npgK2DthjSh9SXQxA3VDuA8YyPG3cB598yCf1bl5/Zp6UOXUeJ
+# VPR/kb/X282mg+VsQZkeXU3YMw+Qwhd7zxBAvh9FfxiGpAXHQeRLoDvvKrTS0yUV
+# gfgiefrOJZl0tucd7d8PmSoDYh8bG5LPaahD4/tFWQ==
 # SIG # End signature block
