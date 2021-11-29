@@ -35,7 +35,7 @@ $Description.Scrollbars         = "Vertical"
 $Description.Width              = 560
 $Description.Height             = 250
 $Description.Location           = New-Object System.Drawing.Point(20,50)
-$Description.Font               = 'Microsoft Sans Serif,10'
+$Description.Font               = 'Consolas,10'
 
 $UsernameLabel                  = New-Object System.Windows.Forms.Label
 $UsernameLabel.Text             = "Username:"
@@ -140,6 +140,26 @@ $DeclineButton.Font              = 'Microsoft Sans Serif,10'
 $DeclineButton.ForeColor         = "#000"
 $DeclineButton.Visible           = $false
 
+$YesButton                     = New-Object System.Windows.Forms.Button
+$YesButton.BackColor           = "#ff7b00"
+$YesButton.Text                = "Yes"
+$YesButton.Width               = 90
+$YesButton.Height              = 30
+$YesButton.Location            = New-Object System.Drawing.Point(450,330)
+$YesButton.Font                = 'Microsoft Sans Serif,10'
+$YesButton.ForeColor           = "#ffffff"
+$YesButton.Visible             = $false
+
+$NoButton                   = New-Object System.Windows.Forms.Button
+$NoButton.BackColor         = "#ffffff"
+$NoButton.Text              = "No"
+$NoButton.Width             = 90
+$NoButton.Height            = 30
+$NoButton.Location          = New-Object System.Drawing.Point(350,330)
+$NoButton.Font              = 'Microsoft Sans Serif,10'
+$NoButton.ForeColor         = "#000"
+$NoButton.Visible           = $false
+
 $CancelButton                   = New-Object System.Windows.Forms.Button
 $CancelButton.BackColor         = "#ffffff"
 $CancelButton.Text              = "Cancel"
@@ -165,9 +185,25 @@ $DoneButton,
 $AcceptButton,
 $DeclineButton,
 $RestartButton,
-$LogoutButton))
+$LogoutButton,
+$YesButton,
+$NoButton))
 
 #---------------------------------------------------------[Functions]--------------------------------------------------------
+
+function ShowNextButton {
+  $CancelButton.Visible = $true
+  $NextButton.Visible = $true
+  $DeclineButton.Visible = $false
+  $AcceptButton.Visible = $false
+  $DoneButton.Visible = $false
+  $LoginButton.Visible = $false
+  $LogoutButton.Visible = $false
+  $RestartButton.Visible = $false
+  $YesButton.Visible = $false
+  $NoButton.Visible = $false
+}
+
 <# ShowDoneButton
 Hide all the buttons and shows the Done button
 #>
@@ -176,8 +212,10 @@ function ShowDoneButton {
   $NextButton.Visible = $false
   $DeclineButton.Visible = $false
   $AcceptButton.Visible = $false
-  $RestartButton.Visible = $false
   $LogoutButton.Visible = $false
+  $RestartButton.Visible = $false
+  $YesButton.Visible = $false
+  $NoButton.Visible = $false
   $DoneButton.Visible = $true
 }
 
@@ -189,9 +227,11 @@ function ShowRestartButton {
   $NextButton.Visible = $false
   $DeclineButton.Visible = $false
   $AcceptButton.Visible = $false
-  $DoneButton.Visible = $false
   $LogoutButton.Visible = $false
   $RestartButton.Visible = $true
+  $YesButton.Visible = $false
+  $NoButton.Visible = $false
+  $DoneButton.Visible = $false
 }
 
 <# ShowLogoutButton
@@ -202,9 +242,11 @@ function ShowLogoutButton {
   $NextButton.Visible = $false
   $DeclineButton.Visible = $false
   $AcceptButton.Visible = $false
-  $DoneButton.Visible = $false
-  $RestartButton.Visible = $false
   $LogoutButton.Visible = $true
+  $RestartButton.Visible = $false
+  $YesButton.Visible = $false
+  $NoButton.Visible = $false
+  $DoneButton.Visible = $false
 }
 
 <# ShowAcceptDeclineButton
@@ -212,20 +254,27 @@ Shows the Accept and Decline buttons,
 to let the user choice if he wants the script to download and install the requirement automatically
 #>
 function ShowAcceptDeclineButton {
-  $DeclineButton.Visible = $true
-  $AcceptButton.Visible = $true
   $CancelButton.Visible = $false
   $NextButton.Visible = $false
+  $DeclineButton.Visible = $true
+  $AcceptButton.Visible = $true
+  $LogoutButton.Visible = $false
+  $RestartButton.Visible = $false
+  $YesButton.Visible = $false
+  $NoButton.Visible = $false
+  $DoneButton.Visible = $false
 }
 
-<# HideAcceptDeclineButton
-Hides the Accept and Decline buttons
-#>
-function HideAcceptDeclineButton {
-  $CancelButton.Visible = $true
-  $NextButton.Visible = $true
+function ShowYesNoButtons {
+  $CancelButton.Visible = $false
+  $NextButton.Visible = $false
   $DeclineButton.Visible = $false
   $AcceptButton.Visible = $false
+  $DoneButton.Visible = $false
+  $LogoutButton.Visible = $false
+  $RestartButton.Visible = $false
+  $YesButton.Visible = $true
+  $NoButton.Visible = $true
 }
 
 <# ShowMainScreen
@@ -242,19 +291,23 @@ Shows the screen asking for the permission to download and install the $CurrentR
 #>
 function ShowDownloadAndInstallRequirementScreen {
   $Title.Text = "Download Requirements"
-  ShowAcceptDeclineButton
   $script:CurrentRequirement = $RequirementsNotMet[$IndexRequirement]
-  
-  if ($CurrentRequirement.Status -like "*Not enabled*") {
-    $Description.Text = "Do you want to enable $($CurrentRequirement.Requirement)?`r`n"
-  }
-  elseif ($CurrentRequirement.Requirement -ne "npm" -and $CurrentRequirement.Status -like "*Not Found*") {
-    $Description.Text = "Do you want to download and install automatically $($CurrentRequirement.Requirement)?`r`n"
-  }
-  else {
-    $Description.Text = "The version $($CurrentRequirement.Version) of $($CurrentRequirement.Requirement) is not supported"
-    if ($CurrentRequirement.Requirement -ne "npm") {
-      $Description.AppendText("Do you want to change the version of $CurrentRequirement.Requirement automatically?")
+
+  if ($CurrentRequirement.Status -like "*WARNING*") {
+    AcceptInstallRequirement $CurrentRequirement
+  } else {
+    ShowAcceptDeclineButton
+    if ($CurrentRequirement.Status -like "*Not enabled*") {
+      $Description.Text = "Do you want to enable $($CurrentRequirement.Requirement)?`r`n"
+    }
+    elseif ($CurrentRequirement.Requirement -ne "npm" -and $CurrentRequirement.Status -like "*Not Found*") {
+      $Description.Text = "Do you want to download and install automatically $($CurrentRequirement.Requirement)?`r`n"
+    }
+    else {
+      $Description.Text = "The version $($CurrentRequirement.Version) of $($CurrentRequirement.Requirement) is not supported"
+      if ($CurrentRequirement.Requirement -ne "npm") {
+        $Description.AppendText("Do you want to change the version of $CurrentRequirement.Requirement automatically?")
+      }
     }
   }
 }
@@ -267,18 +320,21 @@ If a requirement isn't met than store it inside the variable $RequirementsNotMet
 function CheckRequirements {
   . ./check-requirements.ps1
 
-  if ($IsVirtualMachine) {
-    $Description.Text = "You are using a Virtual Machine. Remeber to enable the Nested Virtualization on your Host machine with the following command:`r`n"
-    $Description.AppendText('Set-VMProcessor -VMName <VMName> -ExposeVirtualizationExtensions $true')
-    $Description.AppendText("`r`nRemeber to turn off the Virtual Machine and to replace <VMName> with the name of your Virtual Machine.`r`n`r`n")
-  }
-
+  $script:ProxyData = $ProxyData
   $Title.Text = "Check Requirements"
-  $Description.AppendText("SOFTWARE REQUIREMENTS`r`n------------------------------------------------------------------------------------`r`n")
-  $Description.AppendText("Status`tVersion`tRequirements`r`n")
+  $MaxSpacesStatus = 33
+  $MaxSpacesRequirement = 38
+  $Space = " "
+  $Dash = "-"
+  $Description.AppendText("SOFTWARE REQUIREMENTS`r`n$($Dash * 75)`r`n")
+  $Description.AppendText("Requirements$($Space * 26)Status$($Space * 24)Version`r`n")
   foreach ($item in $requirements) {
-    $Description.AppendText("$($item.Status)`t$($item.Version)`t$($item.Requirement)`r`n")
-    if ($item.Status -like "*KO*") {
+    $CountCharStatus = ($item.Status | Measure-Object -Character).Characters
+    $CountCharRequirement = ($item.Requirement | Measure-Object -Character).Characters
+    $NumberSpacesStatus = $MaxSpacesStatus - $CountCharStatus
+    $NumberSpacesRequirement = $MaxSpacesRequirement - $CountCharRequirement
+    $Description.AppendText("$($item.Requirement)$($Space * $NumberSpacesRequirement)$($item.Status)$($Space * $NumberSpacesStatus)$($item.Version)`r`n")
+    if (-not ($item.Status -like "*OK*") -and ($item.Requirement -ne "Proxy")) {
       $script:RequirementsNotMet += $item
       if ($item.Requirement -eq "Visual Studio Code") {
         $script:VisualStudioCodeAutoExtension = $true
@@ -286,10 +342,14 @@ function CheckRequirements {
     }
   }
 
-  $Description.AppendText("`r`nENVIRONMENT VARIABLES REQUIREMENTS`r`n------------------------------------------------------------------------------------`r`n")
-  $Description.AppendText("Status`tEnvironment Requirements`r`n")
+  $MaxSpacesEnvRequirement = 55
+
+  $Description.AppendText("`r`nENVIRONMENT VARIABLES REQUIREMENTS`r`n$($Dash * 75)`r`n")
+  $Description.AppendText("Environment Requirements$($Space * 31)Status`r`n")
   foreach ($item in $envRequirements) {
-    $Description.AppendText("$($item.Status)`t$($item.EnvironmentVariable)`r`n")
+    $CountCharEnvRequirement = ($item.EnvironmentVariable | Measure-Object -Character).Characters
+    $NumberSpacesEnvRequirement = $MaxSpacesEnvRequirement - $CountCharEnvRequirement
+    $Description.AppendText("$($item.EnvironmentVariable)$($Space * $NumberSpacesEnvRequirement)$($item.Status)`r`n")
     if ($item.Status -like "*KO*") {
       $script:EnvironmentRequirementsNotMet += $item
     }
@@ -321,6 +381,44 @@ function CheckNpmLogin {
   return ($ErrorsNpm.Count -eq 0)
 }
 
+function CheckProxy {
+  if ($ProxyData.ProxyEnable -eq 1) {
+    # Copia .npmrc
+    if (Test-Path $NpmrcFilePath) {
+      Get-Content $NpmrcFilePath | Out-File "$NpmrcFilePath.old.$CurrentDate"
+    }
+    
+    $ProxyServer = $ProxyData.ProxyServer
+    # Sostituisci proxy .npmrc
+    Start-Process npm -ArgumentList "config set proxy $ProxyServer" -WindowStyle hidden -Wait
+    Start-Process npm -ArgumentList "config set https-proxy $ProxyServer" -WindowStyle hidden -Wait
+
+    # Copia docker config.json
+    if (Test-Path $DockerConfigPath) {
+      $DockerConfigJson = Get-Content $DockerConfigPath
+      if (-not [String]::IsNullOrWhiteSpace($DockerConfigJson)) {
+        $DockerConfigJson | Out-File "$DockerConfigPath.old.$CurrentDate" -Force
+      } else {
+        New-Item -Path "$DockerConfigPath.old.$CurrentDate" -Force
+      }
+      $DockerConfigObj = $DockerConfigJson | ConvertFrom-Json
+      $DockerConfigObj.PSObject.Properties.Remove('proxies')
+      $Proxies = @{
+        'defalut' = @{
+          'httpProxy' = $ProxyData.ProxyServer
+          'httpsProxy' = $ProxyData.ProxyServer
+        }
+      }
+
+      $DockerConfigObj | Add-Member -NotePropertyName proxies -NotePropertyValue $Proxies
+
+      # Sostituisci proxy docker config.json
+      Set-Content -Path $DockerConfigPath -Value ($DockerConfigObj | ConvertTo-Json -Depth 5)
+    }
+  }
+  
+}
+
 <# ReloadEnvPath
 Reload the Env Variables Path, used after every complete installation
 #>
@@ -350,9 +448,10 @@ It needs as param a requirement, which will be printed on the GUI.
 At the and it will show the done button to close the installation. 
 #>
 function DeclineInstallRequirement($Requirement) {
+  $DownloadLinkMessage = GetDownloadLink $Requirement.Requirement
   switch ($Requirement.Status) {
     "KO (Not Found)" {
-      $Description.Text = "You have declined.`r`nDownload $($Requirement.Requirement) manually to proceed with the installation."
+      $Description.Text = "You have declined.`r`n$DownloadLinkMessage"
     }
     "KO (Not enabled)" {
       $Description.Text = "You have declined.`r`nEnable $($Requirement.Requirement) manually to proceed with the installation."
@@ -415,7 +514,46 @@ function RemoveInstallers {
   Get-ChildItem -Path "$HOME\Downloads" | ForEach-Object { if ($_.Name -like "*$RandomCode*") { Remove-Item "$HOME\Downloads\$_" } }
 }
 
+function GetDownloadLink($RequirementName) {
+  switch ($RequirementName) {
+    "Visual Studio" {
+      return "Download $Requirementname manually to proceed with the installation from the following link $VisualStudioAppLink."
+    }
+    "Visual Studio Code" {
+      return "Download $Requirementname manually to proceed with the installation from the following link $VisualStudioCodeAppLink."
+    }
+    "Git" {
+      return "Download $Requirementname manually to proceed with the installation from the following link $GitAppLink."
+    }
+    "Node.js" {
+      return "Download $Requirementname manually to proceed with the installation from the following link $NodejsAppLink."
+    }
+    "DotNet Core" {
+      return "Download $Requirementname manually to proceed with the installation from the following link $DotNetAppLink."
+    }
+    "Windows Subsystem Linux" {
+      return "Run the command & dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart, to enable WSL."
+    }
+    "Virtual Machine Platform" {
+      return "Run the command & dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart, to enable VMP.`r`nThen restart the machine."
+    }
+    "Wsl Update" {
+      return "Run the commands: wsl --update and wsl --set-default-version 2, to update to WSL 2."
+    }
+    "Linux Distribution" {
+      return "Run the command wsl --install -d Ubuntu-20.04, to download the Linux Distribution."
+    }
+    "Docker" {
+      return "Download $Requirementname manually to proceed with the installation from the following link $VisualStudioAppLink.`r`nAfter the install run the command wsl --set-default Ubuntu-20.04, at the end logout from the machine."
+    }
+    "npm" {
+      return "Run the command npm i -g npm@6, to downgrade npm"
+    }
+  }
+}
+
 #---------------------------------------------------------[Variables]--------------------------------------------------------
+
 # Variables for install ca-tools
 $setupCaToolsMsi = "Setup_CaTools.msi"
 $setupCaToolsMsiPath = Join-Path ${PWD} $setupCaToolsMsi
@@ -427,18 +565,27 @@ $setupPlatformExePath = Join-Path $CaToolsPath $setupPlatformExe
 $testScarPath = "C:\dev\scarface"
 # Variables download requirements
 $RandomCode = GenerateRandomCode
+
 $VisualStudioExePath = "$HOME\Downloads\$RandomCode-VisualStudio-2022.exe"
 $VisualStudioCodeExePath = "$HOME\Downloads\$RandomCode-VSCode-User-x64.exe"
 $GitExePath = "$HOME\Downloads\$RandomCode-Git-x64.exe"
 $NodejsMsiPath = "$HOME\Downloads\$RandomCode-Node-x64.msi"
 $DotNetExePath = "$HOME\Downloads\$RandomCode-Dotnet-x64.exe"
 $DockerExePath = "$HOME\Downloads\$RandomCode-Docker-x64.exe"
-$VisualStudioDownloadLink = "https://aka.ms/vs/17/release/vs_community.exe"
-$VisualStudioCodeDownloadLink = "https://code.visualstudio.com/sha/download?build=stable&os=win32-x64-user"
-$GitDownloadLink = "https://github.com/git-for-windows/git/releases/download/v2.34.0.windows.1/Git-2.34.0-64-bit.exe"
-$NodejsDownloadLink = "https://nodejs.org/dist/v16.13.0/node-v16.13.0-x64.msi"
-$DotNetDownloadLink = "https://download.visualstudio.microsoft.com/download/pr/0f71eaf1-ce85-480b-8e11-c3e2725b763a/9044bfd1c453e2215b6f9a0c224d20fe/dotnet-sdk-6.0.100-win-x64.exe"
-$DockerDownloadLink = "https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe"
+
+$VisualStudioDownloadLink = "https://visualstudio.microsoft.com/it/downloads/"
+$VisualStudioCodeDownloadLink = "https://code.visualstudio.com/download"
+$GitDownloadLink = "https://git-scm.com/download/win"
+$NodejsDownloadLink = "https://nodejs.org/en/download"
+$DotNetDownloadLink = "https://dotnet.microsoft.com/download/dotnet/thank-you/sdk-6.0.100-windows-x64-installer"
+$DockerDownloadLink = "https://docs.docker.com/desktop/windows/install"
+
+$VisualStudioAppLink = "https://aka.ms/vs/17/release/vs_community.exe"
+$VisualStudioCodeAppLink = "https://code.visualstudio.com/sha/download?build=stable&os=win32-x64-user"
+$GitAppLink = "https://github.com/git-for-windows/git/releases/download/v2.34.0.windows.1/Git-2.34.0-64-bit.exe"
+$NodejsAppLink = "https://nodejs.org/dist/v16.13.0/node-v16.13.0-x64.msi"
+$DotNetAppLink = "https://download.visualstudio.microsoft.com/download/pr/0f71eaf1-ce85-480b-8e11-c3e2725b763a/9044bfd1c453e2215b6f9a0c224d20fe/dotnet-sdk-6.0.100-win-x64.exe"
+$DockerAppLink = "https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe"
 # Variables Save Log
 $CurrentDate = (Get-Date -Format yyyyMMdd-hhmm).ToString()
 $OutLogfile = "$($HOME)\.ca\install_ca_platform_$($CurrentDate).out"
@@ -450,6 +597,7 @@ $NpmLoginResultLogfile = "$($HOME)\.ca\npm_login_result_$($CurrentDate).log"
 $NpmUpdateVersionLogfile = "$($HOME)\.ca\npm_update_version_$($CurrentDate).log"
 $DockerInstallLogfile = "$($HOME)\.ca\docker_install_$($CurrentDate).log"
 $CheckNpmLoginLogfile = "$($HOME)\.ca\check_npm_login_$($CurrentDate).log"
+$AnswerNestedVirtualizationPath = "$($HOME)\.ca\answer_nested_virtualization_$($CurrentDate).log"
 # Variables Login npm
 $NpmRegistry = "https://devops.codearchitects.com:444/Code%20Architects/_packaging/ca-npm/npm/registry/"
 $NpmScope = "@ca"
@@ -487,16 +635,20 @@ $StatusInstallation = 0
 $IndexRequirement = 0
 # Check if Visual Studio Code is already installed
 $VisualStudioCodeAutoExtension = $false
-
+# Proxy variables
+$ProxyData
+$DockerConfigPath = "$HOME\.docker\config.json"
+$NpmrcFilePath = "$HOME\.npmrc"
 #---------------------------------------------------------[Logic]--------------------------------------------------------
+
 <# DownloadAndInstallRequirement
 Download and install the requirement passed as param
 #>
 function DownloadAndInstallRequirement($Requirement) {
   switch ($Requirement.Requirement) {
     "Visual Studio" {
-      $Description.AppendText("`r`nDownloading Visual Studio 2022 from https://visualstudio.microsoft.com/it/downloads/...")
-      Invoke-RestMethod $VisualStudioDownloadLink -OutFile "$VisualStudioExePath"
+      $Description.AppendText("`r`nDownloading Visual Studio 2022 from $VisualStudioDownloadLink...")
+      Invoke-RestMethod $VisualStudioAppLink -OutFile "$VisualStudioExePath"
       $Description.AppendText("`r`nDownload of Visual Studio 2022 complete.")
       $Description.AppendText("`r`nInstalling Visual Studio 2022...")
       $RecommendationsVSWithAdd = CreateRecommendationsVS
@@ -504,34 +656,33 @@ function DownloadAndInstallRequirement($Requirement) {
       $Description.AppendText("`r`nInstall of Visual Studio 2022 complete.")
     }
     "Visual Studio Code" {
-      $Description.AppendText("`r`nDownloading Visual Studio Code x64 from https://code.visualstudio.com/download...")
-      Invoke-RestMethod $VisualStudioCodeDownloadLink -OutFile "$VisualStudioCodeExePath"
+      $Description.AppendText("`r`nDownloading Visual Studio Code x64 from $VisualStudioCodeDownloadLink...")
+      Invoke-RestMethod $VisualStudioCodeAppLink -OutFile "$VisualStudioCodeExePath"
       $Description.AppendText("`r`nDownload of Visual Studio Code x64 complete.")
       $Description.AppendText("`r`nInstalling Visual Studio Code x64...")
-      Start-Process "$VisualStudioCodeExePath" -ArgumentList "/VERYSILENT /NORESTART" -Wait
+      Start-Process "$VisualStudioCodeExePath" -ArgumentList "/VERYSILENT /NORESTART /mergetasks=!runcode" -Wait
       $Description.AppendText("`r`nInstall of Visual Studio Code x64 complete.")
-      ReloadEnvPath
-      InstallVSCodeExtensions
+      $script:VisualStudioCodeAutoExtension = $false
     }
     "Git" {
-      $Description.AppendText("`r`nDownloading Git x64 from https://git-scm.com/download/win...")
-      Invoke-RestMethod $GitDownloadLink -OutFile "$GitExePath"
+      $Description.AppendText("`r`nDownloading Git x64 from $GitDownloadLink...")
+      Invoke-RestMethod $GitAppLink -OutFile "$GitExePath"
       $Description.AppendText("`r`nDownload of Git x64 complete.")
       $Description.AppendText("`r`nInstalling Git x64...")
       Start-Process "$GitExePath" -ArgumentList "/VERYSILENT" -Wait
       $Description.AppendText("`r`nInstall of Git x64 complete.")
     }
     "Node.js" {
-      $Description.AppendText("`r`nDownloading Node.js LTS from https://nodejs.org/en/download...")
-      Invoke-RestMethod $NodejsDownloadLink -OutFile "$NodejsMsiPath"
+      $Description.AppendText("`r`nDownloading Node.js LTS from $NodejsDownloadLink...")
+      Invoke-RestMethod $NodejsAppLink -OutFile "$NodejsMsiPath"
       $Description.AppendText("`r`nDownload of Node.js LTS complete.")
       $Description.AppendText("`r`nInstalling Node.js LTS...")
       Start-Process msiexec.exe -Wait -ArgumentList "/I $NodejsMsiPath /quiet"
       $Description.AppendText("`r`nInstall of Node.js LTS complete.")
     }
     "DotNet Core" {
-      $Description.AppendText("`r`nDownloading .NET 6.0 SDK from https://dotnet.microsoft.com/download/dotnet/thank-you/sdk-6.0.100-windows-x64-installer...")
-      Invoke-RestMethod $DotNetDownloadLink -OutFile "$DotNetExePath"
+      $Description.AppendText("`r`nDownloading .NET 6.0 SDK from $DotNetDownloadLink...")
+      Invoke-RestMethod $DotNetAppLink -OutFile "$DotNetExePath"
       $Description.AppendText("`r`nDownload of .NET 6.0 SDK complete.")
       $Description.AppendText("`r`nInstalling .NET 6.0 SDK...")
       Start-Process "$DotNetExePath" -ArgumentList "/q /norestart" -Wait
@@ -557,20 +708,23 @@ function DownloadAndInstallRequirement($Requirement) {
       $Description.AppendText("`r`nSet of wsl 2 as your default version complete.")
     }
     "Linux Distribution" {
-      $Description.AppendText("`r`nInstalling Ubuntu 18.04 LTS...")
-      wsl --install -d Ubuntu-18.04
-      $Description.AppendText("`r`nInstall of Ubuntu 18.04 LTS complete.")
-      $Description.AppendText("`r`nOpened Ubuntu 18.04 LTS. Create an account on Ubuntu")
+      $Description.AppendText("`r`nInstalling Ubuntu 20.04 LTS...")
+      wsl --install -d Ubuntu-20.04
+      $Description.AppendText("`r`nInstall of Ubuntu 20.04 LTS complete.")
+      $Description.AppendText("`r`nOpened Ubuntu 20.04 LTS. Create an account on Ubuntu")
     }
     "Docker" {
-      $Description.AppendText("`r`nDownloading Docker Desktop from https://docs.docker.com/desktop/windows/install...")
-      Invoke-RestMethod $DockerDownloadLink -OutFile "$DockerExePath"
+      $Description.AppendText("`r`nDownloading Docker Desktop from $DockerDownloadLink...")
+      Invoke-RestMethod $DockerAppLink -OutFile "$DockerExePath"
       $Description.AppendText("`r`nDownload of Docker Desktop complete.")
       $Description.AppendText("`r`nInstalling Docker Desktop...")
       Start-Process "$DockerExePath" -ArgumentList "install --quiet" -WindowStyle hidden -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrorLogfile -Wait
       Get-Content $ErrorLogfile, $OutLogfile | Set-Content $DockerInstallLogfile
       $Description.AppendText("`r`nInstall of Docker Desktop complete.")
-      $Description.AppendText("`r`nLog out to complete the installation.")
+      $Description.AppendText("`r`nSetting default Linux Distribution to Ubuntu 20.04 LTS.")
+      wsl --set-default Ubuntu-20.04
+      $Description.AppendText("`r`nSet of default Linux Distribution to Ubuntu 20.04 LTS complete.")
+      $Description.AppendText("`r`nLog out to complete the installation of Docker.")
     }
     "npm" {
       $NpmVersion = CheckNpmVersion
@@ -582,6 +736,10 @@ function DownloadAndInstallRequirement($Requirement) {
         $Description.AppendText("`r`nVersion of npm updated to $NewNpmVersion")
       }
     }
+    "Machine" {
+      $Description.Text = "You are installing the CAEP on a Virtual Machine.`r`nDid you enable the Nested Virtualization with the following command?`r`n"
+      $Description.AppendText('Set-VMProcessor -VMName <VMName> -ExposeVirtualizationExtensions $true')
+    }
     Default {
       $Description.AppendText("`r`nDefault")
     }
@@ -592,9 +750,11 @@ function DownloadAndInstallRequirement($Requirement) {
     ShowRestartButton
   } elseif ($Requirement.Requirement -eq "Docker") {
     ShowLogoutButton
+  } elseif ($Requirement.Status -like "*WARNING*") {
+    ShowYesNoButtons
   } else {
     ReloadEnvPath
-    HideAcceptDeclineButton
+    ShowNextButton
   }
 }
 
@@ -614,12 +774,7 @@ function InstallSetupCaTools {
     $Description.Text = "$setupCaToolsMsi already exists"
   }
   $Description.Text += "`r`nInstalling Ca-Tools"
-  if ($Silent.IsPresent) {
-    $Description.AppendText("`r`nSilent install")
-    Start-Process msiexec.exe -Wait -ArgumentList "/I $setupCaToolsMsiPath /quiet"
-  } else {
-    Start-Process -Wait -FilePath $setupCaToolsMsiPath
-  }
+  Start-Process msiexec.exe -Wait -ArgumentList "/I $setupCaToolsMsiPath /quiet"
   
   $Description.Text += "`r`nCa-Tools Installed"
   ReloadEnvPath
@@ -664,12 +819,11 @@ function LoginNpm {
   #Start-Process powershell.exe -ArgumentList "npm-login.ps1 -user $($UsernameTextBox.Text) -token $($TokenTextBox.Text) -registry $NpmRegistry -scope $NpmScope" -WindowStyle hidden -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrorLogfile -Wait
   # Non setta correttamente .npmrc
   & npm-login.ps1 -user $UsernameTextBox.Text -token $TokenTextBox.Text -registry $NpmRegistry -scope $NpmScope *> $NpmLoginResultLogfile
-  Get-Content $ErrorLogfile, $OutLogfile | Set-Content $NpmLoginResultLogfile
+  npm config set @ca-codegen:registry $NpmRegistry
+  # Get-Content $ErrorLogfile, $OutLogfile | Set-Content $NpmLoginResultLogfile
   $NpmLoginMessage = Get-Content $NpmLoginResultLogfile
   $Description.Lines = $NpmLoginMessage
-  npm config set @ca-codegen:registry $NpmRegistry
-  $LoginButton.Visible = $false
-  $NextButton.Visible = $true
+  ShowNextButton
   $script:StatusInstallation++
 }
 
@@ -745,6 +899,20 @@ function ExecuteCaScar {
   # }
 }
 
+<# Print log confirm VM
+#>
+function OutFileAnswerNestedVirtualization($Answer) {
+  if ($Answer) {
+    "I have already run the command `"Set-VMProcessor -VMName <VMName> -ExposeVirtualizationExtensions $true`", and enabled the Nested Virtualization." | Out-File $AnswerNestedVirtualizationPath
+    NextScreen
+    ShowNextButton
+  } else {
+    'I have not run the command Set-VMProcessor -VMName <VMName> -ExposeVirtualizationExtensions $true", and have the Nested Virtualization disabled yet.' | Out-File $AnswerNestedVirtualizationPath
+    $Description.Text = "Please run the command `"Set-VMProcessor -VMName <VMName> -ExposeVirtualizationExtensions $true`"`r`nRemember to Turn Off your Virtual Machine and to replace the <VMName> with the name of the YOUR Virtual machine.`r`nNB: This command must be run on PowerShell of your Host Machine with Administrator permission."
+    ShowDoneButton
+  }
+}
+
 <# NextScreen
 Function used to go to the next step of the installation
 #>
@@ -756,6 +924,7 @@ function NextScreen {
       } elseif(-not $VisualStudioCodeAutoExtension) {
         InstallVSCodeExtensions
       } else {
+        CheckProxy
         ShowMainScreen
       }
     }
@@ -795,6 +964,8 @@ $AcceptButton.Add_Click({ AcceptInstallRequirement $CurrentRequirement })
 $DeclineButton.Add_Click({ DeclineInstallRequirement $CurrentRequirement })
 $RestartButton.Add_Click({ Restart-Computer })
 $LogoutButton.Add_Click({ logoff.exe })
+$YesButton.Add_Click({ OutFileAnswerNestedVirtualization $true })
+$NoButton.Add_Click({ OutFileAnswerNestedVirtualization $false })
 
 Get-NetAdapter | ForEach-Object { if (($_.Name -eq "Ethernet" -or $_.Name -eq "Wi-Fi") -and $_.Status -eq "Up") { $InternetStatus = $true } }
 if (-not $InternetStatus) {
@@ -817,8 +988,8 @@ else {
 # SIG # Begin signature block
 # MIIk2wYJKoZIhvcNAQcCoIIkzDCCJMgCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUSXcq+1sNvS4M3imLo32E198j
-# pv2ggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU6PBrNoOkU4MeK5iXvUWr0CSU
+# daaggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -987,29 +1158,29 @@ else {
 # ZWQxJDAiBgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQQIQDue4N8WI
 # aRr2ZZle0AzJjDAJBgUrDgMCGgUAoIGEMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3
 # AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEW
-# BBTCIoV0zDqlxHfXuCAjS4+/A0+SejAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
-# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAH2pWjpJ4dshYRNOcc6VKRRv
-# GyndZQIuNZ5MHqY26ey6YCvZ05pKnniqrZEW0Iaaaot0GOioHfYtU9LfkvRL6kpc
-# G+54U6J7/jAFNKzeOE3lwhlU0B/k1iCAnwCKXirOGgwEsFXEzOFe6wq79WXTy9u9
-# 3pqwrNMmcHYK5kKqGhd6X9VYWNm9DWvBesAT+lxtAuCSlB6XF88xkvC9gpSPoo9J
-# Biaaj3nbtjMknqhAwgGlhlu2S7JdqVs9lkn0lwv14dVXBHyGhkNU4x1UUErbAMYO
-# i8y6BHiVIuTE/ruVBVjdOhtNT5fgkUPRkxffMaj8SHjnIJqRuOI/ZNP0MiJzsOOh
+# BBT3MpTBHPmjGICMdwXvaharrnWF1DAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
+# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAKrJasuIP0Zq13+RxQ/ZJfSx
+# RMlU8GxKuYzfK4A8cVqeI/eDY4Dhs5+qqqxSQI7SgO48eyt5UlShIqX1zkU0sX6b
+# t301njNEKmS7UiG3/Q4NmvvfRnkYyryboVwqjs1+TSDd1i/8lDvfAMwbRyQ7K18y
+# 82Xt3p0Vzu4tVGWjGnn+DYq3PZF+xi95CwRr4ypg2UZNbvue8MVs8g7NjmYdFxau
+# KB9o4jpEfy5dlCo8PPJifSmu54bodyrkKPVNP9BFpv8DMZ8QUyBlcODUmro+3Sw2
+# M18VMoxmgev9pbwty97fhjwk5/m90SDgw26cRYKro7H5QzM5/S+Lt4WVpIZJi4Gh
 # ggNMMIIDSAYJKoZIhvcNAQkGMYIDOTCCAzUCAQEwgZIwfTELMAkGA1UEBhMCR0Ix
 # GzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEY
 # MBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSUwIwYDVQQDExxTZWN0aWdvIFJTQSBU
 # aW1lIFN0YW1waW5nIENBAhEAjHegAI/00bDGPZ86SIONazANBglghkgBZQMEAgIF
 # AKB5MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTIx
-# MTEyNTE1MjYyN1owPwYJKoZIhvcNAQkEMTIEMDqAj/QrtavKjE/aOKfy7eYwbRHe
-# +pwDqXdAwn/ds0v+55WA1HiARe3aJkdTEQ+uPDANBgkqhkiG9w0BAQEFAASCAgBm
-# /J61rKsc2Ven+Vgqayw0MesvWrBQzLPrYslh82lfECXB1K960pkkQKKlyQA6pvVG
-# ud6Cf7M+RSzE8HpvPqU20ii11IlHhV2OmLAodt8pxbFq1wBDwL6npWpdrAOZY6Xl
-# 9NajCoOCgdrKhz/6eNIbiZ4NLKgvQWgqWfh9CuWn3fOdOJtp2Rn8I93/2AhmxjG3
-# FT8YEbwiXXcI4uDNVOJ1MVC2O7T4hq9HjeaVft+X46DpwhOHJXHwPUCegEN/fD7n
-# //usJGYWtAJTbObhhvqD0EydOjaQzcFZNLq+MNVONClFaoT6bfeGVNHOzxmOZdCX
-# NOkV+8i088gKTsCnprN9s9Re6sSRWKSsV17LEsHb7hR80Y+EwSsLMK+UPQpnrJMs
-# IvNiOABsSgaQNbMZc5VpkpgOscYn4yGgdRojyRBW2NPku7XgulBbt3jRt0VnfdVX
-# 4JprfRzOcVYGNDEr5TGqGpYCTDwAWMdChVsH6m2yZiC1LrnGVttmNvEK+6PfuEbl
-# 1l9fC+9CyZn3kzBU5FyZCCTv6e9OSIpQqxlS/wLgoA95xy0AwnlRSQ1umhFRvV4Y
-# EmcMUBR6SI1R5OPffhOwmliHxqe+Bp1oLN34Gpa8rmXCY7l54fmzVk932MWYEX/3
-# LOKyWUcxi9qHy7b4CqJpQgHbmTt/Qnw286I+DcPgCw==
+# MTEyOTA5MzEyNVowPwYJKoZIhvcNAQkEMTIEMMGBtpK8WA0F/wagXOqOfqdBEyGV
+# j1FI6gUJKoSWRZ6yfcwZCWf8PBvdpuT55KDlbzANBgkqhkiG9w0BAQEFAASCAgAm
+# GYnkF7Ji7h0paHZ1dz0lRsI/BnCZrbmFZn0IuOQmPmlEdMWRqGii4UIf0Cx5QT9h
+# +OtowFYrl3dWe2QFXdu21nkE54IcSyiGuNBWYWJWLYoLVvRmHofRKmgyyI8ZVp/n
+# C8ZonGUVPKCvLOkVCnZwiW11IlHS4Wri68NRubGwO/o3iUqywY2xil/KHYE9a2tI
+# odwh5IVlngB0iJLGhSdEI7pW75dmfdGTz9lcxTMOXgXgifdC3mPMlZnWY8qrTOiI
+# uXsyI4iW8gbJLaurxaz2G7rvlGQ8JG4Ufl53ebu+g9NtRtSf2qfQnL/0YQyiPbWv
+# M8WhT5l5Rue33FoR/YH4StLcnLYCXfJnLWEg8z8H/Dr7QdBGJg+lXT8mx8sdzZGd
+# GuCFpttPJSM9WYQ9J2zeJV6o1tuvCRKFdH66h3SPkwXVvjykjnUvv7i0lOqvEckq
+# H7hEZ94SAwLS60ZZJvI2RmiO2twKfHjGzyPgr2Bf1fQcH4Pgn8dQ0fcZ0UPuGPWS
+# YoLzdlEzmNsmav2YR8o1Om45aWJByxRsrCf8zVu7qHThEk/3Dojy4tYX93Xx9A0Q
+# 4FB+B1uTJDSQ5EZNg9w3pmbzvDvGRvTozWqklh4a/Oc2UKDzVIajFFWVECbNXIXD
+# jA+L3cJ7g0w+LWzQ1FGRPQLTO3cKvHFqAFz/raHjyA==
 # SIG # End signature block

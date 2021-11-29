@@ -230,10 +230,69 @@ $azDevOpsRequirement = New-Object Requirement
 $azDevOpsRequirement.Requirement = "Code Architects Azure DevOps Server"
 $azDevOpsRequirement.Status = $azDevOpsStatus
 
-# If is running the script on Virtual Machine and Docker isn't installed, then show message on gui-install-platform.ps1
-$IsVirtualMachine = ((Get-CimInstance win32_computersystem).model -eq 'VMware Virtual Platform' -or ((Get-CimInstance win32_computersystem).model -eq 'Virtual Machine')) -and (-not $dockerVersion)
+# Registry npm
+try {
+  $npmRegistryAvailable = (Invoke-WebRequest -Uri https://registry.npmjs.org -UseBasicParsing -DisableKeepAlive).StatusCode
+
+  if ($npmRegistryAvailable -eq 200) {
+    $npmRegistryStatus = "OK (Reachable)"
+  } else {
+    $npmRegistryStatus = "KO (Unreachable)"
+  }
+}
+catch {
+  $npmRegistryStatus = "KO (Error)"
+}
+
+$npmRegistryRequirement = New-Object Requirement
+$npmRegistryRequirement.Requirement = "Public registry npm"
+$npmRegistryRequirement.Status = $npmRegistryStatus
+
+# Registry NuGet
+try {
+  $nugetRegistryAvailable = (Invoke-WebRequest -Uri https://api.nuget.org/v3/index.json -UseBasicParsing).StatusCode
+
+  if ($nugetRegistryAvailable -eq 200) {
+    $nugetRegistryStatus = "OK (Reachable)"
+  } else {
+    $nugetRegistryStatus = "KO (Unreachable)"
+  }
+}
+catch {
+  $nugetRegistryStatus = "KO (Error)"
+}
+
+$nugetRegistryRequirement = New-Object Requirement
+$nugetRegistryRequirement.Requirement = "Public registry NuGet"
+$nugetRegistryRequirement.Status = $nugetRegistryStatus
+
+# Virtual Machine
+$IsVirtualMachine = (((Get-CimInstance win32_computersystem).model -eq 'VMware Virtual Platform') -or ((Get-CimInstance win32_computersystem).model -eq 'Virtual Machine'))
+if (-not $IsVirtualMachine) {
+  $VirtualMachineStatus = "OK (is a Physical Machine)"
+} else {
+  $VirtualMachineStatus = "WARNING (is a Virtual Machine)"
+}
+
+$VirtualMachineRequirement = New-Object Requirement
+$VirtualMachineRequirement.Requirement = "Machine"
+$VirtualMachineRequirement.Status = $VirtualMachineStatus
+
+# Proxy
+$ProxyData = Get-ItemProperty -Path "Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" | Select-Object "Proxy*"
+if ($ProxyData.ProxyEnable -eq 0) {
+  $ProxyActiveStatus = "OK (Is not active)"
+} else {
+  $ProxyActiveStatus = "WARNING (Is active)"
+}
+
+$ProxyRequirement = New-Object Requirement
+$ProxyRequirement.Requirement = "Proxy"
+$ProxyRequirement.Status = $ProxyActiveStatus
 
 # table
+$requirements += $VirtualMachineRequirement
+$requirements += $ProxyRequirement
 $requirements += (GetRequirementObj -requirements $requirements -name "Git" -version $gitVersion -minVersion $minGitVersion)
 $requirements += (GetRequirementObj -requirements $requirements -name "Node.js" -version $nodeVersion -minVersion $minNodeVersion)
 $requirements += (GetRequirementObj -requirements $requirements -name "npm" -version $npmVersion -minVersion $minNpmVersion -maxVersion $maxNpmVersion)
@@ -247,6 +306,8 @@ $requirements += $linuxDistroRequirement
 $requirements += (GetRequirementObj -requirements $requirements -name "Docker" -version $dockerVersion -minVersion $mindockerVersion)
 $requirements += $adminRequirement
 $requirements += $azDevOpsRequirement
+$requirements += $npmRegistryRequirement
+$requirements += $nugetRegistryRequirement
 $pathRequired | ForEach-Object {
   $envRequirements += GetEnvPathRequirementObj $_
 }
@@ -264,8 +325,8 @@ $envRequirements | ForEach-Object { if($_.Status -like "KO*") { $FoundError = $t
 # SIG # Begin signature block
 # MIIk2wYJKoZIhvcNAQcCoIIkzDCCJMgCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUoY9qgSK1G7R+urfFyh3H/gUe
-# F+mggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU3henwW5Mmlt35CnUKwDZCxCL
+# Yfyggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -434,29 +495,29 @@ $envRequirements | ForEach-Object { if($_.Status -like "KO*") { $FoundError = $t
 # ZWQxJDAiBgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQQIQDue4N8WI
 # aRr2ZZle0AzJjDAJBgUrDgMCGgUAoIGEMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3
 # AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEW
-# BBRMIT8mERQ88A/AP6vf8ZgQkgEU9jAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
-# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAH10XvpDWjbuNQcgvpOjX0F1
-# lbstZ6O/l0gtM1bkPWJmmkzd4wxL94DF/qNPAliTFU9HTEl1HGg7dRmQ6eEtghFQ
-# qWmwo4ZAvxAZ27WSAVOuNy/zYx5zer8sUIbm/53k2VtwLYspzeKg48yQSf55UugL
-# jvP5Ov74M8f3DV/atnPILeIPa0ZZY1RbNnZkPLAYklVwITsMcgYOPW673AMUCqjW
-# LCf5rcZHkGtL1CgHtQJsZlfOkAtkz4xZds8qsk+5mf7KbDVcMnCNJHxPkVwBwxO/
-# 8FOj9iHuJraYdUO5rmRV+fpnVi+wEFztFYVAqxKRDYXxvyAvCUlJy0KoTYzhIeKh
+# BBTEmCjGU/X58Y5dRH5v7mYyG1jVeDAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
+# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAH8PNCUzJlXCC1Cg1uGxyAUB
+# nDvnpz/Om4+ls2cDQYZXlk7p5fBRaDaSlR9WLug1T2G6PdxvV7ACI898r5F9NOpR
+# /aeqwz5xRLzgRg6ZjsqMPt0SxasxAKuxMJAy/6qY2XdHRmjv0N+r4DVcJK5US8qh
+# DIfD+nEzP8+JPj5P8VBBioel1H4+kL0vBxP0+XCa11boJ0zo/yHMTV9e5aKxzeyk
+# 7WpWCkGzkqGVTajkANYMmNbn9N1PBXKRM91kXDbMkcQoScm5+qsPY7cGG9+3iuhF
+# BylANFkZ4R2K2z22s/SmKWo6lpGTugMKtqqrOV++dq3Y6jj6nuzTMXxsQBC8bSSh
 # ggNMMIIDSAYJKoZIhvcNAQkGMYIDOTCCAzUCAQEwgZIwfTELMAkGA1UEBhMCR0Ix
 # GzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEY
 # MBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSUwIwYDVQQDExxTZWN0aWdvIFJTQSBU
 # aW1lIFN0YW1waW5nIENBAhEAjHegAI/00bDGPZ86SIONazANBglghkgBZQMEAgIF
 # AKB5MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTIx
-# MTEyNTE1MjYyMFowPwYJKoZIhvcNAQkEMTIEMHrrKpiBwi+81ZtzrE6ZJrODdTED
-# VQKta/Lh5TPfrNDrYO83pNyVn4Ac6h2jOxmCizANBgkqhkiG9w0BAQEFAASCAgAC
-# v6n0LAukWMW2rzP4u+vzA68OYUMCnAhsS8vg92pCLAN1/gJgZDbY/xAnJM3suK6x
-# 0p6TwnhaxL/Ein6/0pNaSm2sZpnX+QCBMxD4rCclZWsLvdm0z/s0czZmrGfm0GDZ
-# fu2BT5naHDKCX9CxwNbYWibbSc9WnCgssHzmuTgQ/1OG0Lj06FUGdPLvaE6Slcwx
-# fsH+jqSymr2M6at+ws8ZQja2JsGfrosY3YIDkG0NWJuB/2J7Ars4jHBKfU9CjfJ5
-# RfMEOT9bBPBuYpTts3gNwJ3dU1R+k5EoVLIY5TGVJdlXCcWbaudwk9TmVTqbgAEg
-# wT+bis2KbCor6LorIU2e2kT6kE8hmBQEuBZjGxJkz48AkL17bFy0ZvpXP9+YodrP
-# zYNluBOhPst5IAJOikHxH5L7OZeltNAfctTVzgv4gdgBM9pSZ1Occhyp52BzQAjB
-# bWG0DNgL4uxirY0ZawQio2moT0sB/lpjK7aMk4sTT4oDETX7gMey05nXm75e/Bhv
-# VgT1vsyb2wpU2dX5GG2zaTQfYsJJGq2l0lOVwMy3aDm1Xsv65imJC6q9hsujfMPT
-# pXSrXqBQJgxMnVkXShOryfGTq27YHCi2rMo+YKNdjwTyM+AZ9IxG5BLSm0OELAy2
-# YoKkjAntXOFcx8IK5tlCJGAB8tu2Mo1F5/z97xQksw==
+# MTEyOTA5MzE0MlowPwYJKoZIhvcNAQkEMTIEMGA61sqjiWZDBmtcSp+3oUCbXkAq
+# MehA3Ga1QZfiEiRl1dmYa4bbdLUarXKoCtjyDDANBgkqhkiG9w0BAQEFAASCAgBt
+# B4xzaEjb3i91ijQgAZ9h0WmmzsrW+M2mSfYeO+XzcGMTxcJZk5J8h3M5FLqu3FGz
+# DTXN1OfhMayerSKHZhgZG83ywvyQDwxn6YcWXCH4Y69R3nfdw1jNMBXlVOZ64HaQ
+# ehbf4akxYn15+5lOBOAohrzOBuKROpxt1KkA+rRebnjPrTBzuFJgEUYKzIudYqCm
+# h1k51mXn1H66vIC7DHwoh+dFk4Cr8/ZORMEhNBGXqMH++0bzq8UGxUaipQnG5WTT
+# jAPZ1l4DZ9UyyEqfz6w6I35n6cjy0V6BFKmP9z40br3roBkPzV6MFBXD73EpEfoy
+# PJTsufs9VIDf1rdLPuwV3gQN9Gi7ovB/mYxdtIFefepKC55DRh24Wwkc4+G+6OA9
+# +iw2UKq1ypigNI2jr4RDVbG3Qk068fYgpvyzCk8tzuhiYK5ZE8Ypa8WV4CD8I+sx
+# eS0hciYkPoKFVM6Q3bun25GwMsG2MXSWHZV3vVwdu0sQWFqMNICTrBok8M+NY1Qk
+# VF2RYyiHpm2ibRdMAltg7+YP5ShmwGPyChmm0vFwUpGf2CSRAKVNf+U1B1E0x+eE
+# B0jWqP5O5ZMs8fzejT7mWUVzjJ6yQpptyENbGp+ZDmh5kqNBuVDXVGPR1C8iSx7N
+# iQfBzTg1eyX1E5XrHXMsVSinIPzaH51YEBqACYzusg==
 # SIG # End signature block
