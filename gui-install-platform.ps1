@@ -1,5 +1,4 @@
 param(
-  [switch]$Silent,
   [string]$ScarVersion = ""
 )
 
@@ -7,19 +6,20 @@ param(
 # Init PowerShell Gui
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
+. .\generate-scar-config.ps1
 
 #---------------------------------------------------------[Form]--------------------------------------------------------
 
 [System.Windows.Forms.Application]::EnableVisualStyles()
 
 $InstallForm                    = New-Object System.Windows.Forms.Form
-$InstallForm.ClientSize         = '600,400'
-$InstallForm.Text               = "Install Ca Platform"
+$InstallForm.ClientSize         = '800,500'
+$InstallForm.Text               = "Install CAEP"
 $InstallForm.BackColor          = "#ffffff"
 $InstallForm.TopMost            = $false
 
 $Title                          = New-Object System.Windows.Forms.Label
-$Title.Text                     = "Install Ca Platform"
+$Title.Text                     = "Install Code Architects Enterprise Platform"
 $Title.AutoSize                 = $true
 $Title.Width                    = 25
 $Title.Height                   = 10
@@ -32,8 +32,8 @@ $Description.AutoSize           = $false
 $Description.Multiline          = $true
 $Description.ReadOnly           = $true
 $Description.Scrollbars         = "Vertical"
-$Description.Width              = 560
-$Description.Height             = 250
+$Description.Width              = 700
+$Description.Height             = 300
 $Description.Location           = New-Object System.Drawing.Point(20,50)
 $Description.Font               = 'Consolas,10'
 
@@ -76,7 +76,7 @@ $NextButton.BackColor           = "#ff7b00"
 $NextButton.Text                = "Next"
 $NextButton.Width               = 90
 $NextButton.Height              = 30
-$NextButton.Location            = New-Object System.Drawing.Point(450,330)
+$NextButton.Location            = New-Object System.Drawing.Point(550,400)
 $NextButton.Font                = 'Microsoft Sans Serif,10'
 $NextButton.ForeColor           = "#ffffff"
 
@@ -85,7 +85,7 @@ $LoginButton.BackColor           = "#ff7b00"
 $LoginButton.Text                = "Login"
 $LoginButton.Width               = 90
 $LoginButton.Height              = 30
-$LoginButton.Location            = New-Object System.Drawing.Point(450,330)
+$LoginButton.Location            = New-Object System.Drawing.Point(550,400)
 $LoginButton.Font                = 'Microsoft Sans Serif,10'
 $LoginButton.ForeColor           = "#ffffff"
 $LoginButton.Visible             = $false
@@ -95,7 +95,7 @@ $DoneButton.BackColor           = "#ff7b00"
 $DoneButton.Text                = "Done"
 $DoneButton.Width               = 90
 $DoneButton.Height              = 30
-$DoneButton.Location            = New-Object System.Drawing.Point(450,330)
+$DoneButton.Location            = New-Object System.Drawing.Point(550,400)
 $DoneButton.Font                = 'Microsoft Sans Serif,10'
 $DoneButton.ForeColor           = "#ffffff"
 $DoneButton.Visible             = $false
@@ -105,7 +105,7 @@ $AcceptButton.BackColor           = "#ff7b00"
 $AcceptButton.Text                = "Accept"
 $AcceptButton.Width               = 90
 $AcceptButton.Height              = 30
-$AcceptButton.Location            = New-Object System.Drawing.Point(450,330)
+$AcceptButton.Location            = New-Object System.Drawing.Point(550,400)
 $AcceptButton.Font                = 'Microsoft Sans Serif,10'
 $AcceptButton.ForeColor           = "#ffffff"
 $AcceptButton.Visible             = $false
@@ -115,7 +115,7 @@ $RestartButton.BackColor           = "#ff7b00"
 $RestartButton.Text                = "Restart"
 $RestartButton.Width               = 90
 $RestartButton.Height              = 30
-$RestartButton.Location            = New-Object System.Drawing.Point(450,330)
+$RestartButton.Location            = New-Object System.Drawing.Point(550,400)
 $RestartButton.Font                = 'Microsoft Sans Serif,10'
 $RestartButton.ForeColor           = "#ffffff"
 $RestartButton.Visible             = $false
@@ -125,7 +125,7 @@ $LogoutButton.BackColor           = "#ff7b00"
 $LogoutButton.Text                = "Logout"
 $LogoutButton.Width               = 90
 $LogoutButton.Height              = 30
-$LogoutButton.Location            = New-Object System.Drawing.Point(450,330)
+$LogoutButton.Location            = New-Object System.Drawing.Point(550,400)
 $LogoutButton.Font                = 'Microsoft Sans Serif,10'
 $LogoutButton.ForeColor           = "#ffffff"
 $LogoutButton.Visible             = $false
@@ -135,7 +135,7 @@ $DeclineButton.BackColor         = "#ffffff"
 $DeclineButton.Text              = "Decline"
 $DeclineButton.Width             = 90
 $DeclineButton.Height            = 30
-$DeclineButton.Location          = New-Object System.Drawing.Point(350,330)
+$DeclineButton.Location          = New-Object System.Drawing.Point(450,400)
 $DeclineButton.Font              = 'Microsoft Sans Serif,10'
 $DeclineButton.ForeColor         = "#000"
 $DeclineButton.Visible           = $false
@@ -145,7 +145,7 @@ $YesButton.BackColor           = "#ff7b00"
 $YesButton.Text                = "Yes"
 $YesButton.Width               = 90
 $YesButton.Height              = 30
-$YesButton.Location            = New-Object System.Drawing.Point(450,330)
+$YesButton.Location            = New-Object System.Drawing.Point(550,400)
 $YesButton.Font                = 'Microsoft Sans Serif,10'
 $YesButton.ForeColor           = "#ffffff"
 $YesButton.Visible             = $false
@@ -155,7 +155,7 @@ $NoButton.BackColor         = "#ffffff"
 $NoButton.Text              = "No"
 $NoButton.Width             = 90
 $NoButton.Height            = 30
-$NoButton.Location          = New-Object System.Drawing.Point(350,330)
+$NoButton.Location          = New-Object System.Drawing.Point(450,400)
 $NoButton.Font              = 'Microsoft Sans Serif,10'
 $NoButton.ForeColor         = "#000"
 $NoButton.Visible           = $false
@@ -165,7 +165,7 @@ $CancelButton.BackColor         = "#ffffff"
 $CancelButton.Text              = "Cancel"
 $CancelButton.Width             = 90
 $CancelButton.Height            = 30
-$CancelButton.Location          = New-Object System.Drawing.Point(350,330)
+$CancelButton.Location          = New-Object System.Drawing.Point(450,400)
 $CancelButton.Font              = 'Microsoft Sans Serif,10'
 $CancelButton.ForeColor         = "#000"
 $CancelButton.DialogResult      = [System.Windows.Forms.DialogResult]::Cancel
@@ -282,7 +282,7 @@ Shows the Intro screen, after all requirements are met
 #>
 function ShowMainScreen {
   $Title.Text = "Intro"
-  $Description.Text = "With the install-platform.ps1, we are going to:`r`n 1) Install Ca-Tools`r`n 2) Login to npm`r`n 3) Intall Ca-Platform`r`n 4) Installing VSCode extensions`r`n 5) Execute ca scar`r`n`r`nCheck the Documentation for more information."
+  $Description.Text = "With the gui-install-platform.ps1, we are going to:`r`n 1) Install Ca-Tools`r`n 2) Login to npm`r`n 3) Intall CA Enterprise Platform`r`n 4) Execute CA Scarface`r`n`r`nCheck the Documentation for more information."
   $script:StatusInstallation++
 }
 
@@ -322,12 +322,12 @@ function CheckRequirements {
 
   $script:ProxyData = $ProxyData
   $Title.Text = "Check Requirements"
-  $MaxSpacesStatus = 33
+  $MaxSpacesStatus = 39
   $MaxSpacesRequirement = 38
   $Space = " "
   $Dash = "-"
   $Description.AppendText("SOFTWARE REQUIREMENTS`r`n$($Dash * 75)`r`n")
-  $Description.AppendText("Requirements$($Space * 26)Status$($Space * 24)Version`r`n")
+  $Description.AppendText("Requirements$($Space * 26)Status$($Space * 33)Version`r`n")
   foreach ($item in $requirements) {
     $CountCharStatus = ($item.Status | Measure-Object -Character).Characters
     $CountCharRequirement = ($item.Requirement | Measure-Object -Character).Characters
@@ -383,40 +383,77 @@ function CheckNpmLogin {
 
 function CheckProxy {
   if ($ProxyData.ProxyEnable -eq 1) {
-    # Copia .npmrc
-    if (Test-Path $NpmrcFilePath) {
-      Get-Content $NpmrcFilePath | Out-File "$NpmrcFilePath.old.$CurrentDate"
+    $ProxyDataSplit = $ProxyData.ProxyServer -split ":"
+    if ($ProxyDataSplit.Count -eq 2) {
+      $ProxyAddress = $ProxyDataSplit[0]
+      $ProxyPort = $ProxyDataSplit[1]
+    } else {
+      $ProxyAddress = $ProxyDataSplit[1].replace("/","")
+      $ProxyPort = $ProxyDataSplit[2]
     }
-    
-    $ProxyServer = $ProxyData.ProxyServer
-    # Sostituisci proxy .npmrc
-    Start-Process npm -ArgumentList "config set proxy $ProxyServer" -WindowStyle hidden -Wait
-    Start-Process npm -ArgumentList "config set https-proxy $ProxyServer" -WindowStyle hidden -Wait
-
-    # Copia docker config.json
-    if (Test-Path $DockerConfigPath) {
-      $DockerConfigJson = Get-Content $DockerConfigPath
-      if (-not [String]::IsNullOrWhiteSpace($DockerConfigJson)) {
-        $DockerConfigJson | Out-File "$DockerConfigPath.old.$CurrentDate" -Force
-      } else {
-        New-Item -Path "$DockerConfigPath.old.$CurrentDate" -Force
+    if ((Test-NetConnection -ComputerName $ProxyAddress -Port $ProxyPort).TcpTestSucceeded) {
+      # Copia docker config.json
+      if (Test-Path $DockerConfigPath) {
+        $DockerConfigJson = Get-Content $DockerConfigPath
+        if (-not [String]::IsNullOrWhiteSpace($DockerConfigJson)) {
+          $DockerConfigJson | Out-File "$DockerConfigPath.old.$CurrentDate"
+        }
+        else {
+          New-Item -Path "$DockerConfigPath.old.$CurrentDate"
+        }
+        $DockerConfigObj = $DockerConfigJson | ConvertFrom-Json
+        $DockerConfigObj.PSObject.Properties.Remove('proxies')
+        $Proxies = @{
+          'defalut' = @{
+            'httpProxy'  = $ProxyData.ProxyServer
+            'httpsProxy' = $ProxyData.ProxyServer
+          }
+        }
+        $DockerConfigObj | Add-Member -NotePropertyName proxies -NotePropertyValue $Proxies
+        # Sostituisci proxy docker config.json
+        Set-Content -Path $DockerConfigPath -Value ($DockerConfigObj | ConvertTo-Json -Depth 5)
       }
-      $DockerConfigObj = $DockerConfigJson | ConvertFrom-Json
-      $DockerConfigObj.PSObject.Properties.Remove('proxies')
-      $Proxies = @{
-        'defalut' = @{
-          'httpProxy' = $ProxyData.ProxyServer
-          'httpsProxy' = $ProxyData.ProxyServer
+
+      # Copia .npmrc
+      if (Test-Path $NpmrcFilePath) {
+        Get-Content $NpmrcFilePath | Out-File "$NpmrcFilePath.old.$CurrentDate"
+      }
+      $ProxyServer = $ProxyData.ProxyServer
+      # Sostituisci proxy .npmrc
+      Start-Process npm -ArgumentList "config set proxy $ProxyServer" -WindowStyle hidden -Wait
+      Start-Process npm -ArgumentList "config set https-proxy $ProxyServer" -WindowStyle hidden -Wait
+      
+      if (Test-Path "C:\cacert") {
+        $Result = Get-ChildItem -Path C:\cacert -Name -Include *.pem
+        if ($Result.Count -eq 1) {
+          $cacertPemPath = "C:\cacert\$Result"
+          Start-Process npm -ArgumentList "config set cafile $cacertPemPath" -WindowStyle hidden -Wait
+        }
+        else {
+          $Description.Text = "`r`nThere must be 1 file .pem!!!"
+          ShowDoneButton
         }
       }
-
-      $DockerConfigObj | Add-Member -NotePropertyName proxies -NotePropertyValue $Proxies
-
-      # Sostituisci proxy docker config.json
-      Set-Content -Path $DockerConfigPath -Value ($DockerConfigObj | ConvertTo-Json -Depth 5)
+    } else {
+      $Description.Text = "Connection Error to $($ProxyData.ProxyServer)!"
     }
   }
-  
+  elseif (Test-Path $NpmrcFilePath) {
+    # In case the Proxy isn't activem but there's a proxy setted to the config of npm or docker, remove it.
+    if (Test-Path $NpmrcFilePath) {
+      Get-Content $NpmrcFilePath | Out-File "$NpmrcFilePath.old.$CurrentDate"
+      Start-Process npm -ArgumentList "config delete proxy" -WindowStyle hidden -Wait
+      Start-Process npm -ArgumentList "config delete https-proxy" -WindowStyle hidden -Wait
+      Start-Process npm -ArgumentList "config delete cafile" -WindowStyle hidden -Wait
+    }
+    if (Test-Path $DockerConfigPath) {
+      $DockerConfigJson = Get-Content $DockerConfigPath
+      $DockerConfigJson | Out-File "$DockerConfigPath.old.$CurrentDate"
+      $DockerConfigObj = $DockerConfigJson | ConvertFrom-Json
+      $DockerConfigObj.PSObject.Properties.Remove('proxies')
+      Set-Content -Path $DockerConfigPath -Value ($DockerConfigObj | ConvertTo-Json -Depth 5)
+    }
+  }  
 }
 
 <# ReloadEnvPath
@@ -511,7 +548,11 @@ function CreateLogfiles {
 }
 
 function RemoveInstallers {
-  Get-ChildItem -Path "$HOME\Downloads" | ForEach-Object { if ($_.Name -like "*$RandomCode*") { Remove-Item "$HOME\Downloads\$_" } }
+  if ($PSVersionTable.PSVersion.Major -eq 5) {
+    Get-ChildItem -Path "$HOME\Downloads" | ForEach-Object { if ($_.Name -like "*$RandomCode*") { Remove-Item "$HOME\Downloads\$_" } }
+  } else {
+    Get-ChildItem -Path "$HOME\Downloads" | ForEach-Object { if ($_.Name -like "*$RandomCode*") { Remove-Item "$_" } }
+  }
 }
 
 function GetDownloadLink($RequirementName) {
@@ -563,6 +604,7 @@ $CaToolsPath = "C:\Program Files\Ca-Tools"
 $setupPlatformExePath = Join-Path $CaToolsPath $setupPlatformExe
 # Variables for ca scar
 $testScarPath = "C:\dev\scarface"
+$ScarfaceConfigPath = "C:\dev\scarface\scarface.config.json"
 # Variables download requirements
 $RandomCode = GenerateRandomCode
 
@@ -639,6 +681,7 @@ $VisualStudioCodeAutoExtension = $false
 $ProxyData
 $DockerConfigPath = "$HOME\.docker\config.json"
 $NpmrcFilePath = "$HOME\.npmrc"
+
 #---------------------------------------------------------[Logic]--------------------------------------------------------
 
 <# DownloadAndInstallRequirement
@@ -831,15 +874,21 @@ function LoginNpm {
 Installs the ca-platform, it will print errors if they are found
 #>
 function InstallCaPlatform {
-  $Title.Text = "Install Ca-Platform"
-  $Description.Text = "Installing Ca-Platform... (It will take a few minutes)"
+  $Title.Text = "Install CA Enterprise Platform"
+  $Description.Text = "Installing CA Enterprise Platform... (It will take a few minutes)"
   Start-Process $setupPlatformExePath -ArgumentList "-s" -WindowStyle hidden -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrorLogfile -Wait
   Get-Content $OutLogfile, $ErrorLogfile | Set-Content $FullLogfile
   $ArrayErrors = Get-Content $FullLogfile | Where-Object { $_ -like "*Error*" -or $_ -like "*ERR!*" }
   if ($ArrayErrors.Count -ne 0) {
-    $Description.Text += "`r`nERRORS FOUND:"
-    $ArrayErrors | ForEach-Object {  $Description.Text += "`r`n$_" }
-    $Description.Text += "`r`nCheck the full logfile in the path $FullLogfile"
+    $CertPem = $ArrayErrors | Where-Object { $_ -like "*tunneling socket could not be established*" }
+    if ($CertPem.Count -ne 0) {
+      New-Item -Path "C:\cacert" -ItemType Directory -Force
+      $Description.Text += "`r`n`r`nYou have a HTTPS Proxy active!`r`nTo continue the installation of CAEP add the certificate .pem in the folder C:\cacert.`r`nFor more information about the certificate .pem ask your System Administrator."
+    } else {
+      $Description.Text += "`r`nERRORS FOUND:"
+      $ArrayErrors | ForEach-Object {  $Description.Text += "`r`n$_" }
+      $Description.Text += "`r`nCheck the full logfile in the path $FullLogfile"
+    }
     ShowDoneButton
   } else {
     $Description.Text +="`r`n$setupPlatformExe executed correctly"
@@ -878,25 +927,30 @@ function ExecuteCaScar {
     New-Item -ItemType Directory -Path $testScarPath -Force
   }
 
+  CreateScarfaceJSON -version $ScarVersion
+
   if ($ScarVersion -ne "") {
     npm i -g "@ca/generator-scarface@$ScarVersion"
   }
   
   Set-Location $testScarPath
-  Start-Process $HOME\AppData\Roaming\npm\ca.cmd -ArgumentList "scar" #-WindowStyle hidden -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrorLogfile -Wait
+  Start-Process $HOME\AppData\Roaming\npm\ca.cmd -ArgumentList "scar -c $ScarfaceConfigPath" -WindowStyle hidden -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrorLogfile -Wait
+  Get-Content $OutLogfile, $ErrorLogfile | Set-Content $CaScarErrorLogfile
+  $ScarfaceMessage = Get-Content $OutLogfile, $ErrorLogfile
+  $Description.AppendText("`r`n$ScarfaceMessage")
+
   $script:StatusInstallation++
-  # New-Item $CaScarErrorLogfile
-  # Get-Content $OutLogfile, $ErrorLogfile | Set-Content $CaScarErrorLogfile
-  # $ArrayErrors = Get-Content $CaScarErrorLogfile | Where-Object { $_ -like "*Error*" -or $_ -like "*ERR!*" }
-  # if ($ArrayErrors.Count -ne 0) {
-  #   $Description.Text += "`r`nERRORS FOUND:"
-  #   $ArrayErrors | ForEach-Object {  $Description.Text += "`r`n$_" }
-  #   $Description.Text += "`r`nCheck the full logfile in the path $CaScarErrorLogfile"
-  #   ShowDoneButton
-  # } else {
-  #   $Description.Text +="`r`nca scar executed correctly"
-  #   $script:StatusInstallation++
-  # }
+ 
+  $ArrayErrors = Get-Content $CaScarErrorLogfile | Where-Object { $_ -like "*Error*" -or $_ -like "*ERR!*" }
+  if ($ArrayErrors.Count -ne 0) {
+    $Description.Text += "`r`nERRORS FOUND:"
+    $ArrayErrors | ForEach-Object {  $Description.Text += "`r`n$_" }
+    $Description.Text += "`r`nCheck the full logfile in the path $CaScarErrorLogfile"
+    ShowDoneButton
+  } else {
+    $Description.Text +="`r`nca scar executed correctly"
+    $script:StatusInstallation++
+  }
 }
 
 <# Print log confirm VM
@@ -904,11 +958,11 @@ function ExecuteCaScar {
 function OutFileAnswerNestedVirtualization($Answer) {
   if ($Answer) {
     "I have already run the command `"Set-VMProcessor -VMName <VMName> -ExposeVirtualizationExtensions $true`", and enabled the Nested Virtualization." | Out-File $AnswerNestedVirtualizationPath
-    NextScreen
+    $Description.Text = "You have selected YES`r`nClick Next to continue the installation of CAEP."
     ShowNextButton
   } else {
     'I have not run the command Set-VMProcessor -VMName <VMName> -ExposeVirtualizationExtensions $true", and have the Nested Virtualization disabled yet.' | Out-File $AnswerNestedVirtualizationPath
-    $Description.Text = "Please run the command `"Set-VMProcessor -VMName <VMName> -ExposeVirtualizationExtensions $true`"`r`nRemember to Turn Off your Virtual Machine and to replace the <VMName> with the name of the YOUR Virtual machine.`r`nNB: This command must be run on PowerShell of your Host Machine with Administrator permission."
+    $Description.Text = "Please run the command`r`n`"Set-VMProcessor -VMName <VMName> -ExposeVirtualizationExtensions $true`"`r`nRemember to Turn Off your Virtual Machine and to replace the <VMName> with the name of the YOUR Virtual machine.`r`nNB: This command must be run on PowerShell of your Host Machine with Administrator permission."
     ShowDoneButton
   }
 }
@@ -923,30 +977,22 @@ function NextScreen {
         ShowDownloadAndInstallRequirementScreen
       } elseif(-not $VisualStudioCodeAutoExtension) {
         InstallVSCodeExtensions
-      } else {
         CheckProxy
+      } else {
         ShowMainScreen
       }
     }
     1 {
       InstallSetupCaTools
-      # $Description.Text = "InstallSetupCaTools"
-      # $script:StatusInstallation++
     }
     2 {
       ShowLoginNpm
-      # $Description.Text = "ShowLoginNpm"
-      # $script:StatusInstallation++
     }
     3 {
       InstallCaPlatform
-      # $Description.Text = "InstallCaPlatform"
-      # $script:StatusInstallation++
     }
     4 {
-      # ExecuteCaScar
-      $Description.Text = "ExecuteCaScar"
-      $script:StatusInstallation++
+      ExecuteCaScar
     }
     5 {
       $Title.Text = "End"
@@ -988,8 +1034,8 @@ else {
 # SIG # Begin signature block
 # MIIk2wYJKoZIhvcNAQcCoIIkzDCCJMgCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU6PBrNoOkU4MeK5iXvUWr0CSU
-# daaggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU/RSMq7LkB+KVe45SkhmTaECx
+# EsKggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -1158,29 +1204,29 @@ else {
 # ZWQxJDAiBgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQQIQDue4N8WI
 # aRr2ZZle0AzJjDAJBgUrDgMCGgUAoIGEMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3
 # AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEW
-# BBT3MpTBHPmjGICMdwXvaharrnWF1DAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
-# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAKrJasuIP0Zq13+RxQ/ZJfSx
-# RMlU8GxKuYzfK4A8cVqeI/eDY4Dhs5+qqqxSQI7SgO48eyt5UlShIqX1zkU0sX6b
-# t301njNEKmS7UiG3/Q4NmvvfRnkYyryboVwqjs1+TSDd1i/8lDvfAMwbRyQ7K18y
-# 82Xt3p0Vzu4tVGWjGnn+DYq3PZF+xi95CwRr4ypg2UZNbvue8MVs8g7NjmYdFxau
-# KB9o4jpEfy5dlCo8PPJifSmu54bodyrkKPVNP9BFpv8DMZ8QUyBlcODUmro+3Sw2
-# M18VMoxmgev9pbwty97fhjwk5/m90SDgw26cRYKro7H5QzM5/S+Lt4WVpIZJi4Gh
+# BBQrUEGucKHp6r+rql2hh2WoPXtRWzAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
+# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAAGw+nTDBJOkl42n3X4LceHq
+# dEGTsw26vqryM6JIBd8fH4PrqcOLcP+j1WU5TQzrLjjF94LNw+6MU39HyK3s6vjf
+# wOXpXCXXFmkKdeYtzjgAb/H+1aO8JxSPQ8d09N+m7zC56Cr6kS43qOqv+cyCxpzQ
+# 3cnFVDlQAbWoOl7BkTaiemsM7meJNzerznRKXhvGHw2BslIiOrGoKsC5mhFzdD+d
+# yT/Y6u/K5s58ak+b/+KowMOnFv8jWckkEmDS81IkqM7h0d54INmLdP4a5LyivkUD
+# Vxfm87UjemgfExoAYFoXiLDvNEg5IHS7DqO7pMluRUwS/aoGuMu/3t2z4kQOA+Wh
 # ggNMMIIDSAYJKoZIhvcNAQkGMYIDOTCCAzUCAQEwgZIwfTELMAkGA1UEBhMCR0Ix
 # GzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEY
 # MBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSUwIwYDVQQDExxTZWN0aWdvIFJTQSBU
 # aW1lIFN0YW1waW5nIENBAhEAjHegAI/00bDGPZ86SIONazANBglghkgBZQMEAgIF
 # AKB5MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTIx
-# MTEyOTA5MzEyNVowPwYJKoZIhvcNAQkEMTIEMMGBtpK8WA0F/wagXOqOfqdBEyGV
-# j1FI6gUJKoSWRZ6yfcwZCWf8PBvdpuT55KDlbzANBgkqhkiG9w0BAQEFAASCAgAm
-# GYnkF7Ji7h0paHZ1dz0lRsI/BnCZrbmFZn0IuOQmPmlEdMWRqGii4UIf0Cx5QT9h
-# +OtowFYrl3dWe2QFXdu21nkE54IcSyiGuNBWYWJWLYoLVvRmHofRKmgyyI8ZVp/n
-# C8ZonGUVPKCvLOkVCnZwiW11IlHS4Wri68NRubGwO/o3iUqywY2xil/KHYE9a2tI
-# odwh5IVlngB0iJLGhSdEI7pW75dmfdGTz9lcxTMOXgXgifdC3mPMlZnWY8qrTOiI
-# uXsyI4iW8gbJLaurxaz2G7rvlGQ8JG4Ufl53ebu+g9NtRtSf2qfQnL/0YQyiPbWv
-# M8WhT5l5Rue33FoR/YH4StLcnLYCXfJnLWEg8z8H/Dr7QdBGJg+lXT8mx8sdzZGd
-# GuCFpttPJSM9WYQ9J2zeJV6o1tuvCRKFdH66h3SPkwXVvjykjnUvv7i0lOqvEckq
-# H7hEZ94SAwLS60ZZJvI2RmiO2twKfHjGzyPgr2Bf1fQcH4Pgn8dQ0fcZ0UPuGPWS
-# YoLzdlEzmNsmav2YR8o1Om45aWJByxRsrCf8zVu7qHThEk/3Dojy4tYX93Xx9A0Q
-# 4FB+B1uTJDSQ5EZNg9w3pmbzvDvGRvTozWqklh4a/Oc2UKDzVIajFFWVECbNXIXD
-# jA+L3cJ7g0w+LWzQ1FGRPQLTO3cKvHFqAFz/raHjyA==
+# MTIwMTA4NDgxMlowPwYJKoZIhvcNAQkEMTIEMFCgo8gjGv630TKLgsbdOByY6PPF
+# sxHUyliXE7RdPasAwJGRcdMPr2NfAOs3+PuLcTANBgkqhkiG9w0BAQEFAASCAgBO
+# uJQ+MkbuKlm6bk2zWDgq5tisz2+vd/YN8MKgfbBnzfp7kqgUXOS8DWBgP0//lDx7
+# JaMW7mmQzKwORj2e51mMyeJhVeZeRrE6prCXRDulmsa1nBHMjxbhS5k/NogbpKWU
+# io9QwsEJHXi4XBMVHZWZSiFHcETnw5pfKgnFC6KX06Lhax3j7HDqRDosQxaO4dCs
+# Vpv2UVjVOhmkasm0JjvqFZAkCNTtvlxMQjbJ8/lC2qsla1LjgrNSxo34I/QaSJTE
+# Imxxah/v0Oe99yH0QC3+1d59eH0BSk553fwHneTaml4CtNYP/xE/e5W9SyZ9Ewwk
+# 1nuvUNSCro5o+PXvXLSrUYZ/AfMNwlJFe1cAyLzTiVZRMhBMc+WKAbl7Kfd9d5ST
+# dB0WlzOeFds7JXFOqIgAkSkTcVk7p0Hz4hH8tOklyRNlELmInRHyiggCSdOyiNJh
+# nYICv3ivkNrMcnu+vvMOpNNJ0x8QPOqjfg6LQr8aeAvraAV/gdND4RLe9CmYlCKz
+# zL1jUAXYxsTHKxJ7W1LwTg6CYXWCrQaA5qCsvGlSHxKisfrZtZGmsoN89ZaIp7iN
+# QBohgzqNeYQqmD5ZQV7wHxYM+CXevarn1ycEyXAeOEXUfKdiND+jtaM2Qxd24IB1
+# JfibpBywmrUSTsgGp1+flGGmHdDw/gBPBcD3vD7rVw==
 # SIG # End signature block
