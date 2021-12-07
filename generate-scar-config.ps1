@@ -51,7 +51,7 @@ function CreateScarfaceJSON {
         [string]$registryNuget = 'https://devops.codearchitects.com:444/Code%20Architects/_packaging/ca-nuget/nuget/registry/',
 
         [Parameter(Position = 8)]
-        [string]$author = 'Author Name',
+        [string]$author = 'CodeArchitects',
 
         [Parameter(Position = 9)]
         [string]$tokenPath = '~/.token.json',

@@ -688,6 +688,10 @@ $NpmrcFilePath = "$HOME\.npmrc"
 Download and install the requirement passed as param
 #>
 function DownloadAndInstallRequirement($Requirement) {
+  $NextButton.Visible = $false
+  $AcceptButton.Visible = $false
+  $NextButton.Enabled = $false
+  $AcceptButton.Enabled = $false
   switch ($Requirement.Requirement) {
     "Visual Studio" {
       $Description.AppendText("`r`nDownloading Visual Studio 2022 from $VisualStudioDownloadLink...")
@@ -789,6 +793,10 @@ function DownloadAndInstallRequirement($Requirement) {
   }
   RemoveInstallers
   $script:IndexRequirement++
+  $NextButton.Visible = $true
+  $AcceptButton.Visible = $true
+  $NextButton.Enabled = $true
+  $AcceptButton.Enabled = $true
   if ($Requirement.Requirement -eq "Virtual Machine Platform") {
     ShowRestartButton
   } elseif ($Requirement.Requirement -eq "Docker") {
