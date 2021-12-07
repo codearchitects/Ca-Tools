@@ -970,7 +970,7 @@ function OutFileAnswerNestedVirtualization($Answer) {
     ShowNextButton
   } else {
     'I have not run the command Set-VMProcessor -VMName <VMName> -ExposeVirtualizationExtensions $true", and have the Nested Virtualization disabled yet.' | Out-File $AnswerNestedVirtualizationPath
-    $Description.Text = "Please run the command`r`n`"Set-VMProcessor -VMName <VMName> -ExposeVirtualizationExtensions $true`"`r`nRemember to Turn Off your Virtual Machine and to replace the <VMName> with the name of the YOUR Virtual machine.`r`nNB: This command must be run on PowerShell of your Host Machine with Administrator permission."
+    $Description.Text = "Please run the command`r`n`"Set-VMProcessor -VMName <VMName> -ExposeVirtualizationExtensions `$true`"`r`nRemember to Turn Off your Virtual Machine and to replace the <VMName> with the name of the YOUR Virtual machine.`r`nNB: This command must be run on PowerShell of your Host Machine with Administrator permission."
     ShowDoneButton
   }
 }
@@ -1042,8 +1042,8 @@ else {
 # SIG # Begin signature block
 # MIIk2wYJKoZIhvcNAQcCoIIkzDCCJMgCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU/RSMq7LkB+KVe45SkhmTaECx
-# EsKggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUcfT0qzuaK3tEYTuB4UXwGGeX
+# h26ggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -1212,29 +1212,29 @@ else {
 # ZWQxJDAiBgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQQIQDue4N8WI
 # aRr2ZZle0AzJjDAJBgUrDgMCGgUAoIGEMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3
 # AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEW
-# BBQrUEGucKHp6r+rql2hh2WoPXtRWzAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
-# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAAGw+nTDBJOkl42n3X4LceHq
-# dEGTsw26vqryM6JIBd8fH4PrqcOLcP+j1WU5TQzrLjjF94LNw+6MU39HyK3s6vjf
-# wOXpXCXXFmkKdeYtzjgAb/H+1aO8JxSPQ8d09N+m7zC56Cr6kS43qOqv+cyCxpzQ
-# 3cnFVDlQAbWoOl7BkTaiemsM7meJNzerznRKXhvGHw2BslIiOrGoKsC5mhFzdD+d
-# yT/Y6u/K5s58ak+b/+KowMOnFv8jWckkEmDS81IkqM7h0d54INmLdP4a5LyivkUD
-# Vxfm87UjemgfExoAYFoXiLDvNEg5IHS7DqO7pMluRUwS/aoGuMu/3t2z4kQOA+Wh
+# BBSlSEkpOBidR5riPUw9FusWj3HNjTAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
+# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAII3Ee98uK318/dSrKAv69Zp
+# SS41cNQKSVSyjTxi7GKThyavborsfVB11FXC05/rYwaEXxCI0Dm7MhqoyLUJWc5t
+# mwVtmd3vflzqwCo5+6L3DKw10orjsWLedSQdykdVQpwck/k6vqfwX2B4kOMEjVky
+# gk4X70qBskFem775ix8hcGNZHtadtY3TpQCWp58FEvaODQ6sXx26kwHphdO+cJ3v
+# H/R1etG+gBQn+EavCIbTEqLosRlq69fBIBCLo0c0Fs/PT0f95rXWly248pRzEbY3
+# alzTzu/Ng8F0fwY7jeFAoxVLKc2cVkhGS4gNAqQ1yweZx7M7mBllxdM1Umz9Rmyh
 # ggNMMIIDSAYJKoZIhvcNAQkGMYIDOTCCAzUCAQEwgZIwfTELMAkGA1UEBhMCR0Ix
 # GzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEY
 # MBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSUwIwYDVQQDExxTZWN0aWdvIFJTQSBU
 # aW1lIFN0YW1waW5nIENBAhEAjHegAI/00bDGPZ86SIONazANBglghkgBZQMEAgIF
 # AKB5MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTIx
-# MTIwMTA4NDgxMlowPwYJKoZIhvcNAQkEMTIEMFCgo8gjGv630TKLgsbdOByY6PPF
-# sxHUyliXE7RdPasAwJGRcdMPr2NfAOs3+PuLcTANBgkqhkiG9w0BAQEFAASCAgBO
-# uJQ+MkbuKlm6bk2zWDgq5tisz2+vd/YN8MKgfbBnzfp7kqgUXOS8DWBgP0//lDx7
-# JaMW7mmQzKwORj2e51mMyeJhVeZeRrE6prCXRDulmsa1nBHMjxbhS5k/NogbpKWU
-# io9QwsEJHXi4XBMVHZWZSiFHcETnw5pfKgnFC6KX06Lhax3j7HDqRDosQxaO4dCs
-# Vpv2UVjVOhmkasm0JjvqFZAkCNTtvlxMQjbJ8/lC2qsla1LjgrNSxo34I/QaSJTE
-# Imxxah/v0Oe99yH0QC3+1d59eH0BSk553fwHneTaml4CtNYP/xE/e5W9SyZ9Ewwk
-# 1nuvUNSCro5o+PXvXLSrUYZ/AfMNwlJFe1cAyLzTiVZRMhBMc+WKAbl7Kfd9d5ST
-# dB0WlzOeFds7JXFOqIgAkSkTcVk7p0Hz4hH8tOklyRNlELmInRHyiggCSdOyiNJh
-# nYICv3ivkNrMcnu+vvMOpNNJ0x8QPOqjfg6LQr8aeAvraAV/gdND4RLe9CmYlCKz
-# zL1jUAXYxsTHKxJ7W1LwTg6CYXWCrQaA5qCsvGlSHxKisfrZtZGmsoN89ZaIp7iN
-# QBohgzqNeYQqmD5ZQV7wHxYM+CXevarn1ycEyXAeOEXUfKdiND+jtaM2Qxd24IB1
-# JfibpBywmrUSTsgGp1+flGGmHdDw/gBPBcD3vD7rVw==
+# MTIwNzA5MTIxOFowPwYJKoZIhvcNAQkEMTIEMJgntz3Qr6xtwQoPhBZRB+/RAFae
+# wwXyQ7Y0XQstxJlEYLOIqnOgRtbOb1Q6+u1dAzANBgkqhkiG9w0BAQEFAASCAgAo
+# BqK2dlKxzbGyT1nbn5jKTyIjtK1cvxzw36+QFIooToLri9KQCGVgEwke5oFCfMCA
+# GVtv9sJBvHqOlKGq9VMtp7RdJRAJIi/m2jCWcxqlS/oaLtoO6eBAu32i/G6iULbN
+# ECOpGTSQp2iTa5QQBw45f6ZvMeYalaqKnrKK4Ziy2jS3dFqPgFGRu98UfvflQty2
+# Lw/fomct5rmljX6X+WR0UTtBle2qadsJckprkIzCjgb2O2iFat7w3JgoLva+h2ic
+# 7N/kOHNZEkqKG4JBtSPfvJFsaAD6JQRD2tI1mMtD4wwQOiBG2KhnQOo1+y/qrl/P
+# zqVxDZwEihuJKsyitlHO/OdxLBcCMks8brijwzzhSCxqqyxPCM8eiOzge3mfC7Jf
+# Llikq77+/lIFH49p4O8DhilnwU8+2hhJLX3Bm7m+m6uthg/5SpY4DfiQ8XF/cuFX
+# aZu3a4RmjL0oKAVP1g6HjW2zc32+DCALcfidnkv5W5eGH8NNsnCEhwfI42ticKUV
+# w6yhhmPApi84tEjrWgKoFRHGpWd7HswrjjFPNapWhgO3+lBnPTFtWoipXMliReys
+# id397hq6pzcXuAmyFDpHfY8gL+QFL4BqaDDXFot1NhnxZB7hPlqBOYyo03DiiMWQ
+# vYK3iz7i8XrEJhURBnV0HqG9yrKqIp/ZS9Ze5R/X+A==
 # SIG # End signature block
