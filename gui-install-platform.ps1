@@ -277,6 +277,20 @@ function ShowYesNoButtons {
   $NoButton.Visible = $true
 }
 
+function DisableNextAcceptButtons {
+  $NextButton.Visible = $false
+  $AcceptButton.Visible = $false
+  $NextButton.Enabled = $false
+  $AcceptButton.Enabled = $false
+}
+
+function EnableNextAcceptButtons {
+  $NextButton.Visible = $true
+  $AcceptButton.Visible = $true
+  $NextButton.Enabled = $true
+  $AcceptButton.Enabled = $true
+}
+
 <# ShowMainScreen
 Shows the Intro screen, after all requirements are met
 #>
@@ -688,10 +702,7 @@ $NpmrcFilePath = "$HOME\.npmrc"
 Download and install the requirement passed as param
 #>
 function DownloadAndInstallRequirement($Requirement) {
-  $NextButton.Visible = $false
-  $AcceptButton.Visible = $false
-  $NextButton.Enabled = $false
-  $AcceptButton.Enabled = $false
+  DisableNextAcceptButtons
   switch ($Requirement.Requirement) {
     "Visual Studio" {
       $Description.AppendText("`r`nDownloading Visual Studio 2022 from $VisualStudioDownloadLink...")
@@ -793,10 +804,7 @@ function DownloadAndInstallRequirement($Requirement) {
   }
   RemoveInstallers
   $script:IndexRequirement++
-  $NextButton.Visible = $true
-  $AcceptButton.Visible = $true
-  $NextButton.Enabled = $true
-  $AcceptButton.Enabled = $true
+  EnableNextAcceptButtons
   if ($Requirement.Requirement -eq "Virtual Machine Platform") {
     ShowRestartButton
   } elseif ($Requirement.Requirement -eq "Docker") {
@@ -980,23 +988,31 @@ function NextScreen {
       if ($IndexRequirement -lt $RequirementsNotMet.Count) {
         ShowDownloadAndInstallRequirementScreen
       } elseif(-not $VisualStudioCodeAutoExtension) {
+        DisableNextAcceptButtons
         InstallVSCodeExtensions
         CheckProxy
+        EnableNextAcceptButtons
       } else {
         ShowMainScreen
       }
     }
     1 {
+      DisableNextAcceptButtons
       InstallSetupCaTools
+      EnableNextAcceptButtons
     }
     2 {
       ShowLoginNpm
     }
     3 {
+      DisableNextAcceptButtons
       InstallCaPlatform
+      EnableNextAcceptButtons
     }
     4 {
+      DisableNextAcceptButtons
       ExecuteCaScar
+      EnableNextAcceptButtons
     }
     5 {
       $Title.Text = "End"
@@ -1038,8 +1054,8 @@ else {
 # SIG # Begin signature block
 # MIIk2wYJKoZIhvcNAQcCoIIkzDCCJMgCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU8HCj+IEsIun1gdZX4uSp4VMN
-# fcOggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUDX5kHZ+V6juHS9bKA/0mzx07
+# xHeggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -1208,29 +1224,29 @@ else {
 # ZWQxJDAiBgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQQIQDue4N8WI
 # aRr2ZZle0AzJjDAJBgUrDgMCGgUAoIGEMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3
 # AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEW
-# BBSvgXQd1zqqr+01mB60gJ4HVnm5mjAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
-# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAK7lB4+Ert5pRTzIustxbrq0
-# aVfnWDEqui1MD1sEemHtsYrqvjGNKjTaGUXK01eC0LEzEyTj3x1Q8OQPa7XNg3XW
-# qsPulI6orWJXcwSE+47w0xG3bcRxhNvRMuk1g6XNiQaKubMxsTCYO2Iytgol+T4W
-# dq7GwG1iV65yN/YlFV43HjGNYuPcyePryhUXWGxYmTOdK898/hSc8U/IvReq99Lq
-# xFESpfhAaHPvRcWGTvYZnEUHSIUwG5hFC1KDeEHf3ltIZwZWsgkR6OtyQegIvweG
-# sdxon6d6ag5PxSupQYN/rMqq1oXlaX4kQCyZqNrMnyyMcouqWADHgL5twS5K7Nmh
+# BBScjcMR0BAJO4idy0VU53vBjJbaIDAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
+# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAIe2RlTIelGZRNtdy3A0dHrC
+# T50ldBkG11fE5xU93hvnftKg35ChyHinzqjQZuJ0WXwIN/B6blwAAuYhjnlWK6Re
+# vxFS5Nzeg/6eSLI8k55lZ2sdjwoC7nCb7/PMPHPiID+0j1HU5PmmjqIFjWeGg+sI
+# AnoUXHjuCfI/x1/v/+1gIO0x6rJunTjtloFAePgnvbfRqyzwP0iLU6Cxp72HuQTP
+# v0Lhgo3ToYbsEeM6H7QaKujPmD1of4onrgkHsxfvN9yzY5NA9topKB9ifx3zmpRU
+# qA4NoADXLdUrMbY2Cqc4VC5RpyOIPxJHZz02Jqyq1k8OTKaEnIhGAwYlPCKpfXah
 # ggNMMIIDSAYJKoZIhvcNAQkGMYIDOTCCAzUCAQEwgZIwfTELMAkGA1UEBhMCR0Ix
 # GzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEY
 # MBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSUwIwYDVQQDExxTZWN0aWdvIFJTQSBU
 # aW1lIFN0YW1waW5nIENBAhEAjHegAI/00bDGPZ86SIONazANBglghkgBZQMEAgIF
 # AKB5MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTIx
-# MTIwNzE2MjgwNlowPwYJKoZIhvcNAQkEMTIEMMDDvIri2HXa90gcZvnH92hAP6Xj
-# Q1XKAZ1vf9+A5jUojGOLtlRwRn4ub+0YYN5TXDANBgkqhkiG9w0BAQEFAASCAgA/
-# FpcF3c2P/E/s1ZLj0c7H1rLzQ1SfYav/j7N54LqJqNvuHFXP97NVW4qGaA90nBoT
-# e6jiH3B+dqQ79/ffVyiVOgbclSiHBwUS72KBdNO8p7zhEWDz3M3OVeRTBsL2CLGY
-# J4rKP9hH2NFQ708Z+O1QcffZWL/cSUwtoW/gq7Gy1IlV++WC+3r8HfjFXDAjdPdq
-# yBqqCAxlyfJBKoiIjeZO+MR+G7VHBjSMdhG34/GMQ+ciWQdmuYCjvQpCZ/jWPJGs
-# P0Lb2HlK74lNliPXIEN4aqHvSu6bOI9bMlptOjw2agaRLTIBXGfY5KsgqRNChyB+
-# O4hATpPWAFoyL/7B5oUITZog98wzINrBsNpY0AwVkAVw140K5wRg7BXdGs8JcwNf
-# nEhnsJDp7V1cRelpsqqv+YYKdS0qJXWwO8OjulkZCvgZl1j2chT/+0oA+9R6Y5Ky
-# 55YLh8irkKEKQMToraI/D4Cg//oEkO7lIhN68/Yay8WsVtuUKMQWeJCxu4GxnUYP
-# IJ7o2SoXGGetn5CqlKtelYHw5nURo4e8PEy9k6HVinHPE1Lz/38MJXCaEXrznufk
-# BVQHHCNPEjA+/mPAK257f+3BQGa0ZDpX4rilZviFO+aa50b32sGd91LN1WD/s9TS
-# 0rROTeLoUDTodZvWK4sQCg0f/w7pCI/42QkxGD926A==
+# MTIwOTEzMjczMFowPwYJKoZIhvcNAQkEMTIEMJxM/y/ZwbSLLxaSmxtYECAsglVL
+# V59X5PtdmhrhfJh6k2SlOxBCF/+X+Lipzo7h/jANBgkqhkiG9w0BAQEFAASCAgB9
+# x/qNBkLVYboeiUAeowD0AlzSBL4T65sfgZPfVR8BFYhMga5WWReLx1pcTiU138Z7
+# EaLY7WN1ZYsNebRVnosVGTHPbYJPV4fd1qAQ7+WvGoispJ1oy1SfodUQVWL3C0Wr
+# /UpHs2DwJ0cMol0E8Mykwbp64PLkHfPHneB6K7KlYHjScSTlYbLyOLnepTbnwsOb
+# PGBspHQWkVbpa3JIDeoKBBvSH7ir1t0GujAVR3bFqS/gxEp8ILY7GSwzibhOVOR1
+# fhTUPT26t0SQYcadsf5hGIB+gbkaf+kyH72FtQ/zV8VqfTRYyUshRsw9C9C/cLFI
+# 8KzM+R4OJYPA6s+ITHGg8+w9cS1eAlQBG+qgonfbMmHOoMlQj17CmrZBzwxJhhEN
+# qWdmI5WjH0LOx9wxCE1g4Qahmv4tue2jVfc9vcV83KEyOsTG7JcrKzXKQG9hjkYx
+# 69uaTpY975AUOCAmCVMf6L3JqCTajC1R/fDXkvsmTJyhcQU9m+DpB3hmIbNeQ74+
+# ok5d90DZ/jobfMfzVTca6z7BjnSMxQnzwELGwtp/PK+JdydBcoEptCQPjb80SjjZ
+# pm7h1XbuwSK67YlCiGMyJeiVOFuHZ7/fyIWGOrK3D0zL/IgGQLYM09H+PwpGjk+A
+# y0IsqN2Yu7zHQ1XzzQ6UT+7eTu9j57CgbUqfFEfFXg==
 # SIG # End signature block
