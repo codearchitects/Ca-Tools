@@ -670,7 +670,7 @@ $RecommendationsVSCode = @(
   "msjsdiag.debugger-for-chrome",
   "spmeesseman.vscode-taskexplorer",
   "Gruntfuggly.triggertaskonsave",
-  "angular.ng-template"
+  "Angular.ng-template"
 )
 $RecommendationsVS = @(
   "Microsoft.VisualStudio.Workload.NetWeb",
@@ -920,16 +920,33 @@ function InstallVSCodeExtensions {
   if (-not $VisualStudioCodeAutoExtension) {
     $Description.Text = "Visual Studio Code is already installed.`r`n"
   }
-  $Description.AppendText("`r`nInstalling VSCode extensions`r`n")
-  foreach ($item in $RecommendationsVSCode) {
-    Start-Process code -ArgumentList "--install-extension $item --force" -WindowStyle hidden -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrorLogfile -Wait
-    Get-Content $OutLogfile, $ErrorLogfile | Add-Content $VSCodeExtentionsLogfile
-    $Description.Lines += Get-Content $OutLogfile, $ErrorLogfile
-    $Description.Text += "`r`n"
-    $Description.SelectionStart = $Description.TextLength;
-	  $Description.ScrollToCaret()
+  $InstalledVSCodeExtensions = code --list-extensions
+  $VSCodeExtensionsNotInstalled = @()
+  if ($InstalledVSCodeExtensions.Count -ne 0) {
+    foreach ($extension in $RecommendationsVSCode) {
+      if (-not $InstalledVSCodeExtensions.Contains($extension)) {
+        $VSCodeExtensionsNotInstalled += $extension
+      }
+    }
+  } else {
+    $VSCodeExtensionsNotInstalled = $RecommendationsVSCode
   }
-  $Description.AppendText("`r`nInstallation of VSCode extensions completed`r`n")
+  
+  if ($VSCodeExtensionsNotInstalled.Count -ne 0) {
+    $Description.AppendText("`r`nInstalling VSCode extensions`r`n")
+    foreach ($item in $VSCodeExtensionsNotInstalled) {
+      Start-Process code -ArgumentList "--install-extension $item --force" -WindowStyle hidden -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrorLogfile -Wait
+      Get-Content $OutLogfile, $ErrorLogfile | Add-Content $VSCodeExtentionsLogfile
+      $Description.Lines += Get-Content $OutLogfile, $ErrorLogfile
+      $Description.Text += "`r`n"
+      $Description.SelectionStart = $Description.TextLength;
+      $Description.ScrollToCaret()
+    }
+    $Description.AppendText("`r`nInstallation of VSCode extensions completed.`r`n")
+  } else {
+    $Description.AppendText("`r`nVSCode extensions already installed.`r`n")
+  }
+  
   $script:VisualStudioCodeAutoExtension = $true
 }
 
