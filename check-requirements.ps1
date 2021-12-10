@@ -134,7 +134,7 @@ try {
     $wslWindowsFeature = (dism /online /get-featureinfo /featurename:Microsoft-Windows-Subsystem-Linux) | Select-String "Disattivata"
   }
   
-  if ($wslWindowsFeature) {
+  if (-not $wslWindowsFeature) {
     $wslEnableStatus = "OK"
   } else {
     $wslEnableStatus = "KO (Not enabled)"
@@ -156,7 +156,7 @@ try {
     $vmpWindowsFeature = (dism /online /get-featureinfo /featurename:VirtualMachinePlatform) | Select-String "Disattivata"
   }
 
-  if ($vmpWindowsFeature) {
+  if (-not $vmpWindowsFeature) {
     $vmpEnableStatus = "OK"
   } else {
     $vmpEnableStatus = "KO (Not enabled)"
@@ -188,7 +188,7 @@ $wslUpdateRequirement.Status = $wslUpdateStatus
 
 # Linux Distribution
 try {
-  if (-not ([System.Text.Encoding]::Unicode.GetString([System.Text.Encoding]::Default.GetBytes(($(wsl -l -v)))) | Where-Object { $_ -like "*distribution*" })) {
+  if (-not ([System.Text.Encoding]::Unicode.GetString([System.Text.Encoding]::Default.GetBytes(($(wsl -l -v)))) | Where-Object { ($_ -like "*distribution*") -or ($_ -like "*distribuzioni*") })) {
     $linuxDistroStatus = "OK"
   } else {
     $linuxDistroStatus = "KO (Not Found)"
@@ -204,7 +204,7 @@ $linuxDistroRequirement.Status = $linuxDistroStatus
 
 # Administrator permission
 try {
-  (Get-LocalGroupMember Administrators).Name | ForEach-Object { if ($_.ToLower() -like "*$($(whoami).ToLower())") {$isAdmin = $true} }
+  (Get-LocalGroupMember Administrators -ErrorAction SilentlyContinue).Name | ForEach-Object { if ($_.ToLower() -like "*$($(whoami).ToLower())") {$isAdmin = $true} }
   if ($isAdmin) {
     $adminPermissionPresent = "OK"
   } else {
@@ -277,8 +277,8 @@ $nugetRegistryRequirement.Requirement = "Public registry NuGet"
 $nugetRegistryRequirement.Status = $nugetRegistryStatus
 
 # Virtual Machine
-$IsVirtualMachine = (((Get-CimInstance win32_computersystem).model -eq 'VMware Virtual Platform') -or ((Get-CimInstance win32_computersystem).model -eq 'Virtual Machine'))
-if (-not $IsVirtualMachine) {
+$ComputerModel = (Get-CimInstance win32_computersystem).model
+if (($ComputerModel -ne 'VMware Virtual Platform') -and ($ComputerModel -ne 'Virtual Machine') -and ($ComputerModel -ne 'Macchina Virtuale')) {
   $VirtualMachineStatus = "OK (is a Physical Machine)"
 } else {
   $VirtualMachineStatus = "WARNING (is a Virtual Machine)"
@@ -335,8 +335,8 @@ $envRequirements | ForEach-Object { if($_.Status -like "KO*") { $FoundError = $t
 # SIG # Begin signature block
 # MIIk2wYJKoZIhvcNAQcCoIIkzDCCJMgCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUUJoM+3AnHb1BGGUq410A7w/5
-# BE6ggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUHP8LJ5PpDKyTvK2BU2SsjQtO
+# oIuggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -505,29 +505,29 @@ $envRequirements | ForEach-Object { if($_.Status -like "KO*") { $FoundError = $t
 # ZWQxJDAiBgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQQIQDue4N8WI
 # aRr2ZZle0AzJjDAJBgUrDgMCGgUAoIGEMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3
 # AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEW
-# BBTNA0sFiIVphKhsJfSUOYZ9tVeMhzAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
-# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAJB2hOdFzExBUh6jOEG0yhGd
-# jd9PgXoAZJgSYl/a0pypvmQ5fuAA1w3V/r6yy7BLpJGw4ZH3F+b7xeWBUoLp6vFI
-# BoCvv8Mx7+F7sNOHiNLjNXVY9GIi8pDYm/nuH3eifcElR8vP/+uepIxpz194+ek0
-# L26jNun7iOhIoQewiyWNK2JIunxOS4cLUNO7IrfpzufJByjesU1bC95cX9Ff1mTW
-# K76A3FlSV/m0u65K9KVpQ7NEpFk2PyHod5gWlXhVYzN0IZEyIqSrjq4KMIgkgrhC
-# orFE/MEp7NoZ3prpeze4zc+k+KHNKsH09WnJRsGebwvrpxp9VVMPuPoFCOz453mh
+# BBQGbDaCwyXvw9OBgSy1W+7UnZeQLTAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
+# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAIup9DiTmyhZtf4Xn4JXPBzZ
+# Lxdp9ywLiZJSF6XgWKCO23TCJxoNLIGTWn80Sk7oyqbzr32pcnuj9x8Zk9qucuVd
+# w8Gc8eDN26J34bIYSKMeN0Io4HBZQ4t60QXdiYlbfMzRqlhkxBGMYbhjmqOCFWox
+# qd+2hHAHc1PUiuj2jCqMkeuvYt0GKqnk1kzYCWatDJagaC8Wgn2/nkxfXg31i2F1
+# KT0rJ0YiLrm03vWD8sCpMRLlK83XY8HVUL1mWz+Gsv7bg5qQSuwDQ9PHAmpo6qEs
+# Gh6sorgCT/AEGEq6EmbDKFCv2r71XTkh85bOQQaYSelcy0EvOmU1t8BigIL76pmh
 # ggNMMIIDSAYJKoZIhvcNAQkGMYIDOTCCAzUCAQEwgZIwfTELMAkGA1UEBhMCR0Ix
 # GzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEY
 # MBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSUwIwYDVQQDExxTZWN0aWdvIFJTQSBU
 # aW1lIFN0YW1waW5nIENBAhEAjHegAI/00bDGPZ86SIONazANBglghkgBZQMEAgIF
 # AKB5MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTIx
-# MTIxMDA5MzY0NFowPwYJKoZIhvcNAQkEMTIEMHETNLqTDlFmhw/bWID/ImZF+m8W
-# k/zn/VhnZnZObWpCUnsgG3xMbceNjGQCvJpZvDANBgkqhkiG9w0BAQEFAASCAgAs
-# ZV0M1UGLl0lUk3ceufrWwCM+fiAj08j48SSKRnPYFXVhUPVLhHAZHbbnLIVKjKO+
-# i6sx/KqYQgsMSqAvDy2V/NMttkJegJI0vYJ2iNtbtP80HPXOaqgLU84b4+Bco4C9
-# yOtgBrnQUojsYfTUU/uXw91wlPGWzTJrmIjKvPE+hLR/V7bCz+WajFBwPE5KGLmA
-# O09j/054niGYPaily1fSArOawab5zNg7izqXkjSf9LQuCR4uJLetHkoRF+aZEbYN
-# xo8wezf2a5gMntN795QH6yZSKlpnn+wmODyKSL/X+HG9ssAVzMFQpO49h/2gnpe8
-# nhD3p9giWhkB9gG9yOpIRmSosZz08IFkQXmr+IEJdgd9pZh7nlguugxRkVYPHYnQ
-# N8toUbt4itbQ5frKvJ7xxKZYV/Cm+HlYCzTOU8OPMIkoyQH5seOhatWWkp5xEW2l
-# ETT3lsnDEaVCmqLTDIe6g14wjoK4HO1e6kzRZEGizWSKnWdzk9U977b+bmEzzfKT
-# cuzXJGZKRN8IwHuNWNi1osUZCnn03o4WVDwPftDyiiio3czOT0J3Shhba/bDDXg1
-# GxSJbsuRUzXGjntjcKszd8KYFVoa33JPcBi72bClCMj6+p4VJuv29jiw2yy2IniZ
-# IWwgSKPMQLktzW8tmY6n/A83ZMQclOEw134s/B41Pw==
+# MTIxMDExMDA0MVowPwYJKoZIhvcNAQkEMTIEMOsf++nn0UdtYOfzVawSiV7Ot0tA
+# KOY+hj1kl6zu4Am8ZZ4AVJ/fpawk0N/YCstS+zANBgkqhkiG9w0BAQEFAASCAgBB
+# mwCOYDiTJpcxCU/4pFz95U1mUfSAqvP6ZIe1/Rc1nBIrQQeAXOwuxWnXdKwo0PoA
+# cxAaDgwRe4tW4QwPXP/Eo9nGs/MJgNUCAgtnzIoqedPMvJNmjU4mC+iaZDjlj+3m
+# WPj7V/YZKiTuwZ+LyPBG+OmnHeXh6eBGcTF6noKVfJ+/lijsY/Ce5eZUywwbeSis
+# v8CiXG8ZrbYpF6DKAyvvDH0amyxCGDALg3M44MZLSLA5whl4E6SPQxpnIOaOg698
+# G2fCrn2LRwAVi4ro5OzsReqZMJy4fbxR+EWid8IAMD8k+PQVDvpCghkSMEdgFAg5
+# cUANbT/geoz3DBQKAO6LvHtt9TKSYaxlgEEesdljVz6hTVXQBZo+98bfICfbh/a/
+# wnCML7h/+JqhQrMFrTbU4PXaisXSqj3bCUyUfrgR7IAoYlOD8d5ZSByYOovwnVUg
+# rjWusj9Z5m+1gp4ItlWtfP+E1CFmLdCbzNGzkjvqv9gDUZ0ElDBCPkj7j7EUKwx7
+# N9aSD7R673fVB1+WOHYGOvIJLniSApwwt7es+BQvMMWLLOu1YxRWrARKdL0eE65+
+# ww0UjO15ehOC2SHqeLTQIc1VAFfNQ8SVeiX8I2uf9Q8+G3WVzAZV5PeBVFIVE0Jf
+# ilHXjuqTBJ6GbBLHPZ33Swbwc2wVnYIjAw6ihyYwyw==
 # SIG # End signature block
