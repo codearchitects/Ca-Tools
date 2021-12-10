@@ -129,12 +129,12 @@ catch {
 # Microsoft-Windows-Subsystem-Linux
 try {
   if ((Get-WinSystemLocale).DisplayName -like "*English*") {
-    $wslWindowsFeature = (dism /online /get-featureinfo /featurename:Microsoft-Windows-Subsystem-Linux) | Select-String "Disabled"
+    $wslWindowsFeatureDisabled = (dism /online /get-featureinfo /featurename:Microsoft-Windows-Subsystem-Linux) | Select-String "Disabled"
   } else {
-    $wslWindowsFeature = (dism /online /get-featureinfo /featurename:Microsoft-Windows-Subsystem-Linux) | Select-String "Disattivata"
+    $wslWindowsFeatureDisabled = (dism /online /get-featureinfo /featurename:Microsoft-Windows-Subsystem-Linux) | Select-String "Disattivata"
   }
   
-  if ($wslWindowsFeature) {
+  if (-not $wslWindowsFeatureDisabled) {
     $wslEnableStatus = "OK"
   } else {
     $wslEnableStatus = "KO (Not enabled)"
@@ -151,12 +151,12 @@ $wslRequirement.Status = $wslEnableStatus
 # VirtualMachinePlatform
 try {
   if ((Get-WinSystemLocale).DisplayName -like "*English*") {
-    $vmpWindowsFeature = (dism /online /get-featureinfo /featurename:VirtualMachinePlatform) | Select-String "Disabled"
+    $vmpWindowsFeatureDisabled = (dism /online /get-featureinfo /featurename:VirtualMachinePlatform) | Select-String "Disabled"
   } else {
-    $vmpWindowsFeature = (dism /online /get-featureinfo /featurename:VirtualMachinePlatform) | Select-String "Disattivata"
+    $vmpWindowsFeatureDisabled = (dism /online /get-featureinfo /featurename:VirtualMachinePlatform) | Select-String "Disattivata"
   }
 
-  if ($vmpWindowsFeature) {
+  if (-not $vmpWindowsFeatureDisabled) {
     $vmpEnableStatus = "OK"
   } else {
     $vmpEnableStatus = "KO (Not enabled)"
@@ -188,7 +188,7 @@ $wslUpdateRequirement.Status = $wslUpdateStatus
 
 # Linux Distribution
 try {
-  if (-not ([System.Text.Encoding]::Unicode.GetString([System.Text.Encoding]::Default.GetBytes(($(wsl -l -v)))) | Where-Object { $_ -like "*distribution*" })) {
+  if (-not ([System.Text.Encoding]::Unicode.GetString([System.Text.Encoding]::Default.GetBytes(($(wsl -l -v)))) | Where-Object { ($_ -like "*distribution*") -or ($_ -like "*distribuzioni*") })) {
     $linuxDistroStatus = "OK"
   } else {
     $linuxDistroStatus = "KO (Not Found)"
@@ -204,7 +204,7 @@ $linuxDistroRequirement.Status = $linuxDistroStatus
 
 # Administrator permission
 try {
-  (Get-LocalGroupMember Administrators).Name | ForEach-Object { if ($_.ToLower() -like "*$($(whoami).ToLower())") {$isAdmin = $true} }
+  (Get-LocalGroupMember Administrators -ErrorAction SilentlyContinue).Name | ForEach-Object { if ($_.ToLower() -like "*$($(whoami).ToLower())") {$isAdmin = $true} }
   if ($isAdmin) {
     $adminPermissionPresent = "OK"
   } else {
@@ -277,8 +277,8 @@ $nugetRegistryRequirement.Requirement = "Public registry NuGet"
 $nugetRegistryRequirement.Status = $nugetRegistryStatus
 
 # Virtual Machine
-$IsVirtualMachine = (((Get-CimInstance win32_computersystem).model -eq 'VMware Virtual Platform') -or ((Get-CimInstance win32_computersystem).model -eq 'Virtual Machine'))
-if (-not $IsVirtualMachine) {
+$ComputerModel = (Get-CimInstance win32_computersystem).model
+if (($ComputerModel -ne 'VMware Virtual Platform') -and ($ComputerModel -ne 'Virtual Machine') -and ($ComputerModel -ne 'Macchina Virtuale')) {
   $VirtualMachineStatus = "OK (is a Physical Machine)"
 } else {
   $VirtualMachineStatus = "WARNING (is a Virtual Machine)"
@@ -335,8 +335,8 @@ $envRequirements | ForEach-Object { if($_.Status -like "KO*") { $FoundError = $t
 # SIG # Begin signature block
 # MIIk2wYJKoZIhvcNAQcCoIIkzDCCJMgCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUUJoM+3AnHb1BGGUq410A7w/5
-# BE6ggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUQnf9hTGjwxcdfrU+MW5rJkhc
+# S9Sggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -505,29 +505,29 @@ $envRequirements | ForEach-Object { if($_.Status -like "KO*") { $FoundError = $t
 # ZWQxJDAiBgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQQIQDue4N8WI
 # aRr2ZZle0AzJjDAJBgUrDgMCGgUAoIGEMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3
 # AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEW
-# BBTNA0sFiIVphKhsJfSUOYZ9tVeMhzAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
-# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAJB2hOdFzExBUh6jOEG0yhGd
-# jd9PgXoAZJgSYl/a0pypvmQ5fuAA1w3V/r6yy7BLpJGw4ZH3F+b7xeWBUoLp6vFI
-# BoCvv8Mx7+F7sNOHiNLjNXVY9GIi8pDYm/nuH3eifcElR8vP/+uepIxpz194+ek0
-# L26jNun7iOhIoQewiyWNK2JIunxOS4cLUNO7IrfpzufJByjesU1bC95cX9Ff1mTW
-# K76A3FlSV/m0u65K9KVpQ7NEpFk2PyHod5gWlXhVYzN0IZEyIqSrjq4KMIgkgrhC
-# orFE/MEp7NoZ3prpeze4zc+k+KHNKsH09WnJRsGebwvrpxp9VVMPuPoFCOz453mh
+# BBT6qk4li9jwArJzycN0n/H4fieSiTAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
+# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAAKya8i1gP+epibrbFmR88hC
+# x6rlpgDDNDXsfvpmOa4Do9gkvh/RY/TCdYItnKDs5zXMG7BKKjlR+IVsZkYh0oek
+# SRXWMlFgNZqFPGuc3joAOl2mhOLdpDtuy/7waJDrAas51TjdsvjhC16GPIFMR/r8
+# 0aWS1u4ZKvpQoJqux3hH+ZCAWJSDJLvJT4Z67B8EsmtWXWjm26VUB4vZc55CMUwp
+# L/yBqsBAqbNc+OwN/cF4+IkZCx5l2iFAvEZ3tkHKzs1qSk5PKxmr//glDACDDeYj
+# vo3GiPljeC3Y9U5xYg2zvTFbV0hTWR88PoJRKK/Q0hXo/ekuwCTNY7MoW2ZTQ0ah
 # ggNMMIIDSAYJKoZIhvcNAQkGMYIDOTCCAzUCAQEwgZIwfTELMAkGA1UEBhMCR0Ix
 # GzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEY
 # MBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSUwIwYDVQQDExxTZWN0aWdvIFJTQSBU
 # aW1lIFN0YW1waW5nIENBAhEAjHegAI/00bDGPZ86SIONazANBglghkgBZQMEAgIF
 # AKB5MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTIx
-# MTIxMDA5MzY0NFowPwYJKoZIhvcNAQkEMTIEMHETNLqTDlFmhw/bWID/ImZF+m8W
-# k/zn/VhnZnZObWpCUnsgG3xMbceNjGQCvJpZvDANBgkqhkiG9w0BAQEFAASCAgAs
-# ZV0M1UGLl0lUk3ceufrWwCM+fiAj08j48SSKRnPYFXVhUPVLhHAZHbbnLIVKjKO+
-# i6sx/KqYQgsMSqAvDy2V/NMttkJegJI0vYJ2iNtbtP80HPXOaqgLU84b4+Bco4C9
-# yOtgBrnQUojsYfTUU/uXw91wlPGWzTJrmIjKvPE+hLR/V7bCz+WajFBwPE5KGLmA
-# O09j/054niGYPaily1fSArOawab5zNg7izqXkjSf9LQuCR4uJLetHkoRF+aZEbYN
-# xo8wezf2a5gMntN795QH6yZSKlpnn+wmODyKSL/X+HG9ssAVzMFQpO49h/2gnpe8
-# nhD3p9giWhkB9gG9yOpIRmSosZz08IFkQXmr+IEJdgd9pZh7nlguugxRkVYPHYnQ
-# N8toUbt4itbQ5frKvJ7xxKZYV/Cm+HlYCzTOU8OPMIkoyQH5seOhatWWkp5xEW2l
-# ETT3lsnDEaVCmqLTDIe6g14wjoK4HO1e6kzRZEGizWSKnWdzk9U977b+bmEzzfKT
-# cuzXJGZKRN8IwHuNWNi1osUZCnn03o4WVDwPftDyiiio3czOT0J3Shhba/bDDXg1
-# GxSJbsuRUzXGjntjcKszd8KYFVoa33JPcBi72bClCMj6+p4VJuv29jiw2yy2IniZ
-# IWwgSKPMQLktzW8tmY6n/A83ZMQclOEw134s/B41Pw==
+# MTIxMDExMDc0MVowPwYJKoZIhvcNAQkEMTIEMCQ2AVPaNyG7c/sMSQ7tUmywLmCX
+# A9Yxgk9rk2rO/USKqo20Vw/teLPstu+jwIvzZTANBgkqhkiG9w0BAQEFAASCAgCL
+# 2AgmDexrZr7s5IjU1wcwC+r6HZqYkzMW//9n8zXN7RdhGOX3C6T5I7Vx+3XrwLI+
+# JWWqBLXNlFCWus0p0T3ewISe2WmmmEqC/C9CdftCJ4bkwk6g/5k1blt5YSW3yg7F
+# xavdY0gtt60EyntyFiiflL3zI7BxR+nKRSs4Dc6SuxzMZ49tUXnadBzKpugH+sc3
+# NDir4Gu4GxZesW5oLDadk67pG+Xd4XvwmMSFW42dAjWmlxCNsZHcoYauBLC1MgbV
+# q2bPTKXks6jm6Oo02Lp9gzV11f/En5SzN5TfC7f7e59i7Y85ZTQqaISVHIRWovDd
+# yFM2Vl0g5Mvdjw8rpSkqqvJBS0JQQmqBrEDX4fQTPdqB/pfUR0GqHExmL1Bzocwc
+# Do9WptbnC2CZC7fTIRTkV4M00pUKFGYvbJedZPlz4kioiQIGWriGYECKprDx3Wa7
+# fjHTtSwCKOSj8CcX5GwPbgqftEwODIVtRxEsW667XC3mq7ZNxGcrJbULyaTs3SwU
+# IQVJQY1SqNpcCZSmqIac3dIc8VLLul/505EqymdsjtjZzPaHKOin4BgpgiDgkzzR
+# oHubP9mfVjkfijqXEeFPlxH4h3Y1n4+cK/RpxIStXc9IRKaeWCCE2NGXlCRiHykb
+# ot5QjC5cuz4ZVlxEu0beYFGexkQhWcvEaug8ZzXBnw==
 # SIG # End signature block
