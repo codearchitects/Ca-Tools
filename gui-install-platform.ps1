@@ -670,7 +670,7 @@ $RecommendationsVSCode = @(
   "msjsdiag.debugger-for-chrome",
   "spmeesseman.vscode-taskexplorer",
   "Gruntfuggly.triggertaskonsave",
-  "angular.ng-template"
+  "Angular.ng-template"
 )
 $RecommendationsVS = @(
   "Microsoft.VisualStudio.Workload.NetWeb",
@@ -920,16 +920,33 @@ function InstallVSCodeExtensions {
   if (-not $VisualStudioCodeAutoExtension) {
     $Description.Text = "Visual Studio Code is already installed.`r`n"
   }
-  $Description.AppendText("`r`nInstalling VSCode extensions`r`n")
-  foreach ($item in $RecommendationsVSCode) {
-    Start-Process code -ArgumentList "--install-extension $item --force" -WindowStyle hidden -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrorLogfile -Wait
-    Get-Content $OutLogfile, $ErrorLogfile | Add-Content $VSCodeExtentionsLogfile
-    $Description.Lines += Get-Content $OutLogfile, $ErrorLogfile
-    $Description.Text += "`r`n"
-    $Description.SelectionStart = $Description.TextLength;
-	  $Description.ScrollToCaret()
+  $InstalledVSCodeExtensions = code --list-extensions
+  $VSCodeExtensionsNotInstalled = @()
+  if ($InstalledVSCodeExtensions.Count -ne 0) {
+    foreach ($extension in $RecommendationsVSCode) {
+      if (-not $InstalledVSCodeExtensions.Contains($extension)) {
+        $VSCodeExtensionsNotInstalled += $extension
+      }
+    }
+  } else {
+    $VSCodeExtensionsNotInstalled = $RecommendationsVSCode
   }
-  $Description.AppendText("`r`nInstallation of VSCode extensions completed`r`n")
+  
+  if ($VSCodeExtensionsNotInstalled.Count -ne 0) {
+    $Description.AppendText("`r`nInstalling VSCode extensions`r`n")
+    foreach ($item in $VSCodeExtensionsNotInstalled) {
+      Start-Process code -ArgumentList "--install-extension $item --force" -WindowStyle hidden -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrorLogfile -Wait
+      Get-Content $OutLogfile, $ErrorLogfile | Add-Content $VSCodeExtentionsLogfile
+      $Description.Lines += Get-Content $OutLogfile, $ErrorLogfile
+      $Description.Text += "`r`n"
+      $Description.SelectionStart = $Description.TextLength;
+      $Description.ScrollToCaret()
+    }
+    $Description.AppendText("`r`nInstallation of VSCode extensions completed.`r`n")
+  } else {
+    $Description.AppendText("`r`nVSCode extensions already installed.`r`n")
+  }
+  
   $script:VisualStudioCodeAutoExtension = $true
 }
 
@@ -1054,8 +1071,8 @@ else {
 # SIG # Begin signature block
 # MIIk2wYJKoZIhvcNAQcCoIIkzDCCJMgCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUDX5kHZ+V6juHS9bKA/0mzx07
-# xHeggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUAiUAOHSjkqvOWIFhDbajX/Cv
+# 4cSggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -1224,29 +1241,29 @@ else {
 # ZWQxJDAiBgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQQIQDue4N8WI
 # aRr2ZZle0AzJjDAJBgUrDgMCGgUAoIGEMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3
 # AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEW
-# BBScjcMR0BAJO4idy0VU53vBjJbaIDAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
-# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAIe2RlTIelGZRNtdy3A0dHrC
-# T50ldBkG11fE5xU93hvnftKg35ChyHinzqjQZuJ0WXwIN/B6blwAAuYhjnlWK6Re
-# vxFS5Nzeg/6eSLI8k55lZ2sdjwoC7nCb7/PMPHPiID+0j1HU5PmmjqIFjWeGg+sI
-# AnoUXHjuCfI/x1/v/+1gIO0x6rJunTjtloFAePgnvbfRqyzwP0iLU6Cxp72HuQTP
-# v0Lhgo3ToYbsEeM6H7QaKujPmD1of4onrgkHsxfvN9yzY5NA9topKB9ifx3zmpRU
-# qA4NoADXLdUrMbY2Cqc4VC5RpyOIPxJHZz02Jqyq1k8OTKaEnIhGAwYlPCKpfXah
+# BBQUhr/qz0PYuVnftCRIuWe0okzHtjAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
+# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAGq+SLcAiIl77r0rRpAZYCW9
+# +gT2cl1eTzNkCDl0meAdoRzNISKC1nu1AYqWyXpehzb9H4l9rUfwqaTRTZt6IFJg
+# X0Yx7WYAtIUHUaEFuRYMYlVyhY9w5iIX/pCGYycizNqgHgRIsZIkfqHocjmERvdZ
+# Dp5rvGWKAxLslj8LW2NWO3QhEwBlCGhmogpVLhA6Bz0soWjZh/9kGOOsXFDeoL5P
+# aRQFw2reG2W2NB6kgV1te/SpcIBO6FtCT+FB2cHcOcDWY8mjtoqjmRfJOQRWB6+Z
+# fL9kSXoNJ4Ti55KZghJ+vzitN6QbvNhJFRuFGOduFyHr7p+5yFPcHF0E0W8XjnCh
 # ggNMMIIDSAYJKoZIhvcNAQkGMYIDOTCCAzUCAQEwgZIwfTELMAkGA1UEBhMCR0Ix
 # GzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEY
 # MBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSUwIwYDVQQDExxTZWN0aWdvIFJTQSBU
 # aW1lIFN0YW1waW5nIENBAhEAjHegAI/00bDGPZ86SIONazANBglghkgBZQMEAgIF
 # AKB5MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTIx
-# MTIwOTEzMjczMFowPwYJKoZIhvcNAQkEMTIEMJxM/y/ZwbSLLxaSmxtYECAsglVL
-# V59X5PtdmhrhfJh6k2SlOxBCF/+X+Lipzo7h/jANBgkqhkiG9w0BAQEFAASCAgB9
-# x/qNBkLVYboeiUAeowD0AlzSBL4T65sfgZPfVR8BFYhMga5WWReLx1pcTiU138Z7
-# EaLY7WN1ZYsNebRVnosVGTHPbYJPV4fd1qAQ7+WvGoispJ1oy1SfodUQVWL3C0Wr
-# /UpHs2DwJ0cMol0E8Mykwbp64PLkHfPHneB6K7KlYHjScSTlYbLyOLnepTbnwsOb
-# PGBspHQWkVbpa3JIDeoKBBvSH7ir1t0GujAVR3bFqS/gxEp8ILY7GSwzibhOVOR1
-# fhTUPT26t0SQYcadsf5hGIB+gbkaf+kyH72FtQ/zV8VqfTRYyUshRsw9C9C/cLFI
-# 8KzM+R4OJYPA6s+ITHGg8+w9cS1eAlQBG+qgonfbMmHOoMlQj17CmrZBzwxJhhEN
-# qWdmI5WjH0LOx9wxCE1g4Qahmv4tue2jVfc9vcV83KEyOsTG7JcrKzXKQG9hjkYx
-# 69uaTpY975AUOCAmCVMf6L3JqCTajC1R/fDXkvsmTJyhcQU9m+DpB3hmIbNeQ74+
-# ok5d90DZ/jobfMfzVTca6z7BjnSMxQnzwELGwtp/PK+JdydBcoEptCQPjb80SjjZ
-# pm7h1XbuwSK67YlCiGMyJeiVOFuHZ7/fyIWGOrK3D0zL/IgGQLYM09H+PwpGjk+A
-# y0IsqN2Yu7zHQ1XzzQ6UT+7eTu9j57CgbUqfFEfFXg==
+# MTIwOTE2NDM0OFowPwYJKoZIhvcNAQkEMTIEMHScoIq8rrDunbxTcMZBAWAu2X7u
+# b1gFCW14bIRlVz0LCggxD/6C87RyZiLoZuToYjANBgkqhkiG9w0BAQEFAASCAgCH
+# tc44bdqQREu7B+9qNDSjETRBlT2kclfza1QlJzo7wT454IZi2PYhfbkk6U1Opyq2
+# em6oY8gjyQ4g+fAjVBZiU05sNxSWW/UjsHwQNfeXs7HMbKDD7wOYxTtt494KG4R8
+# xyvJ2j4iak1mHk33QMWTtGzY5YCil/qfI0fzsZwJmSfJ2zqothaucLP3nvTQDkup
+# tfBHVQUnQrbbIONoIxjq5uSmrKa8eGtTvMChFJ1Cs9sShYrY/ILvgHFCigDbdSzo
+# w9kAXE6ViU2TS4FljHhwC3RQKZ30lJDAVIzG6zYbo4KOl2IaL82NC7NyjTPekXxd
+# 5+Is79jhA6tQkh8PuCQBq+36oL3lz9gUXVFhRx4eba9nRIEriXj++u0EoHlMA7ZV
+# GrdyJ8ez9P29PG5L63luEXnSYMbjJqVK1v/QyFL11vozDKFb07UD+JwqteNqS4KP
+# lcNBrJaD9IjGxWIeL0VixCXcOS+5PMjyseBTsYHZmGV3SJn9+qAFUbOOob2HFfI5
+# bOcspUgOSOuNmq2H+Gk060SgKsqg5LbpjdcDQh2lYxUm6eO39/36Y1SG8X1C1Zec
+# ljABLaeYmA7llfAIUJou0Bp1jircfD0AvkdCv9PazaGnOovQFnJdYKHU7UFQrApN
+# naIb7SUP23WDazTf6C3qMPZzZfNy6RWZGR+0mjZc1Q==
 # SIG # End signature block
