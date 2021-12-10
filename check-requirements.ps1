@@ -129,9 +129,9 @@ catch {
 # Microsoft-Windows-Subsystem-Linux
 try {
   if ((Get-WinSystemLocale).DisplayName -like "*English*") {
-    $wslWindowsFeature = (dism /online /get-featureinfo /featurename:Microsoft-Windows-Subsystem-Linux) | Select-String "Enabled"
+    $wslWindowsFeature = (dism /online /get-featureinfo /featurename:Microsoft-Windows-Subsystem-Linux) | Select-String "Disabled"
   } else {
-    $wslWindowsFeature = (dism /online /get-featureinfo /featurename:Microsoft-Windows-Subsystem-Linux) | Select-String "Attivata"
+    $wslWindowsFeature = (dism /online /get-featureinfo /featurename:Microsoft-Windows-Subsystem-Linux) | Select-String "Disattivata"
   }
   
   if ($wslWindowsFeature) {
@@ -151,9 +151,9 @@ $wslRequirement.Status = $wslEnableStatus
 # VirtualMachinePlatform
 try {
   if ((Get-WinSystemLocale).DisplayName -like "*English*") {
-    $vmpWindowsFeature = (dism /online /get-featureinfo /featurename:VirtualMachinePlatform) | Select-String "Enabled"
+    $vmpWindowsFeature = (dism /online /get-featureinfo /featurename:VirtualMachinePlatform) | Select-String "Disabled"
   } else {
-    $vmpWindowsFeature = (dism /online /get-featureinfo /featurename:VirtualMachinePlatform) | Select-String "Attivata"
+    $vmpWindowsFeature = (dism /online /get-featureinfo /featurename:VirtualMachinePlatform) | Select-String "Disattivata"
   }
 
   if ($vmpWindowsFeature) {
@@ -335,8 +335,8 @@ $envRequirements | ForEach-Object { if($_.Status -like "KO*") { $FoundError = $t
 # SIG # Begin signature block
 # MIIk2wYJKoZIhvcNAQcCoIIkzDCCJMgCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUwwDY1DlvTkZNFCwfs+Nf2BkJ
-# sTGggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUUJoM+3AnHb1BGGUq410A7w/5
+# BE6ggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -505,29 +505,29 @@ $envRequirements | ForEach-Object { if($_.Status -like "KO*") { $FoundError = $t
 # ZWQxJDAiBgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQQIQDue4N8WI
 # aRr2ZZle0AzJjDAJBgUrDgMCGgUAoIGEMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3
 # AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEW
-# BBQF3gudBgWwJtpcRWNWYI+r/VCdwDAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
-# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAHlobp/3SB3BkuF6fUTdPGBe
-# +fRLOfW6oVyl2FJsEQORA1FcU7TqZbgW0Fh5iprAWSHsxn5Nif3FB6eWrR68/uOK
-# HA4d2f0S0TSp4Dtxet/8mwaUd+B50ExGleKWtdeJ+7aGkZn/cCIbAOmnsOk3cNZ6
-# P/phw+eZOOpKIbnhAS/0eOCdGo9BhEWrvthuVv+WKCBjgoNE/aJQslef3GFivqOC
-# 7xg+OkzI8l5HgJLo2zrvO/qwF1qMFcWfnlTS8uFq3XOI8pyzaV8NxIPbNu+vyleV
-# eqWmzjp1S94olNWtjn6KhQYYhcwYil1gU5sYuT6TFrfXz8L2Vhus5G8I2WLLBJyh
+# BBTNA0sFiIVphKhsJfSUOYZ9tVeMhzAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
+# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAJB2hOdFzExBUh6jOEG0yhGd
+# jd9PgXoAZJgSYl/a0pypvmQ5fuAA1w3V/r6yy7BLpJGw4ZH3F+b7xeWBUoLp6vFI
+# BoCvv8Mx7+F7sNOHiNLjNXVY9GIi8pDYm/nuH3eifcElR8vP/+uepIxpz194+ek0
+# L26jNun7iOhIoQewiyWNK2JIunxOS4cLUNO7IrfpzufJByjesU1bC95cX9Ff1mTW
+# K76A3FlSV/m0u65K9KVpQ7NEpFk2PyHod5gWlXhVYzN0IZEyIqSrjq4KMIgkgrhC
+# orFE/MEp7NoZ3prpeze4zc+k+KHNKsH09WnJRsGebwvrpxp9VVMPuPoFCOz453mh
 # ggNMMIIDSAYJKoZIhvcNAQkGMYIDOTCCAzUCAQEwgZIwfTELMAkGA1UEBhMCR0Ix
 # GzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEY
 # MBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSUwIwYDVQQDExxTZWN0aWdvIFJTQSBU
 # aW1lIFN0YW1waW5nIENBAhEAjHegAI/00bDGPZ86SIONazANBglghkgBZQMEAgIF
 # AKB5MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTIx
-# MTIwNzE2MDUwNVowPwYJKoZIhvcNAQkEMTIEMEcXi0lVk/JzqfhFeNTPtlKzlNW1
-# W8PZ3X6v3JQw6rBfTM2Hd/NdwaR8aFYpCNee5DANBgkqhkiG9w0BAQEFAASCAgA+
-# BTvmegoe5B4wJ4mwGLsxOoUStl1DZpcIuqBynj17ChCWTbM3lZwlMwD4vXYoT487
-# fXSrbRGHDaW4LeWaWFVrbpqf0wKzmnKMZhm01/k/VGIGHsyRraUSbdJ8ISp5Vco2
-# RkwB1rzZ5HB/S0a97Pj0amQCBpu+aijVqvlthWCipEjfGzQxmwdvrXR3lQ9ZSLdc
-# z+z43rW6/MGi05cT3ppMdX4yd1HAidDC1qZv1HySVUzNFUpE4WWJJWIE/fh0XB6f
-# LRa0lxWbddow41g7Wk2AKFTwZxogrMpeqcD0WrEiRq7KSszEhQM0LAjlZ2vR32g2
-# H6BdlZRIGjePZaIfMzydRXAxK2zARjyNd07C7B+Xp7G4jj+tj7CeCv9F9B7bFc6L
-# IGbRAbpVoFk5k+dAD/OfpTRJWE+OrVcoegEeITl+Pg4Lpjglp1L32L2JgfF/tT//
-# 1ooGF39egyZXmq0bQ271Iv7D0/7F7adKYOqH2Gy2BhJQ2f+VrsToN+0WFKsE8qpn
-# G4gHo9u52bLQpXyuygo4eg20mR0kWhfwEGUGkqySp3ofGX1tSISTB61+t2Cy8zIa
-# o4YNdBmJtzP5EOhbK+NvGHANBmNr+NsnUoRkPO+5+tSnCsAxCmBfhRb4zhn5HOxq
-# 9KBtkFBQPURKcmrFkP4Xs4CRKJ50yMzZevc4MXoNiA==
+# MTIxMDA5MzY0NFowPwYJKoZIhvcNAQkEMTIEMHETNLqTDlFmhw/bWID/ImZF+m8W
+# k/zn/VhnZnZObWpCUnsgG3xMbceNjGQCvJpZvDANBgkqhkiG9w0BAQEFAASCAgAs
+# ZV0M1UGLl0lUk3ceufrWwCM+fiAj08j48SSKRnPYFXVhUPVLhHAZHbbnLIVKjKO+
+# i6sx/KqYQgsMSqAvDy2V/NMttkJegJI0vYJ2iNtbtP80HPXOaqgLU84b4+Bco4C9
+# yOtgBrnQUojsYfTUU/uXw91wlPGWzTJrmIjKvPE+hLR/V7bCz+WajFBwPE5KGLmA
+# O09j/054niGYPaily1fSArOawab5zNg7izqXkjSf9LQuCR4uJLetHkoRF+aZEbYN
+# xo8wezf2a5gMntN795QH6yZSKlpnn+wmODyKSL/X+HG9ssAVzMFQpO49h/2gnpe8
+# nhD3p9giWhkB9gG9yOpIRmSosZz08IFkQXmr+IEJdgd9pZh7nlguugxRkVYPHYnQ
+# N8toUbt4itbQ5frKvJ7xxKZYV/Cm+HlYCzTOU8OPMIkoyQH5seOhatWWkp5xEW2l
+# ETT3lsnDEaVCmqLTDIe6g14wjoK4HO1e6kzRZEGizWSKnWdzk9U977b+bmEzzfKT
+# cuzXJGZKRN8IwHuNWNi1osUZCnn03o4WVDwPftDyiiio3czOT0J3Shhba/bDDXg1
+# GxSJbsuRUzXGjntjcKszd8KYFVoa33JPcBi72bClCMj6+p4VJuv29jiw2yy2IniZ
+# IWwgSKPMQLktzW8tmY6n/A83ZMQclOEw134s/B41Pw==
 # SIG # End signature block
