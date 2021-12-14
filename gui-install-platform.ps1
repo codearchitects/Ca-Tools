@@ -7,6 +7,9 @@ param(
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
+Unblock-File -Path ".\generate-scar-config.ps1"
+. .\generate-scar-config.ps1
+
 #---------------------------------------------------------[Form]--------------------------------------------------------
 
 [System.Windows.Forms.Application]::EnableVisualStyles()
@@ -606,10 +609,6 @@ function GetDownloadLink($RequirementName) {
   }
 }
 
-function UnblockImportScripts {
-  Unblock-File -Path ".\generate-scar-config.ps1"
-  . .\generate-scar-config.ps1
-}
 
 #---------------------------------------------------------[Variables]--------------------------------------------------------
 
@@ -1054,7 +1053,6 @@ $LogoutButton.Add_Click({ logoff.exe })
 $YesButton.Add_Click({ OutFileAnswerNestedVirtualization $true })
 $NoButton.Add_Click({ OutFileAnswerNestedVirtualization $false })
 
-UnblockImportScripts
 Get-NetAdapter | ForEach-Object { if (($_.Name -eq "Ethernet" -or $_.Name -eq "Wi-Fi") -and $_.Status -eq "Up") { $InternetStatus = $true } }
 if (-not $InternetStatus) {
   $Description.Text = "PLEASE CONNECT TO INTERNET!!!"
