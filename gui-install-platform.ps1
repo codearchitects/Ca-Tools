@@ -7,6 +7,9 @@ param(
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
+Unblock-File -Path ".\generate-scar-config.ps1"
+. .\generate-scar-config.ps1
+
 #---------------------------------------------------------[Form]--------------------------------------------------------
 
 [System.Windows.Forms.Application]::EnableVisualStyles()
@@ -606,10 +609,6 @@ function GetDownloadLink($RequirementName) {
   }
 }
 
-function UnblockImportScripts {
-  Unblock-File -Path ".\generate-scar-config.ps1"
-  . .\generate-scar-config.ps1
-}
 
 #---------------------------------------------------------[Variables]--------------------------------------------------------
 
@@ -1054,7 +1053,6 @@ $LogoutButton.Add_Click({ logoff.exe })
 $YesButton.Add_Click({ OutFileAnswerNestedVirtualization $true })
 $NoButton.Add_Click({ OutFileAnswerNestedVirtualization $false })
 
-UnblockImportScripts
 Get-NetAdapter | ForEach-Object { if (($_.Name -eq "Ethernet" -or $_.Name -eq "Wi-Fi") -and $_.Status -eq "Up") { $InternetStatus = $true } }
 if (-not $InternetStatus) {
   $Description.Text = "PLEASE CONNECT TO INTERNET!!!"
@@ -1076,8 +1074,8 @@ else {
 # SIG # Begin signature block
 # MIIk2wYJKoZIhvcNAQcCoIIkzDCCJMgCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU117FRJhBEHLQ6T1j7LQ4NdRY
-# +MWggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUhkSEXMwn42of35esQOp6jJpj
+# GWuggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -1246,29 +1244,29 @@ else {
 # ZWQxJDAiBgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQQIQDue4N8WI
 # aRr2ZZle0AzJjDAJBgUrDgMCGgUAoIGEMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3
 # AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEW
-# BBS/gNdSJeXCn7kyEvKOYDPPQ+7ICDAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
-# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAK7yXUD97tVS8Ps1BStUhHi+
-# LfFK3Mf4TDPy73tWIThQQI3a9eD8xLqJ54EbaCPawenHK5nP5aQzH+lymzhM/Dz3
-# khcL2mBwD1OA6GEO09lIBRyf5B7C3YdvRWypPoKhWHimNLdmDskMlVNBWn9hH+ZV
-# e77TAywq5o8hsC0sUlZoehXoZZoioOLlCLSgv/CwiGQKEI5Po+LiMCFtHzJugvef
-# wreB0vds2gN5vNVVPY8ZTtQkpXob6yQTqYGzwAGP/JwvjHkhYTjzSfTe3cz2DUYQ
-# r+qfWuCMDiifx/c3N22tJT9M6g/uP0anZsxGOW0y1xHWHqma6RATUG5zM47cggKh
+# BBR2vgxVkVrSlMOz3yCZbV9ydxq3fjAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
+# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAEmteMG1jiQhXjTuF2zyrAC0
+# eqpAjWwH2NIN0czLo7tXv2j6p1v8TQ3/el48ukcQOexKW7zOVQX6O+mwSNu5H4Jb
+# dUh0M0FMBSieMfp7WCAQYHgPYB3DQo7jXlLTO24F4vHnvE1lXFxCw2/uAxn2s11G
+# F9fnkMcwGBWzzYNjs/GxJ8TslMXkIBticPvW8cSX9nzi/hZJG7ToCPCKeXlY3k1t
+# LSH27H8PZr7zeOQr1ZRHIVnGsXZh0yvpPFvS9XaLzN0lbtnzZvA+0CysXiarpF8g
+# jgGll6GJ+tYYCzqmGVcTCCk/aPtO6LOwQOHPl1Svdd17RpRIc9FOijHSJioSiXah
 # ggNMMIIDSAYJKoZIhvcNAQkGMYIDOTCCAzUCAQEwgZIwfTELMAkGA1UEBhMCR0Ix
 # GzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEY
 # MBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSUwIwYDVQQDExxTZWN0aWdvIFJTQSBU
 # aW1lIFN0YW1waW5nIENBAhEAjHegAI/00bDGPZ86SIONazANBglghkgBZQMEAgIF
 # AKB5MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTIx
-# MTIxMDE2NTgwMFowPwYJKoZIhvcNAQkEMTIEMChizB4vOAfT6Z87A+ZRWo7YE++6
-# 24EEAkWF/Xv0gevgiFwD7MkZHQ3jT1+GyIFplTANBgkqhkiG9w0BAQEFAASCAgBD
-# SUGzDlGBIjyBEk2JuGtiY+3ARtZ2UHiHvhJvHA+j8JDPaTY0i9fEVrSVkG6sfTRj
-# ewDltg6x6T/7NxDzVzTruQOPzz08QRDMPOg/J/Ptc8ePbDGUxlWkdyecoLcXggow
-# zUYllJWZG3yXL0c9Tc/DPn2ghJgUEknMktLyF9fBL///HdAzb5wx9vZ7RG5TkZgM
-# XRYHKxiFY2hyCuDkV/A0+HK5LrGwXw04cNDDhvOsiRGjBIuHu0Z8fV92g4oD7xP3
-# 0k+tlOMV9GODy4vIMkV1Tg/BtZdpx/FkjiN1wPKcCZx+fzFwNXWpGR+tzqUma24e
-# E8SggCMy/l3tSF4xgCUJ5tWJGbJGsi+4Yj0W2YzPULGVhLodxzfp7jc5qWWTK2rA
-# Nk42aNpD6aD6Jab6Flz2Wcqgp+q7zk5hw4isfixibTIpLPXOXs67D2y27ys3VQgv
-# itfbGKeTPezfPSsh0ort90zKKovRU2HQwJP7Mo5a5U2BesBXd+u1FoUq3LhR4axE
-# PBAggxqJsyijfFuNbOgYg2vcJMz4x5moEpCxQySH4L6g7vXerjxB0Vf9npQ1En4Z
-# mYXCK1DcD0SPOwjsK7EBhhBA5TUjBjtbed+lrgGEqwj/MbucFOuTbKae5O+SIoHz
-# V/rLxdJPatvIApdPO0jFF9CMUEVvj+R0xNzTiUpxFQ==
+# MTIxNDExMTcwM1owPwYJKoZIhvcNAQkEMTIEMOU0xmCR/tQ1O0m40Vzd8bazOvWQ
+# nr39jfMktecUeLARTLcRRpGewXmQV3nZz2BUtTANBgkqhkiG9w0BAQEFAASCAgCE
+# V42nxmtYV4PIBbcoGMvyv/IT3LrMhEOUPnR9GFEWHyZzfshrv4IIwvVG2j7I77jJ
+# aZQGedXk/dt3wUKVGrmtAqB6whCgPZwHgmlMwAEp/CNI79IG4MKuDtiE+cL6MsL6
+# W3h1ZaTWQis0G/tnS2o4qh7Zqb6M/uS1lsEtGFl9r3pOOkPKGgXzMKoZFsD+NLMX
+# KGjeSyHv2GDidbQ9/XKd79EHlIs/lEtIoX+mrKwtFJyroh6esp98XHy+OMPnd3Yx
+# C88zbO+MZedRo0qF83UyR9c+Os+1xiTZNUM+Zqo9aE/C3N+MuhWgMpQ2h3/1lT3f
+# VZHOUckNEzXYZGQQUKhr4c7w3V0U8f9ru3yPwhp97LzQREAxdiQrBwZJR6GUKsTc
+# A5l89UgPZUqBUOzZczzg0cR/MMtb4OLBVX2UiReCzN05g+Xj1By6LpfBgpG0quHU
+# LpfgjedHSLvAzw3T5oxELaxjttTFfE2U1HGmTWS3SPpWor2XpYm1pNbjkKwueLVs
+# ADNI1gyO4BAPRgAdvcIfIsA77RdZhqTxBM27aDA3gFfnsSjcc56eLR5t2zxDatYy
+# lK9fwwAdvuTyxJtG8HpnRF4O9TCxmwLs7eMg3avF3Zdj7IpY5Y44ReBzQ2Meo6kP
+# Kxa8LEbtTJVfohWao+nngjYc98rDhAXmQrS6PWMUBw==
 # SIG # End signature block
