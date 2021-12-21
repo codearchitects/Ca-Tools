@@ -355,6 +355,9 @@ function CheckRequirements {
       if ($item.Requirement -eq "Visual Studio Code") {
         $script:VisualStudioCodeAutoExtension = $true
       }
+      OutFileInstallRequirement -Requirement $item -Status "KO"
+    } else {
+      OutFileInstallRequirement -Requirement $item -Status "OK"
     }
   }
 
@@ -561,6 +564,9 @@ function CreateLogfiles {
   if (-not(Test-Path $CheckNpmLoginLogfile)) {
     New-Item -Path $CheckNpmLoginLogfile -Force | Out-Null
   }
+  if (-not(Test-Path $InstallRequirementsLogfile)) {
+    New-Item -Path $InstallRequirementsLogfile -Force | Out-Null
+  }
 }
 
 function RemoveInstallers {
@@ -657,6 +663,7 @@ $NpmUpdateVersionLogfile = "$($HOME)\.ca\npm_update_version_$($CurrentDate).log"
 $DockerInstallLogfile = "$($HOME)\.ca\docker_install_$($CurrentDate).log"
 $CheckNpmLoginLogfile = "$($HOME)\.ca\check_npm_login_$($CurrentDate).log"
 $AnswerNestedVirtualizationPath = "$($HOME)\.ca\answer_nested_virtualization_$($CurrentDate).log"
+$InstallRequirementsLogfile = "$($HOME)\.ca\install_requirements_$($CurrentDate).log"
 # Variables Login npm
 $NpmRegistry = "https://devops.codearchitects.com:444/Code%20Architects/_packaging/ca-npm/npm/registry/"
 $NpmScope = "@ca"
@@ -805,6 +812,7 @@ function DownloadAndInstallRequirement($Requirement) {
       $Description.AppendText("`r`nDefault")
     }
   }
+  OutFileInstallRequirement -Requirement $Requirement -Status "INSTALLED"
   RemoveInstallers
   $script:IndexRequirement++
   EnableNextAcceptButtons
@@ -1005,6 +1013,16 @@ function OutFileAnswerNestedVirtualization($Answer) {
     ShowDoneButton
   }
 }
+function OutFileInstallRequirement($Requirement, $Status) {
+  $Message = ""
+  if ($Requirement.Version) {
+    $Message = "Name = $($Requirement.Requirement), Status = $Status, Version = $($Requirement.Version)`r`n$('-'*80)"
+  } else {
+    $Message = "Name = $($Requirement.Requirement), Status = $Status`r`n$('-'*80)"
+  }
+
+  $Message | Add-Content $InstallRequirementsLogfile
+}
 
 <# NextScreen
 Function used to go to the next step of the installation
@@ -1081,8 +1099,8 @@ else {
 # SIG # Begin signature block
 # MIIk2wYJKoZIhvcNAQcCoIIkzDCCJMgCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU5gkcXitMBSIku52B9uFFKhg/
-# 3h6ggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUGnD1Pwrf7J7oAMpbU8fSF+wX
+# 4cOggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -1251,29 +1269,29 @@ else {
 # ZWQxJDAiBgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQQIQDue4N8WI
 # aRr2ZZle0AzJjDAJBgUrDgMCGgUAoIGEMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3
 # AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEW
-# BBQrGkgzTt6kAQkcQSpEOIlu1jmTuDAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
-# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAHGXbxDemDgofGJtEcEFK3A+
-# lU5kNZm9bXftOuqcNXJGO7HH/+OQY/2q5AWugrX+kQIcPqGYopGsYo6+7yBkVX+y
-# x8LAH747shmYA+XEjtBTBGLLtR3uvWs6TGxiMKYn0Gt19F534Ymo4yeDY5sTbiFp
-# mhbHXywXoVYmuMUw2llAHCvEFfuzY83lkURy9YAZ/b+ziLHrPKg4ktdBryKMe9Cj
-# /ZsUI0YL4cNnsHJi3oWHOLsmlgJLVFqqaASKh09TSEQwvWPfI8xoE/zzF2YeCka1
-# 3bEafvKA7TXsSmlrePCq9mKls4mlQ0DgS7GQarcMvV7K4ALCrPzbt1PsxpR9tWuh
+# BBQ4YQsmaRG/wuCkMuHbQQaEX/yxVzAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
+# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAK+jYW0bAtDbjRPD1PUDC2k9
+# Z1yxLfqYXmvLgHhTD5gcvdvrCsJtUFaNfazK1r1ZRKIEUYW9eROp5zQ0xmP1NYyt
+# KDIYz5+uyrxLR1j4+x7IUga+d9igUPlp0PqYOY1gcC3PsyuccwogF6tBCPzky1HL
+# r2yb4Dapyd2zOblxEcIQ9w4a4lHwg0IUukfIvgdfTCkdpYXooE1RaYK/qKmPTBnM
+# DtIs9YDE0rBi17jydhBwXPAzpxSHepngk3MZ702oMwtKlvAHlNB/8ZUWlg6LGux5
+# Crm2BApKB6kA/2EvnTLgIyMjIIg4FFCElJeqcGYKjn/J2xPVyubomEAbNKkMzcSh
 # ggNMMIIDSAYJKoZIhvcNAQkGMYIDOTCCAzUCAQEwgZIwfTELMAkGA1UEBhMCR0Ix
 # GzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEY
 # MBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSUwIwYDVQQDExxTZWN0aWdvIFJTQSBU
 # aW1lIFN0YW1waW5nIENBAhEAjHegAI/00bDGPZ86SIONazANBglghkgBZQMEAgIF
 # AKB5MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTIx
-# MTIxNjEwNTcyMlowPwYJKoZIhvcNAQkEMTIEMIrtvCoOEUqoSY8osZX/YRQ/7XdW
-# WZQARdwmFf3o+U1MDIdBv0lfJmigPE1m4IP4azANBgkqhkiG9w0BAQEFAASCAgBt
-# jC91RtseTg/CV9ghPNUPtdwO9nUcPkzVe32tbwr0YizqoLSnfmfUV+84qsPoFcJu
-# kXmtXHnMUpqaUkPAdjHIEEJgvbO1XYbP9aZGzeflxBpKJXowq9h6jB0wO1NIehTv
-# MGmzDgax0a7l7lLTeY7r6WAlIJt1rB7eA5+gWqvOdtH1ZIIiSq1YYPIgn+4vI9KH
-# loUq46DYMz77s4s2yCysrQb9bmv9lgYogp6jhzQiYOn+gYg3EolHgosDOApn8Ovp
-# gyZZJP7OtTga/DEErhmVYMQe5GfC1UELbWZPnO11VLonVVa0twMghlYU0557b3Zt
-# xoOl7noLnDxRPuo3V0M8m1xxqDgTMNA6J/2fAVS1EYffeyXOfUxWLXBuW2TJKnKu
-# H8cU0CJBwOq+Dgk/8eU8pJJZFMEaC38kJhmKmCmsrBCBWs3z2dyDTkreYhcne8I4
-# g3F1WvvxmZR19Z6fUn44aSSZfI+/tRHKgmrr+iHZ3Bz8BHpsR0hv+jxqQqTSZD2Y
-# cggr8nwkZ1HoSXKwTmF0h9mgzDuz7t4NgxIvl5Hghg3rsRw0qr/Rfnc9nkPJYNfI
-# TdkCUzgRXef2J30fP7Q4DJjJp0S8jT9aIfQBEBbsstSiVwdwR+xuit2lneiMi0J8
-# zlQ88Hphp8olm3glgntf2mTJzQeyfz0inMR3scTSrw==
+# MTIyMTE2NTY0N1owPwYJKoZIhvcNAQkEMTIEMJm04ejtWSxsAhtG9V86wt+ifzee
+# ZuYqiq5UDI98KynJ/iClmS5w5ZjYMJphH+Q/4TANBgkqhkiG9w0BAQEFAASCAgAc
+# rVJVFbCIeV2aEdYoQRHGGrlE54H5qcyvkXgB/gZ2pgu1cEq+ZGa3mExSMV/bnS27
+# ozxUCKTv5o9GGSQdYeJ4M98yf9B8OPlB+A5ZNlHYmhDi+SCXztUPEqvkpUqmzSmd
+# KlBFbi5KcSuV7QA/bqhUJGBEpLw3dx2vPguUdeJ/OEQoXx2YGXfoDbdsgzoN3w2v
+# A2ipOee+LwZ9kNZJnzUzFd+cPyRmVvM7xWJQxaXTHQEeJw8vBRcksvmLWyDA1D+K
+# kuXk1WZDMGx7OIBfnFthJ8pIbofdpkvZ0x7ezIBA66O4dJDiplULDDk0VFFic7ip
+# jEDADVHgtEC9Z4hUPaijJNLInf/+HluMR8qOt9VlT0Y/ciQJkrtjSibgeBHUkHxH
+# eQD+h6RCCKwIgNd8c5OEE+WP+vphAs/vhG5KM47GjXIh8ZNLq/a7c397uAOzpUgc
+# JxKMLQvPHgLI/PFxxAGM1J7JMp7GZNsD49GHIZF57lpS++qfsROTlrEi147i4Emr
+# /ISwoPdS/VTLyIc/w3zdqzxmdp9Mv7h4gyfLQcDpiSP/+eQnl+im1VxZf2RN3U0Y
+# KpLTu0SGd4NPpd7rnS2xvQwKc2QjHKwNKw57tJH8Xm2ILNLVcFSsGels5DaqTFYv
+# C6gbs/I0j/5SJO+61rJM+Y2EVbLmJVW9VinTKhCSxw==
 # SIG # End signature block
