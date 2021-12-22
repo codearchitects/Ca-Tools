@@ -1,5 +1,5 @@
 param(
-  [string]$ScarVersion = "0.0.0-beta.63"
+  [string]$ScarVersion = ""
 )
 
 #---------------------------------------------------------[Initialisations]--------------------------------------------------------
@@ -355,6 +355,9 @@ function CheckRequirements {
       if ($item.Requirement -eq "Visual Studio Code") {
         $script:VisualStudioCodeAutoExtension = $true
       }
+      OutFileInstallRequirement -Requirement $item -Status "KO"
+    } else {
+      OutFileInstallRequirement -Requirement $item -Status "OK"
     }
   }
 
@@ -574,6 +577,9 @@ function CreateLogfiles {
   if (-not(Test-Path $CheckNpmLoginLogfile)) {
     New-Item -Path $CheckNpmLoginLogfile -Force | Out-Null
   }
+  if (-not(Test-Path $InstallRequirementsLogfile)) {
+    New-Item -Path $InstallRequirementsLogfile -Force | Out-Null
+  }
 }
 
 function RemoveInstallers {
@@ -670,6 +676,7 @@ $NpmUpdateVersionLogfile = "$($HOME)\.ca\npm_update_version_$($CurrentDate).log"
 $DockerInstallLogfile = "$($HOME)\.ca\docker_install_$($CurrentDate).log"
 $CheckNpmLoginLogfile = "$($HOME)\.ca\check_npm_login_$($CurrentDate).log"
 $AnswerNestedVirtualizationPath = "$($HOME)\.ca\answer_nested_virtualization_$($CurrentDate).log"
+$InstallRequirementsLogfile = "$($HOME)\.ca\install_requirements_$($CurrentDate).log"
 # Variables Login npm
 $NpmRegistry = "https://devops.codearchitects.com:444/Code%20Architects/_packaging/ca-npm/npm/registry/"
 $NpmScope = "@ca"
@@ -820,6 +827,7 @@ function DownloadAndInstallRequirement($Requirement) {
       $Description.AppendText("`r`nDefault")
     }
   }
+  OutFileInstallRequirement -Requirement $Requirement -Status "INSTALLED"
   RemoveInstallers
   $script:IndexRequirement++
   EnableNextAcceptButtons
@@ -980,7 +988,11 @@ function ExecuteCaScar {
 
   if (-not (Test-Path $ScarfaceConfigPath)) {
     New-Item -Path $ScarfaceConfigPath -Force | Out-Null
-    CreateScarfaceJSON -version $ScarVersion
+    if ($ScarVersion) {
+      CreateScarfaceJSON -version $ScarVersion
+    } else {
+      CreateScarfaceJSON
+    }
   }
   
   Set-Location $testScarPath
@@ -1015,6 +1027,16 @@ function OutFileAnswerNestedVirtualization($Answer) {
     $Description.Text = "Please run the command`r`n`"Set-VMProcessor -VMName <VMName> -ExposeVirtualizationExtensions `$true`"`r`nRemember to Turn Off your Virtual Machine and to replace the <VMName> with the name of the YOUR Virtual machine.`r`nNB: This command must be run on PowerShell of your Host Machine with Administrator permission."
     ShowDoneButton
   }
+}
+function OutFileInstallRequirement($Requirement, $Status) {
+  $Message = ""
+  if ($Requirement.Version) {
+    $Message = "Name = $($Requirement.Requirement), Status = $Status, Version = $($Requirement.Version)`r`n$('-'*80)"
+  } else {
+    $Message = "Name = $($Requirement.Requirement), Status = $Status`r`n$('-'*80)"
+  }
+
+  $Message | Add-Content $InstallRequirementsLogfile
 }
 
 <# NextScreen
@@ -1093,8 +1115,8 @@ else {
 # SIG # Begin signature block
 # MIIk2wYJKoZIhvcNAQcCoIIkzDCCJMgCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUOWh6bNn7UAf3TEFHfdLzMEbM
-# y0Kggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUxJ1/9yxwyWZd/bBeaYmLlviR
+# EPuggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -1263,29 +1285,29 @@ else {
 # ZWQxJDAiBgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQQIQDue4N8WI
 # aRr2ZZle0AzJjDAJBgUrDgMCGgUAoIGEMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3
 # AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEW
-# BBSnf7RR+XVqcAkwt0OBeZIes3czHzAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
-# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBACHeE2QUY7rbtdB7XC/QIyuz
-# HX80WsV1QXVUazCLvwFAvmwObvdULmVEX1hlCiN3vEYxDNqpuQPRBv895/KtsWJW
-# pVMYiFLWpg8nkJu9d2MnPY7QWWYwTuhTyKUwWrrAWIC/mekwnH4LGsOf6LGme/Wz
-# G52AOdju+B+pyMmaTXye0GDdlO4Qtw8MwE7M7FK8KrilGOS1g8v01ePtaIG39YiS
-# 8U8KZ4EH0e/m8eAWKQEa/Eaxwp8VT7jJ9JLXowPuJwPhlAlDFY+/IzaLCdoxGbIv
-# 9babJ7fvqnhdelxph5GZXZXuiJMqRawr9r5l6FjN8lQ3xanNaZkQFyRjL+NVAI6h
+# BBSr4AFS3IAr3npgkWqvQaIO9eKsOTAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
+# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAB540o8mH3JVfCT4pqKi6bpC
+# DkrwBNl7l56sKCeQKJAyE42Q3ieYG4fjbwYVZh03nYCs5hc7nWtmUCgzSx8+B97j
+# W98GCH8yMr/On4hHHgZRnl03NOQXRGvLFyngug+X+bzAeuX/AFvGHqIWomkX7imf
+# qtjURb+uWSi0ZdQsT0nxXIhwYUEniROYyA0cmKZh9GsoezyycUWj15kBxWyKutre
+# r6fNwaliuxgQee8U/wc1gfNIkELTF4tOvofT666iwAYZJQPxMWKYnQmW7q9UsxTO
+# MaVUnkdsqg9T1XtJyBmp42RbTUTMRHgSd8WmLk7JMnmNu3nNVRxsJO7N+dUS8qWh
 # ggNMMIIDSAYJKoZIhvcNAQkGMYIDOTCCAzUCAQEwgZIwfTELMAkGA1UEBhMCR0Ix
 # GzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEY
 # MBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSUwIwYDVQQDExxTZWN0aWdvIFJTQSBU
 # aW1lIFN0YW1waW5nIENBAhEAjHegAI/00bDGPZ86SIONazANBglghkgBZQMEAgIF
 # AKB5MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTIx
-# MTIxNDE3MDkyMVowPwYJKoZIhvcNAQkEMTIEMBlhcPyVtDXHHgGrSghZiN7TTapS
-# s1xkanBo4TI7NMy01kvmCfR3eyuK9byUyRbbBzANBgkqhkiG9w0BAQEFAASCAgBo
-# klICKhiILHYrD8fN4Imq+m9rSqcDjyXGdEmny2sKUPeDYGA/nwUfjph7o+ocT+Zc
-# syp2ou1TlGd8qHV3ntIDTAzXgQ2X+0cKJSE7DRxmxndhHqzVA6oDAtQ7ZnD8bpp6
-# XZuFuMEdEi5rL9F2TIXbok1EgRcLIpHXfAL5P3O8qwNwdByjEr5mINh6Az3Fi1q9
-# 97wLepod3vCqMFxootC0A5UuQRmjo3pFGwworoqujoeLUfQaN8C1l/9LgORn6Yy3
-# 7LSY8kCzBr3KF8vi6joro3oRoQAoVmJ08BTJZTm25swmJ64d5gZmui13xMy7Kqgq
-# dx2MJGMix/S8iSwZBKiwJzGVzV4tIgaDVmjAlzaCQxSnzbWK6SPKflY2tcKDpN+X
-# ucwM1RDJ+Z5iP0oBttKOLW8gvyokWXSy6a7qJYRb2dN7e9t+J5LnxXt3TqV6vxFQ
-# DXI6c8+kXxkM6K6lYeQfgQSEfFYE/jLX2pxaScZX2FqBv0jCsvhi6oDf4LSoynyC
-# rVS7OK4MnqcNWCJD4WeMG1QVUFK6LzGFY1YwZd8xWs2xCEoUkDx374W2hNAH+8Gk
-# jCiiyA7sZ6vOqMmSqo8NnSm7gm2V1AW1Rn7zcDr4WJAiSDS8Z7odU6AybLHzEYpL
-# zz2yDpabeHju1wS9HonHvIdW9WghcaMmB3Vly0OU3w==
+# MTIyMjA5MTg0OVowPwYJKoZIhvcNAQkEMTIEMH3u9QpMt8m4KPdPsD0tPjjimZNj
+# ee9qfHyXef5llPV39GHLiK+B154+W5eVk5VAtDANBgkqhkiG9w0BAQEFAASCAgCG
+# JbIYxxJeTxASmZMImvycRgKPyq7nMSFgj1u/ji4Tj5baa9O7Ad4eehMAKeTpW172
+# qTJL+3S39Klh89oO1AtD0z3viD4UeV8JxvWRKSD/X/+pATNiGqS6mqlQnWeweGR1
+# qkaT7iJfKusyNVKaHDOMBKkzwLiHy5AIWNJlUW68KmvVEe2HT1VdAIJtB8Osxv0I
+# vwP4R1xQl+fx16OS4cRlnWFDKAjNV9ElkLjct++aWiIwW/Fdey1JFdVBniS33iIe
+# p7R+0q1FgaP54PzlBUB35bEypd5pHSsyBad365z2904XzS2ZCWifxnRU4hV9EhyZ
+# fzNCE0uZycq/p9o5Ece7hrpZqYSSur58hbxjNHNXmhYB+WlZIrjanHlt/yP/hycr
+# kSq5cF3sbkOFy4fZM4f+LsDmxJ9sgyHyeyXHG8EWeF/yvwScuWO1FGsuRtwxFIfj
+# GGAXlOpYyUogUeCZAHGg8HUskUvnuEVJKO5yhHqoQCUS93GP3fBTyOFMOcV3ak+S
+# twEX9cME9cO2VTFQpqZIIMpFL+wFwmlI4FoPKudVbfnkPlSGgNvMWgj3f4t/KxHY
+# dA+GpmCgDK59EJ26l6Z6BUxcJ/YgemeKsNZQT5klLUDfDvwt5uZU5inUga4V2FRs
+# yoxmeGe8d2K9EcdvB1upkQc1j6iHa+qtgyAIAsIT9A==
 # SIG # End signature block
