@@ -475,6 +475,19 @@ function CheckProxy {
   }  
 }
 
+<#SetIntegratedTerminalVSCode
+Set Integrated Terminal for Visual Studio Code to Command Prompt
+#>
+function SetIntegratedTerminalVSCode {
+  if (Test-Path $VSCodeSettingJson) {
+    $VSCodeSettingObj = Get-Content $VSCodeSettingJson | ConvertFrom-Json
+    $VSCodeSettingObj | Add-Member -NotePropertyName 'terminal.integrated.defaultProfile.windows' -NotePropertyValue 'Command Prompt'
+    Set-Content -Path $VSCodeSettingJson -Value ($VSCodeSettingObj | ConvertTo-Json -Depth 5)
+  } else {
+    $Description.AppendText("ERROR!!! You don't have Visual Studio Code installed!!!")
+  }
+}
+
 <# ReloadEnvPath
 Reload the Env Variables Path, used after every complete installation
 #>
@@ -705,6 +718,8 @@ $VisualStudioCodeAutoExtension = $false
 $ProxyData
 $DockerConfigPath = "$HOME\.docker\config.json"
 $NpmrcFilePath = "$HOME\.npmrc"
+# Visual Studio Code Setting json path
+$VSCodeSettingJson = "$($HOME)\AppData\Roaming\Code\User\settings.json"
 
 #---------------------------------------------------------[Logic]--------------------------------------------------------
 
@@ -1035,6 +1050,7 @@ function NextScreen {
       } elseif(-not $VisualStudioCodeAutoExtension) {
         DisableNextAcceptButtons
         InstallVSCodeExtensions
+        SetIntegratedTerminalVSCode
         CheckProxy
         EnableNextAcceptButtons
       } else {
@@ -1099,8 +1115,8 @@ else {
 # SIG # Begin signature block
 # MIIk2wYJKoZIhvcNAQcCoIIkzDCCJMgCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUGnD1Pwrf7J7oAMpbU8fSF+wX
-# 4cOggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUxJ1/9yxwyWZd/bBeaYmLlviR
+# EPuggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -1269,29 +1285,29 @@ else {
 # ZWQxJDAiBgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQQIQDue4N8WI
 # aRr2ZZle0AzJjDAJBgUrDgMCGgUAoIGEMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3
 # AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEW
-# BBQ4YQsmaRG/wuCkMuHbQQaEX/yxVzAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
-# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAK+jYW0bAtDbjRPD1PUDC2k9
-# Z1yxLfqYXmvLgHhTD5gcvdvrCsJtUFaNfazK1r1ZRKIEUYW9eROp5zQ0xmP1NYyt
-# KDIYz5+uyrxLR1j4+x7IUga+d9igUPlp0PqYOY1gcC3PsyuccwogF6tBCPzky1HL
-# r2yb4Dapyd2zOblxEcIQ9w4a4lHwg0IUukfIvgdfTCkdpYXooE1RaYK/qKmPTBnM
-# DtIs9YDE0rBi17jydhBwXPAzpxSHepngk3MZ702oMwtKlvAHlNB/8ZUWlg6LGux5
-# Crm2BApKB6kA/2EvnTLgIyMjIIg4FFCElJeqcGYKjn/J2xPVyubomEAbNKkMzcSh
+# BBSr4AFS3IAr3npgkWqvQaIO9eKsOTAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
+# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAB540o8mH3JVfCT4pqKi6bpC
+# DkrwBNl7l56sKCeQKJAyE42Q3ieYG4fjbwYVZh03nYCs5hc7nWtmUCgzSx8+B97j
+# W98GCH8yMr/On4hHHgZRnl03NOQXRGvLFyngug+X+bzAeuX/AFvGHqIWomkX7imf
+# qtjURb+uWSi0ZdQsT0nxXIhwYUEniROYyA0cmKZh9GsoezyycUWj15kBxWyKutre
+# r6fNwaliuxgQee8U/wc1gfNIkELTF4tOvofT666iwAYZJQPxMWKYnQmW7q9UsxTO
+# MaVUnkdsqg9T1XtJyBmp42RbTUTMRHgSd8WmLk7JMnmNu3nNVRxsJO7N+dUS8qWh
 # ggNMMIIDSAYJKoZIhvcNAQkGMYIDOTCCAzUCAQEwgZIwfTELMAkGA1UEBhMCR0Ix
 # GzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEY
 # MBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSUwIwYDVQQDExxTZWN0aWdvIFJTQSBU
 # aW1lIFN0YW1waW5nIENBAhEAjHegAI/00bDGPZ86SIONazANBglghkgBZQMEAgIF
 # AKB5MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTIx
-# MTIyMTE2NTY0N1owPwYJKoZIhvcNAQkEMTIEMJm04ejtWSxsAhtG9V86wt+ifzee
-# ZuYqiq5UDI98KynJ/iClmS5w5ZjYMJphH+Q/4TANBgkqhkiG9w0BAQEFAASCAgAc
-# rVJVFbCIeV2aEdYoQRHGGrlE54H5qcyvkXgB/gZ2pgu1cEq+ZGa3mExSMV/bnS27
-# ozxUCKTv5o9GGSQdYeJ4M98yf9B8OPlB+A5ZNlHYmhDi+SCXztUPEqvkpUqmzSmd
-# KlBFbi5KcSuV7QA/bqhUJGBEpLw3dx2vPguUdeJ/OEQoXx2YGXfoDbdsgzoN3w2v
-# A2ipOee+LwZ9kNZJnzUzFd+cPyRmVvM7xWJQxaXTHQEeJw8vBRcksvmLWyDA1D+K
-# kuXk1WZDMGx7OIBfnFthJ8pIbofdpkvZ0x7ezIBA66O4dJDiplULDDk0VFFic7ip
-# jEDADVHgtEC9Z4hUPaijJNLInf/+HluMR8qOt9VlT0Y/ciQJkrtjSibgeBHUkHxH
-# eQD+h6RCCKwIgNd8c5OEE+WP+vphAs/vhG5KM47GjXIh8ZNLq/a7c397uAOzpUgc
-# JxKMLQvPHgLI/PFxxAGM1J7JMp7GZNsD49GHIZF57lpS++qfsROTlrEi147i4Emr
-# /ISwoPdS/VTLyIc/w3zdqzxmdp9Mv7h4gyfLQcDpiSP/+eQnl+im1VxZf2RN3U0Y
-# KpLTu0SGd4NPpd7rnS2xvQwKc2QjHKwNKw57tJH8Xm2ILNLVcFSsGels5DaqTFYv
-# C6gbs/I0j/5SJO+61rJM+Y2EVbLmJVW9VinTKhCSxw==
+# MTIyMjA5MTg0OVowPwYJKoZIhvcNAQkEMTIEMH3u9QpMt8m4KPdPsD0tPjjimZNj
+# ee9qfHyXef5llPV39GHLiK+B154+W5eVk5VAtDANBgkqhkiG9w0BAQEFAASCAgCG
+# JbIYxxJeTxASmZMImvycRgKPyq7nMSFgj1u/ji4Tj5baa9O7Ad4eehMAKeTpW172
+# qTJL+3S39Klh89oO1AtD0z3viD4UeV8JxvWRKSD/X/+pATNiGqS6mqlQnWeweGR1
+# qkaT7iJfKusyNVKaHDOMBKkzwLiHy5AIWNJlUW68KmvVEe2HT1VdAIJtB8Osxv0I
+# vwP4R1xQl+fx16OS4cRlnWFDKAjNV9ElkLjct++aWiIwW/Fdey1JFdVBniS33iIe
+# p7R+0q1FgaP54PzlBUB35bEypd5pHSsyBad365z2904XzS2ZCWifxnRU4hV9EhyZ
+# fzNCE0uZycq/p9o5Ece7hrpZqYSSur58hbxjNHNXmhYB+WlZIrjanHlt/yP/hycr
+# kSq5cF3sbkOFy4fZM4f+LsDmxJ9sgyHyeyXHG8EWeF/yvwScuWO1FGsuRtwxFIfj
+# GGAXlOpYyUogUeCZAHGg8HUskUvnuEVJKO5yhHqoQCUS93GP3fBTyOFMOcV3ak+S
+# twEX9cME9cO2VTFQpqZIIMpFL+wFwmlI4FoPKudVbfnkPlSGgNvMWgj3f4t/KxHY
+# dA+GpmCgDK59EJ26l6Z6BUxcJ/YgemeKsNZQT5klLUDfDvwt5uZU5inUga4V2FRs
+# yoxmeGe8d2K9EcdvB1upkQc1j6iHa+qtgyAIAsIT9A==
 # SIG # End signature block
