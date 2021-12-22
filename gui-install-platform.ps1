@@ -1,14 +1,12 @@
 param(
-  [string]$ScarVersion = ""
+  [string]$ScarVersion = "",
+  [string]$ScarConfig = "https://castorybookbloblwebsite.blob.core.windows.net/scar-configs/scarface.config.json"
 )
 
 #---------------------------------------------------------[Initialisations]--------------------------------------------------------
 # Init PowerShell Gui
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
-
-Unblock-File -Path ".\generate-scar-config.ps1"
-. .\generate-scar-config.ps1
 
 #---------------------------------------------------------[Form]--------------------------------------------------------
 
@@ -392,9 +390,9 @@ function CheckNpmVersion {
 Checks if the user has already logged in with npm
 #>
 function CheckNpmLogin {
-  Start-Process npm -ArgumentList "view @ca/cli" -WindowStyle hidden -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrorLogfile -Wait
+  Start-Process powershell.exe -ArgumentList "npm view @ca/cli" -WindowStyle hidden -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrorLogfile -Wait
   Get-Content $OutLogfile, $ErrorLogfile | Set-Content $CheckNpmLoginLogfile
-  Start-Process npm -ArgumentList "view @ca-codegen/core" -WindowStyle hidden -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrorLogfile -Wait
+  Start-Process powershell.exe -ArgumentList "npm view @ca-codegen/core" -WindowStyle hidden -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrorLogfile -Wait
   Get-Content $OutLogfile, $ErrorLogfile | Add-Content $CheckNpmLoginLogfile
   $ErrorsNpm = Get-Content $CheckNpmLoginLogfile | Where-Object { $_ -like "*ERR!*" -or $_ -like "*error*" }
   return ($ErrorsNpm.Count -eq 0)
@@ -439,14 +437,14 @@ function CheckProxy {
       }
       $ProxyServer = $ProxyData.ProxyServer
       # Sostituisci proxy .npmrc
-      Start-Process npm -ArgumentList "config set proxy $ProxyServer" -WindowStyle hidden -Wait
-      Start-Process npm -ArgumentList "config set https-proxy $ProxyServer" -WindowStyle hidden -Wait
+      Start-Process powershell.exe -ArgumentList "npm config set proxy $ProxyServer" -WindowStyle hidden -Wait
+      Start-Process powershell.exe -ArgumentList "npm config set https-proxy $ProxyServer" -WindowStyle hidden -Wait
       
       if (Test-Path "C:\cacert") {
         $Result = Get-ChildItem -Path C:\cacert -Name -Include *.pem
         if ($Result.Count -eq 1) {
           $cacertPemPath = "C:\cacert\$Result"
-          Start-Process npm -ArgumentList "config set cafile $cacertPemPath" -WindowStyle hidden -Wait
+          Start-Process powershell.exe -ArgumentList "npm config set cafile $cacertPemPath" -WindowStyle hidden -Wait
         }
         else {
           $Description.Text = "`r`nThere must be 1 file .pem!!!"
@@ -461,9 +459,9 @@ function CheckProxy {
     # In case the Proxy isn't activem but there's a proxy setted to the config of npm or docker, remove it.
     if (Test-Path $NpmrcFilePath) {
       Get-Content $NpmrcFilePath | Out-File "$NpmrcFilePath.old.$CurrentDate"
-      Start-Process npm -ArgumentList "config delete proxy" -WindowStyle hidden -Wait
-      Start-Process npm -ArgumentList "config delete https-proxy" -WindowStyle hidden -Wait
-      Start-Process npm -ArgumentList "config delete cafile" -WindowStyle hidden -Wait
+      Start-Process powershell.exe -ArgumentList "npm config delete proxy" -WindowStyle hidden -Wait
+      Start-Process powershell.exe -ArgumentList "npm config delete https-proxy" -WindowStyle hidden -Wait
+      Start-Process powershell.exe -ArgumentList "npm config delete cafile" -WindowStyle hidden -Wait
     }
     if (Test-Path $DockerConfigPath) {
       $DockerConfigJson = Get-Content $DockerConfigPath
@@ -481,7 +479,7 @@ Set Integrated Terminal for Visual Studio Code to Command Prompt
 function SetIntegratedTerminalVSCode {
   if (Test-Path $VSCodeSettingJson) {
     $VSCodeSettingObj = Get-Content $VSCodeSettingJson | ConvertFrom-Json
-    $VSCodeSettingObj | Add-Member -NotePropertyName 'terminal.integrated.defaultProfile.windows' -NotePropertyValue 'Command Prompt'
+    $VSCodeSettingObj | Add-Member -NotePropertyName 'terminal.integrated.defaultProfile.windows' -NotePropertyValue 'Command Prompt' -Force
     Set-Content -Path $VSCodeSettingJson -Value ($VSCodeSettingObj | ConvertTo-Json -Depth 5)
   } else {
     $Description.AppendText("ERROR!!! You don't have Visual Studio Code installed!!!")
@@ -813,7 +811,7 @@ function DownloadAndInstallRequirement($Requirement) {
       $NpmVersion = CheckNpmVersion
       if ($NpmVersion -lt 6.0.0 -or $NpmVersion -gt 7.0.0) {
         $Description.AppendText("`r`nCurrent version of npm is $NpmVersion.`r`nChanging the version of npm to 6.14.15...")
-        Start-Process npm -ArgumentList "i -g npm@6" -WindowStyle hidden -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrorLogfile -Wait
+        Start-Process powershell.exe -ArgumentList "npm i -g npm@6" -WindowStyle hidden -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrorLogfile -Wait
         Get-Content $ErrorLogfile, $OutLogfile | Set-Content $NpmUpdateVersionLogfile
         $NewNpmVersion = npm --version
         $Description.AppendText("`r`nVersion of npm updated to $NewNpmVersion")
@@ -988,13 +986,9 @@ function ExecuteCaScar {
 
   if (-not (Test-Path $ScarfaceConfigPath)) {
     New-Item -Path $ScarfaceConfigPath -Force | Out-Null
-    if ($ScarVersion) {
-      CreateScarfaceJSON -version $ScarVersion
-    } else {
-      CreateScarfaceJSON
-    }
+    GenerateScarConfigJson
   }
-  
+
   Set-Location $testScarPath
   Start-Process $HOME\AppData\Roaming\npm\ca.cmd -ArgumentList "scar -c $ScarfaceConfigPath" -WindowStyle hidden -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrorLogfile -Wait
   Get-Content $OutLogfile, $ErrorLogfile | Set-Content $CaScarErrorLogfile
@@ -1013,6 +1007,24 @@ function ExecuteCaScar {
     $Description.Text +="`r`nca scar executed correctly"
     $script:StatusInstallation++
   }
+}
+
+function GenerateScarConfigJson {
+  $ScarConfigObj = (Invoke-WebRequest -Uri $ScarConfig).Content | ConvertFrom-Json
+  $MaxDate = 0
+  $TokenPath = "~/.token.json"
+  $TokenList = Get-Content $TokenPath | ConvertFrom-Json
+  foreach($t in $TokenList) {
+    $CurrentDate = $t.date.Replace("-", "")
+    if ($MaxDate -lt $CurrentDate) {
+      $MaxDate = $CurrentDate
+      $TokenObj = $t
+    }
+  }
+
+  $ScarConfigObj.token = $TokenObj.token
+  $ScarConfigObj.user = $TokenObj.user
+  $ScarConfigObj | ConvertTo-Json | Set-Content -Path $ScarfaceConfigPath
 }
 
 <# Print log confirm VM
@@ -1115,8 +1127,8 @@ else {
 # SIG # Begin signature block
 # MIIk2wYJKoZIhvcNAQcCoIIkzDCCJMgCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUxJ1/9yxwyWZd/bBeaYmLlviR
-# EPuggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUun3RrE4oq+0t9k+VYr+NWrnA
+# DJiggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -1285,29 +1297,29 @@ else {
 # ZWQxJDAiBgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQQIQDue4N8WI
 # aRr2ZZle0AzJjDAJBgUrDgMCGgUAoIGEMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3
 # AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEW
-# BBSr4AFS3IAr3npgkWqvQaIO9eKsOTAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
-# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAB540o8mH3JVfCT4pqKi6bpC
-# DkrwBNl7l56sKCeQKJAyE42Q3ieYG4fjbwYVZh03nYCs5hc7nWtmUCgzSx8+B97j
-# W98GCH8yMr/On4hHHgZRnl03NOQXRGvLFyngug+X+bzAeuX/AFvGHqIWomkX7imf
-# qtjURb+uWSi0ZdQsT0nxXIhwYUEniROYyA0cmKZh9GsoezyycUWj15kBxWyKutre
-# r6fNwaliuxgQee8U/wc1gfNIkELTF4tOvofT666iwAYZJQPxMWKYnQmW7q9UsxTO
-# MaVUnkdsqg9T1XtJyBmp42RbTUTMRHgSd8WmLk7JMnmNu3nNVRxsJO7N+dUS8qWh
+# BBTP1lfvGaeujM3oigtg5zGt++2+vjAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
+# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAJdVNBlnz8PhY3VvNENXoxKw
+# NmHnL405Jf56qxW6Ps3GLl19loOM9+f3YgTiqhwUJvjMG8io/E8Mr3G88oaRIzZ/
+# gX6b6kvC07iLOTiZ5fz4vy08LYSgsZI+8PSFx+jt743aSjl09szkgcvVHPL70XcB
+# YFss58UNJZPTgo8T0uXbMHMaTaiFDrDcqJqOAm3xetAgjpYInU2R32T4a7P07DKX
+# yBY4MKddPaY374HWF9lxTHKO7tNr3id4xIZ8j9ecEYrXUeUv9dwH2vsGuByfI8P5
+# 4wlLxrYwShUOvJwUE3oa15xW2zN6MV6z/lJMX+ecVni9E4noGVwR/0qZES9qd3uh
 # ggNMMIIDSAYJKoZIhvcNAQkGMYIDOTCCAzUCAQEwgZIwfTELMAkGA1UEBhMCR0Ix
 # GzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEY
 # MBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSUwIwYDVQQDExxTZWN0aWdvIFJTQSBU
 # aW1lIFN0YW1waW5nIENBAhEAjHegAI/00bDGPZ86SIONazANBglghkgBZQMEAgIF
 # AKB5MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTIx
-# MTIyMjA5MTg0OVowPwYJKoZIhvcNAQkEMTIEMH3u9QpMt8m4KPdPsD0tPjjimZNj
-# ee9qfHyXef5llPV39GHLiK+B154+W5eVk5VAtDANBgkqhkiG9w0BAQEFAASCAgCG
-# JbIYxxJeTxASmZMImvycRgKPyq7nMSFgj1u/ji4Tj5baa9O7Ad4eehMAKeTpW172
-# qTJL+3S39Klh89oO1AtD0z3viD4UeV8JxvWRKSD/X/+pATNiGqS6mqlQnWeweGR1
-# qkaT7iJfKusyNVKaHDOMBKkzwLiHy5AIWNJlUW68KmvVEe2HT1VdAIJtB8Osxv0I
-# vwP4R1xQl+fx16OS4cRlnWFDKAjNV9ElkLjct++aWiIwW/Fdey1JFdVBniS33iIe
-# p7R+0q1FgaP54PzlBUB35bEypd5pHSsyBad365z2904XzS2ZCWifxnRU4hV9EhyZ
-# fzNCE0uZycq/p9o5Ece7hrpZqYSSur58hbxjNHNXmhYB+WlZIrjanHlt/yP/hycr
-# kSq5cF3sbkOFy4fZM4f+LsDmxJ9sgyHyeyXHG8EWeF/yvwScuWO1FGsuRtwxFIfj
-# GGAXlOpYyUogUeCZAHGg8HUskUvnuEVJKO5yhHqoQCUS93GP3fBTyOFMOcV3ak+S
-# twEX9cME9cO2VTFQpqZIIMpFL+wFwmlI4FoPKudVbfnkPlSGgNvMWgj3f4t/KxHY
-# dA+GpmCgDK59EJ26l6Z6BUxcJ/YgemeKsNZQT5klLUDfDvwt5uZU5inUga4V2FRs
-# yoxmeGe8d2K9EcdvB1upkQc1j6iHa+qtgyAIAsIT9A==
+# MTIyMjE1NTUzM1owPwYJKoZIhvcNAQkEMTIEMHsJkveLF6c8QkZNOWsgW2InYhHz
+# GvX/+KDtQIuTLWWtEIYWnkAkP6ArXdNqbhZ55jANBgkqhkiG9w0BAQEFAASCAgAS
+# Kwy7ct0sDQv9dwXldpOjqD2RrPpGe3nUsA+BNiBcqmj0GCaZAJcI+cbJOXEfnImI
+# qjzpMrKqcxaBsWYMM02Y85THp7/qazqSzHdawEe2HVmNwdOn4Nr3QXaa/8pzwSLK
+# 4K1DJWNi12nh3DQuHsvGlxtv7q1xNDw7vUCjxdODkvYG+Gz3XBCTO3q8+nPFf8au
+# 7IqPFxFqMhHsFgP0oyk6aAeGkpL2Y83LcTVwZZvG3aSUE2pmmgeVKUBegTf9hiOG
+# gbnfBaLi52HXxUcf4uZ4Um2RoNyGvKY5cQWU6qJLxk9YN9M8dnoWLchjLY6Vi0s6
+# JeY53p/DeehIleJcCwUWRn61RfwvDlIapHh8vlLlHzRZxlKdy2D+L5VoHXFPp1Rn
+# +TtUmW2ejMcqrF0wUo6M3ZJRLQ8ZRVnKVTYdFmJZZcy7vqFjKp5+w66OOPlyL8+2
+# wierkHR7/7Gc/H+fYCsJY3PKsJYAgRbyJPNG4HrLfr48FZ4BpV/g0948DPRKIKgx
+# UTldCoaAFXviFq5PGIvXZOWCghdev0pwWah55pqQ6OorZ5rd9DQ+bd1yj6du55cn
+# 0u7thwaTVIKemQdzoh7jLN0p4R9EwradKu8HU0XIt5z8mFmes7zZOFJCZ6rOMvmB
+# lV8vY8DuO0uifplXdcwF8ol5Dq7wVAVFGlTzSATINg==
 # SIG # End signature block
