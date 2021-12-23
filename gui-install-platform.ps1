@@ -621,7 +621,7 @@ function GetDownloadLink($RequirementName) {
       return "Download $Requirementname manually to proceed with the installation from the following link $VisualStudioAppLink.`r`nAfter the install run the command wsl --set-default Ubuntu-20.04, at the end logout from the machine."
     }
     "npm" {
-      return "Run the command npm i -g npm@6, to downgrade npm"
+      return "Run the command npm i -g npm@6.14.15, to downgrade npm"
     }
   }
 }
@@ -811,7 +811,7 @@ function DownloadAndInstallRequirement($Requirement) {
       $NpmVersion = CheckNpmVersion
       if ($NpmVersion -lt 6.0.0 -or $NpmVersion -gt 7.0.0) {
         $Description.AppendText("`r`nCurrent version of npm is $NpmVersion.`r`nChanging the version of npm to 6.14.15...")
-        Start-Process powershell.exe -ArgumentList "npm i -g npm@6" -WindowStyle hidden -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrorLogfile -Wait
+        Start-Process powershell.exe -ArgumentList "npm i -g npm@6.14.15" -WindowStyle hidden -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrorLogfile -Wait
         Get-Content $ErrorLogfile, $OutLogfile | Set-Content $NpmUpdateVersionLogfile
         $NewNpmVersion = npm --version
         $Description.AppendText("`r`nVersion of npm updated to $NewNpmVersion")
@@ -1127,8 +1127,8 @@ else {
 # SIG # Begin signature block
 # MIIk2wYJKoZIhvcNAQcCoIIkzDCCJMgCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUun3RrE4oq+0t9k+VYr+NWrnA
-# DJiggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUXFiM0S+w8LD9Y8/GiLfBKTXS
+# YKSggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -1297,29 +1297,29 @@ else {
 # ZWQxJDAiBgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQQIQDue4N8WI
 # aRr2ZZle0AzJjDAJBgUrDgMCGgUAoIGEMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3
 # AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEW
-# BBTP1lfvGaeujM3oigtg5zGt++2+vjAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
-# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAJdVNBlnz8PhY3VvNENXoxKw
-# NmHnL405Jf56qxW6Ps3GLl19loOM9+f3YgTiqhwUJvjMG8io/E8Mr3G88oaRIzZ/
-# gX6b6kvC07iLOTiZ5fz4vy08LYSgsZI+8PSFx+jt743aSjl09szkgcvVHPL70XcB
-# YFss58UNJZPTgo8T0uXbMHMaTaiFDrDcqJqOAm3xetAgjpYInU2R32T4a7P07DKX
-# yBY4MKddPaY374HWF9lxTHKO7tNr3id4xIZ8j9ecEYrXUeUv9dwH2vsGuByfI8P5
-# 4wlLxrYwShUOvJwUE3oa15xW2zN6MV6z/lJMX+ecVni9E4noGVwR/0qZES9qd3uh
+# BBTxjrZdPqkjS2XABJlFd6Q5yW3k1zAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
+# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAFiEnrjpSNHAx5nLuek1EbfT
+# a0+27U0sQr5OtQZRLQpZ/yWSq99ogGWa20ibEeJJVF37OCx0SeGpAzQitaSM2UjM
+# SneALECMwXTErvzoxYlOGEv/RtznByriRCMDpEZ6VcuS8MUGu4lYaWDFGcDyX2vP
+# limPZPD94vsIf6KFOSMxRuvEpmVpGuSDLR92cdKB7biPl2hY0pS+DR0C4rklXTkm
+# Zz8DNmQL/Rg5RxOJZMULhK0nZTiIeSPVwF0MSPahuWHUkXoy2hYcUcn+xdpE27qI
+# WGG8UKEZKny76RnJfqVbRIDqbjPW65LiKhVZR2Xzq31PxE19bsv47grY2TGMz5Wh
 # ggNMMIIDSAYJKoZIhvcNAQkGMYIDOTCCAzUCAQEwgZIwfTELMAkGA1UEBhMCR0Ix
 # GzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEY
 # MBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSUwIwYDVQQDExxTZWN0aWdvIFJTQSBU
 # aW1lIFN0YW1waW5nIENBAhEAjHegAI/00bDGPZ86SIONazANBglghkgBZQMEAgIF
 # AKB5MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTIx
-# MTIyMjE1NTUzM1owPwYJKoZIhvcNAQkEMTIEMHsJkveLF6c8QkZNOWsgW2InYhHz
-# GvX/+KDtQIuTLWWtEIYWnkAkP6ArXdNqbhZ55jANBgkqhkiG9w0BAQEFAASCAgAS
-# Kwy7ct0sDQv9dwXldpOjqD2RrPpGe3nUsA+BNiBcqmj0GCaZAJcI+cbJOXEfnImI
-# qjzpMrKqcxaBsWYMM02Y85THp7/qazqSzHdawEe2HVmNwdOn4Nr3QXaa/8pzwSLK
-# 4K1DJWNi12nh3DQuHsvGlxtv7q1xNDw7vUCjxdODkvYG+Gz3XBCTO3q8+nPFf8au
-# 7IqPFxFqMhHsFgP0oyk6aAeGkpL2Y83LcTVwZZvG3aSUE2pmmgeVKUBegTf9hiOG
-# gbnfBaLi52HXxUcf4uZ4Um2RoNyGvKY5cQWU6qJLxk9YN9M8dnoWLchjLY6Vi0s6
-# JeY53p/DeehIleJcCwUWRn61RfwvDlIapHh8vlLlHzRZxlKdy2D+L5VoHXFPp1Rn
-# +TtUmW2ejMcqrF0wUo6M3ZJRLQ8ZRVnKVTYdFmJZZcy7vqFjKp5+w66OOPlyL8+2
-# wierkHR7/7Gc/H+fYCsJY3PKsJYAgRbyJPNG4HrLfr48FZ4BpV/g0948DPRKIKgx
-# UTldCoaAFXviFq5PGIvXZOWCghdev0pwWah55pqQ6OorZ5rd9DQ+bd1yj6du55cn
-# 0u7thwaTVIKemQdzoh7jLN0p4R9EwradKu8HU0XIt5z8mFmes7zZOFJCZ6rOMvmB
-# lV8vY8DuO0uifplXdcwF8ol5Dq7wVAVFGlTzSATINg==
+# MTIyMzEzMTc1OVowPwYJKoZIhvcNAQkEMTIEMMR8y75Sd8QzbMYhv6VEQDJMa/MP
+# YCSP1QxjlxI+0vOMwlULNUE4JzJtVBAtafokZzANBgkqhkiG9w0BAQEFAASCAgAf
+# r+KnjyIGM2UYKqDGk88od4T3/nfHIcOEDYnVeA+TdzJCJpUlRtHQ68aJO463X2rq
+# NnCS7NRUCGNbIyCSo7FgELUGyQ1pZRmPGXF8fSKBmgwwuZB6insLMw/qYhxcrKC4
+# VZccxIFmhhr8yBtkqufZzlGgvMHMBzypiv0N2ra72hZXc7vKULd47G1o8BWI5KIE
+# q/CUdx+mQwIEzC0Or/7rUR+pOy9QBnA/oRvsnSGYZ9gWUc1s1ta0OP8KW3qyuA+3
+# 61JB5jr4smV6VsK3Sbv0j1oMFcUl0Gi2uBIz7mn/B6CqR3CkX3nGPNwrM5R16o5d
+# 95T7Ou0QSZK8NrxTc6eqEgjk5zUpKD9Xvc81PNVIJuNcBT7JD6qEy5OMZlTmLgV2
+# ycz3JVeB1b3sfVmVb7PLQNzPeIpMSKsx0nS7rwGKgY2pohGmmPhkr7HfhhmN6iXu
+# pxrUnXqrASacLwrPhzX7vMa7M4it5LYzkEfaodxHR9FVsBxMz4Ht/PyM3qyUHrYm
+# r3tI9W9XizobXYCM8P25rmgZAcX7oBI1d4oFxHG+rhE8xRH0Hj1GXTw/LM7eXrLH
+# DGynpT6WA31wbD/0s6Din/FjK9u7oqbHXryxXGPJnt7oKWhPB9ciwI5hNIUkMfRg
+# 3GAKnPPEPFN0ThRzgCqKVdkx+mFrGnwpMhTuyY4Epg==
 # SIG # End signature block
