@@ -477,10 +477,18 @@ function CheckProxy {
 Set Integrated Terminal for Visual Studio Code to Command Prompt
 #>
 function SetIntegratedTerminalVSCode {
-  if (Test-Path $VSCodeSettingJson) {
-    $VSCodeSettingObj = Get-Content $VSCodeSettingJson | ConvertFrom-Json
-    $VSCodeSettingObj | Add-Member -NotePropertyName 'terminal.integrated.defaultProfile.windows' -NotePropertyValue 'Command Prompt' -Force
-    Set-Content -Path $VSCodeSettingJson -Value ($VSCodeSettingObj | ConvertTo-Json -Depth 5)
+  if (Test-Path $VSCodeSettingsPath) {
+    $Description.AppendText("Setting Visual Studio Code default integrated terminal to Command Prompt")
+    if (-not (Test-Path $VSCodeSettingsJsonPath)) {
+      New-Item -Path $VSCodeSettingsJsonPath -Value "{ }" -Force | Out-Null
+    } elseif (-not (Get-Content $VSCodeSettingsJsonPath)) {
+      Set-Content -Path $VSCodeSettingsJsonPath -Value "{ }"
+    }
+    
+    $VSCodeSettingObj = Get-Content $VSCodeSettingsJsonPath | ConvertFrom-Json
+    $VSCodeSettingObj = $VSCodeSettingObj | Select-Object * -ExcludeProperty 'terminal.integrated.shell.windows', 'terminal.integrated.defaultProfile.windows', 'terminal.integrated.shellArgs.windows', 'terminal.integrated.profiles.windows'
+    $VSCodeSettingObj | Add-Member -NotePropertyName 'terminal.integrated.shell.windows' -NotePropertyValue 'C:\WINDOWS\System32\cmd.exe' -Force
+    Set-Content -Path $VSCodeSettingsJsonPath -Value ($VSCodeSettingObj | ConvertTo-Json -Depth 5)
   } else {
     $Description.AppendText("ERROR!!! You don't have Visual Studio Code installed!!!")
   }
@@ -717,7 +725,8 @@ $ProxyData
 $DockerConfigPath = "$HOME\.docker\config.json"
 $NpmrcFilePath = "$HOME\.npmrc"
 # Visual Studio Code Setting json path
-$VSCodeSettingJson = "$($HOME)\AppData\Roaming\Code\User\settings.json"
+$VSCodeSettingsPath = "$($HOME)\AppData\Roaming\Code\User"
+$VSCodeSettingsJsonPath = Join-Path $VSCodeSettingsPath "settings.json"
 
 #---------------------------------------------------------[Logic]--------------------------------------------------------
 
@@ -1127,8 +1136,8 @@ else {
 # SIG # Begin signature block
 # MIIk2wYJKoZIhvcNAQcCoIIkzDCCJMgCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUcQ6p4G3Vn03wjxeNDpDQQEZt
-# 8dGggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU1YTrsCGvc7eICDIMJIrN4ada
+# iRiggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -1297,29 +1306,29 @@ else {
 # ZWQxJDAiBgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQQIQDue4N8WI
 # aRr2ZZle0AzJjDAJBgUrDgMCGgUAoIGEMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3
 # AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEW
-# BBQByPLyhjmxhs5v4Ji78fGwoIQRNjAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
-# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAB/qJ2ZoRXvR3fDDyUNrsI0U
-# o4RRBbRGAsfHBrgWKw46Y2NnpcUo668o9NqlwKHBXn9nEYikBO3VRT7sBJF8cUmB
-# d+zqMDX4yjTRuKcgdNFBVPlplj2MYBTTwNmLkSqikYNdZizFvnTYBHGvP9JipLmR
-# D9VNETeCpM/qppxGhuYkACJAfur4smX3foaRs9dBvUIYyQ8nvi1hlIkpn82gamJb
-# C7fKujxyy9I3ZlgsFlTztilcP4el9Illp8QHWabgSxnZcRtlBTS9WMA4j0/qHrLC
-# X3uwSMVqc0b1mTlaVUV/u7l8oCtaM7j9/FYP2zsfizX4g+wdIQuloUw9/oG14U2h
+# BBRkk4yuugQtck+PFkhOkWq629VeyTAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
+# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAEst2+l7Q0VxdlMiz/gJhDh+
+# +7vbShNrUT/IR/wPPvVxWtL+vQKL9FqfoQlJBmGPBo88AmrnoBJvJhxDCsTA6e0A
+# 1zpmoMNQSahfb1oA/Gh6wdfvMEC3KM/BUoH7CojL6Wv+g13dwOUyTiZjkcN/HYia
+# OvQ5Aw76GSuzz3z5JUNgBeCTaQsWseZtB6KLbX8yxrJ+zujgJFiFqGHndXdVO0s/
+# NMOIo1/LKMga+HO//eZvtvcTCNmTIiXCAHbXs8oR6uuWZhUfRLr1UCFfxBAVI5hp
+# b6GvxKE84fwHd1/GjFYxeB8lc8ay1Qkbbsf/wm52os2viii9mpRrRyPNuXn3bHeh
 # ggNMMIIDSAYJKoZIhvcNAQkGMYIDOTCCAzUCAQEwgZIwfTELMAkGA1UEBhMCR0Ix
 # GzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEY
 # MBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSUwIwYDVQQDExxTZWN0aWdvIFJTQSBU
 # aW1lIFN0YW1waW5nIENBAhEAjHegAI/00bDGPZ86SIONazANBglghkgBZQMEAgIF
 # AKB5MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTIx
-# MTIyNzEwMjY1NFowPwYJKoZIhvcNAQkEMTIEMC6ylhMLqjzSlANVFTJdc4p2CMVH
-# dEyyoJKuqP1r5m5ee+JifI7oBl2j67Pr8yJOtjANBgkqhkiG9w0BAQEFAASCAgBw
-# GLcuL3GtzF7vz0x3t4FgZtDthRvhKFzBKHNbtY3x0wUWS9Mvo76d/v77uLw1Kvt0
-# ZEHyZYT5OWSJ8FLYOxv5TdoqZb+s8+rEymWrIAcjX/8EWR8Wvz6rKJOp5KS1N2av
-# NQ3MYu+fmmXnQhst7roQ9TMPx9xw6xKRvkwUGazfKy+EbA6THhwN75OHbbMCxbHO
-# IUp49GUYcpTSNPt/R32R9tfHpL+TkPVZIuFSWu7oaJnLc7e0i7lblge0+CNaDaqj
-# ChSxVEiuL3ZQfgnNpBmEbte0KLp8FOUHnXrdSg6Eu2Ud5Kbjwxwzy2bCS/YlsGRf
-# i8Fq0GyVg2d3+LFzsOR0z1WjE3AlHnKFuhBK4siKHCdbfP0sAPk0ITMEq5S8vsEP
-# n9PaYQy1HfxMIyM8S7FL5uhXXGu39KX31pa+aAKSsw/Bn2D+ptdHMb9gxPvnge6J
-# GcQV5lAXMSwcDTx4DukXi6uC0CZ5G/lMEKnjukgU1LbS/R07QlapeAUg9vA5DY8Z
-# Il3yGcrCCk/IswQYkVYwPT+3/r+dTHFcM1KN+5M0UhYMfqTTJjEnkgUtVbb5Nd4I
-# tEpJjuPUfSnnZpRfsmsJ2x5MX6oLvn7y6gxGSOJ7esFkEsBq29WWLNbTuOfAtn3q
-# K7QBiHzeN1pzPpSjo41yndQuvQtfW+ZX84i80CFFOQ==
+# MTIyNzExMjc0OFowPwYJKoZIhvcNAQkEMTIEMByvcqp3Hp6Ln0ZesjSrpfGUA5Wh
+# kWLkPdqxHyGSxIetcNopIw3TQOrpCLwUN6lhvDANBgkqhkiG9w0BAQEFAASCAgBs
+# xmjYmFD5Mr2BQiRMhUBypqB8QdLjiyu2yoiEZoNoefc45QveIGSnRh5Oh0OnPIwy
+# SilQV+hhJrIfxqPgp6/31FIWdKZutNC7uQjVI6/gXxiBCkZmiTAdRkA5U0OHJX6k
+# Bcpu6v7hVXht3e3wT2vhL4XsXVx3v0JNhgUt+mW1J/3zgeUm8qFeb391NWQ5sg+1
+# HbAM+jYoIjktcx5rXL5tkL5/SGl6oUv19xmAitJsamnQtkeOep9U3YlFZhWt2opB
+# cItL0/3wew0uii0zEKrogAMXhIj9KA7HuhdQpnk5rU3N4/hx3FJJdueNmdCFEbkw
+# EOBB8uIdrGc54+GRgBKA9I7KamVb2IsMZTTXHXzCLL1ntVq2MY6OY/FikrsB2atZ
+# TI20DUR9vz+8dSrHu5tnAr/TLSbF94JJimFRHGJvGwH7AX0slfLdYsMW0frEJ2/N
+# 3hKqGKPmtp3kwmwAx2k0A5/z2b1RWPU+usLPLY8SaVxcgbqq4kCqfrLPZYlAOi/7
+# D4EvaBUcmvvnwbxAYFiknMwdZBBP2lo4giez1NHndytoK9h8C9nt67Jj8rGWbLmW
+# QBG+G3sh9c34+TY4daRCpAZ4QDlIRdO9gwYjVn5ndUpAUK+TwSD/1R5X3ZQCejUH
+# SCbSrR9ioZPVbbJx8t94HvaZ1Nzpes/nMcsHgTTu+Q==
 # SIG # End signature block
