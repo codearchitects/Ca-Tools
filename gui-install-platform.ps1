@@ -647,6 +647,7 @@ $setupPlatformExePath = Join-Path $CaToolsPath $setupPlatformExe
 # Variables for ca scar
 $testScarPath = "C:\dev\scarface"
 $ScarfaceConfigPath = "C:\dev\scarface\scarface.config.json"
+$BackofficePath = "C:\dev\scarface\back-office"
 # Variables download requirements
 $RandomCode = GenerateRandomCode
 
@@ -991,6 +992,8 @@ function ExecuteCaScar {
   $Description.Text = "Executing ca scar... (it will take a few minutes)"
   if (-not (Test-Path $testScarPath)) {
     New-Item -ItemType Directory -Path $testScarPath -Force
+  } else {
+    RemoveBackOfficeProject
   }
 
   if (-not (Test-Path $ScarfaceConfigPath)) {
@@ -1060,6 +1063,12 @@ function OutFileInstallRequirement($Requirement, $Status) {
   }
 
   $Message | Add-Content $InstallRequirementsLogfile
+}
+
+function RemoveBackOfficeProject {
+  if (Test-Path $BackofficePath) {
+    Remove-Item -Path $BackofficePath -Force
+  }
 }
 
 <# NextScreen
@@ -1138,8 +1147,8 @@ else {
 # SIG # Begin signature block
 # MIIk2wYJKoZIhvcNAQcCoIIkzDCCJMgCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUG1/Z4YKEY51Tah0FYu6oMQgj
-# B3eggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUJ1R+FO5rQDAbYCniJ89nwI74
+# XL+ggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -1308,29 +1317,29 @@ else {
 # ZWQxJDAiBgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQQIQDue4N8WI
 # aRr2ZZle0AzJjDAJBgUrDgMCGgUAoIGEMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3
 # AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEW
-# BBQbvD4jA+PUBH6Oz0+5qfTcITHpnzAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
-# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAG8KUFOFQAL8dDCpypDanIC6
-# QX1Xr7F7/7+QR4yueobarTUPEfXg2IdpmRl2Cf+gbJDlHvg3yg3SkkjZUiqiZZH5
-# CCdXqNQXd+zZeVRIDnLBAw8wkxqxQ0cXzpHFyLnDr85EZ/6DGbCgVilDf2RzE11Y
-# lpTLhdQ4N39PyOHGtol6GXjYy694xp34sDo4rrL5GQcE7z9N4hhZT5HdBt0TU+nC
-# EcRsLQg3+HwXOfPyyrMvnZJsLTuk3mm+cajwUtQPbaaW1r4TcxgI9/RfRCy99xr4
-# WDs/9H9aeBbbcN58DT4o9BMX2zhVsxXwhIy0DFBWQNzy3BGpjAnS4NxH40ITkp2h
+# BBS8r0eZDYEmkD4JkiFLu2KKF2RrsDAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
+# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBACkFLpp0TI8rVCLxhxHFit1o
+# 2P8Rrkok+gFzyNedLRCiz/k8aV8D6rdsAalEDekoaR0QrYdL0rFjQ28z/VHXx/q0
+# mDmiq+7Pj8fwNLSqSsGV9UAlNBlFf05nkrgqwMxuM82fKfZMVPssgW1iK+uoa6ib
+# 5EVid8SInNQgLOceIi8eza49MWi6HsY2Vrjld/b5kK9blEjkOPRMdQzefD89EGYW
+# CVeAgTTsoEPfU+UEUVoUp04dZAksBtLsqwMX9e99/IkWAfq1mKxVtIXUpS6WDqm3
+# n/oOfmUl5cEwJm8K3Vlr8AdRGH6k8l6jwhk0bW/NcQOyJKIW9gk8QSTJB/i2ZeGh
 # ggNMMIIDSAYJKoZIhvcNAQkGMYIDOTCCAzUCAQEwgZIwfTELMAkGA1UEBhMCR0Ix
 # GzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEY
 # MBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSUwIwYDVQQDExxTZWN0aWdvIFJTQSBU
 # aW1lIFN0YW1waW5nIENBAhEAjHegAI/00bDGPZ86SIONazANBglghkgBZQMEAgIF
 # AKB5MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTIy
-# MDExMzE1MjQ0OFowPwYJKoZIhvcNAQkEMTIEMOiqxiuGCBkL4JpnPaEw7SgpG4BW
-# 1I6wtUBolUOWrRWv5/cGy2HPRgRU40akItl8ijANBgkqhkiG9w0BAQEFAASCAgAZ
-# UMiTWI+JP0gH8j/EbZLuvSMe/luZicle/MvCVpL7lvAXX3lM/T2hmu7/kjy6qwlu
-# 0dX0/LYDyhaV320GM9mLs4EKH3Hv9hG24LmCacj+jNyrbnBuuNlojDU7aeT8VqJg
-# 4Vxdf6FfdB8dlEvgxvsl2apIfLR84Ao68FdLI3RH6NBYU9ZUYMewwSm/tJfZODX9
-# 5hmZe7Fjc+rW8lgHMhRuw2adtLHiPlkgJlqd0gPc3njHWm7sfdAIA7HvobiHknhd
-# SfTxnKH5pf3Brk0EO+B1lhbGGqewySQ4F815t/JxVrF4EGQCR4eziHwJhb782z2R
-# vkEN8nn8GzU6Bj3HFSyzePqXihtBfjUcqItdr1Q3xFLboyDznC+eNa/sGbgmd+RC
-# 0DmAaZPB01XaygfF3S7ellPeDsbw1bOwcIJN0FRQyv5nVeTsnEuuZStA8CvM41q7
-# sNdNjxNe0nFw0YaXtw2AlQd7LW54WpkjmPNoS2eBY0OD6ICqm1rJxyxw2x8JRYF7
-# eoFNmXefyEA1UDcs7Mf57qqptioy+lGO661wV4JFoelVjbGxfkKT+WdRHANQXzYJ
-# 4HpVjGBCP6iY29sCEQzOT/kYtVMmBg7F0540kTzbIfkOxo7udFz/bNlXFOPFdtfx
-# rCt9IrSxJiFlUrHseFYxaY9DVCwkkObZ+9mGCL7FGg==
+# MDEyNTEzMzMzN1owPwYJKoZIhvcNAQkEMTIEMKan5+zORu6B9s6FyzHfO7UwWoaJ
+# aJHwefKGA1ZP0XMmPzp0dZoa5WKFp0PMZeIWSzANBgkqhkiG9w0BAQEFAASCAgBi
+# SRiR5/sbzus8KbjXoEljRqg263uDB66XJeMt2QX3eKLI77AvVLrTE+798+vYeMst
+# FiRxQqMbQuesSmDhDnkWTqSMeGAnjAIFqkRnEmWiAhu6dojh1xOTnRKm1q+6D/d8
+# 28e8rYpOxvWUG8QnfhW+vUS5aWjT3B0D5jnjF3C8WxD7BuDxlpX+qYbX1hcU7R2t
+# 4XV1yEDthvLjsKH8JixEX3ytlMT+ymcaGPqyiqPwseX7aswFynruCYb4ybKrgfoh
+# cXkwn1ZTWQgoibxLyHRKrF4Dv7Aq/0XY+mwxhXbUnIjVmnmGDTf8mZkInidAKM9u
+# ogntjpU8/uDefQv2GexQ9pyrW3I/XWC8qn4hIl5roj4F4GJHgktLwJWuUDf/G3la
+# tDWB/roZoI6GHrsrNch5pHYwXOXc05V0YmnbzuCEj2wkKbW5wO4E14JlLC/tZ55M
+# 6sU3hJGRc0OJ8lyDL9FOYkNo5V+Ye37Wtu2HBxis4dT56UFt8uUGopm19lfYh9Ok
+# 7UUJ1OWs5wW4L81OEf6ZWxV7RAm59M6QBjiWylNm4qp8Rco8RfByMIF7wOVpQYQd
+# F3LE89+atIcaDlvlSH7K/v7rLaN/JQOFDHVHsfwUL09fw0KRE2eHhTFa9dwei7En
+# CvC4j2ZKBB991F/sdUU8ctY31iex/efYFdmoiZs6ig==
 # SIG # End signature block
