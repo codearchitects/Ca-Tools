@@ -1002,6 +1002,7 @@ function ExecuteCaScar {
   }
 
   Set-Location $testScarPath
+  Start-Process $HOME\AppData\Roaming\npm\ca.cmd -ArgumentList "scar:setup" -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrorLogfile -Wait
   Start-Process $HOME\AppData\Roaming\npm\ca.cmd -ArgumentList "scar -c $ScarfaceConfigPath" -WindowStyle hidden -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrorLogfile -Wait
   Get-Content $OutLogfile, $ErrorLogfile | Set-Content $CaScarErrorLogfile
   $ScarfaceMessage = Get-Content $OutLogfile, $ErrorLogfile
