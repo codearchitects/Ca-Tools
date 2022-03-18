@@ -1,36 +1,272 @@
-try {
-    ca plugins:remove @ca/cli-plugin-scarface
+param(
+  [string]$ScarVersion = "",
+  [string]$ScarConfig = ""
+)
 
-    npm uninstall -g @ca/cli
-} catch {
-    Write-Host "@ca/cli-plugin-scarface already removed."
+function New-RandomCode {
+    return -join (((48..57)+(65..90)+(97..122)) * 80 | Get-Random -Count 32 | ForEach-Object{ [char]$_ })
 }
 
-# Rimozione 'codearchitects.jfrog.io' da NuGet.Config
-$NugetConfig = [XML](Get-Content -Path "$HOME\AppData\Roaming\NuGet\Nuget.Config")
-foreach ($PackageSource in $NugetConfig.configuration.packageSources.add) {
-    if ($PackageSource.value -like "*codearchitects.jfrog.io*") {
-        $NodePackageSources = $NugetConfig.SelectSingleNode("//configuration//packageSources//add[@key=`"$($packageSource.key)`"]")
+function Invoke-AcceptRequirement {
+  $CurrentRequirement = $RequirementsList[$IndexRequirement]
+  
+  if ($CurrentRequirement.MaxVersion) {
+    $Message = "ACCEPTED, Name = $($CurrentRequirement.Name), Version = $($CurrentRequirement.MaxVersion)`r`n$('-'*70)"
+  } else {
+    $Message = "ACCEPTED, Name = $($CurrentRequirement.Name)`r`n$('-'*70)"
+  }
+  Add-Content -Path $InstallRequirementsLogfile -Value $Message -Force
+  
+  Show-Buttons
+  switch ($CurrentRequirement.Type) {
+    "Software" {
+      Invoke-DownloadInstallRequirementAction -Requirement $CurrentRequirement
     }
-}
-if ($NodePackageSources) {
-    $NugetConfig.configuration.packageSources.RemoveChild($NodePackageSources) | Out-Null
-    $NodePackageCredentials = $NugetConfig.SelectSingleNode("//configuration//packageSourceCredentials//$($NodePackageSources.key)")
-    if ($NodePackageCredentials) {
-        $NugetConfig.configuration.packageSourceCredentials.RemoveChild($NodePackageCredentials) | Out-Null
+    "Feature" {
+      Invoke-EnableFeatureAction -Requirement $CurrentRequirement
     }
-    $NugetConfig.Save("$HOME\AppData\Roaming\NuGet\NuGet.Config")
+    "Env Variable" {
+      Invoke-EnvironmentVariableAction -Requirement $CurrentRequirement
+    }
+    "PostInstallSoftware" {
+      Invoke-PostInstallAction -Requirement $CurrentRequirement
+    }
+    "Permission" {
+      Invoke-PermissionAction -Requirement $CurrentRequirement
+    }
+    "Connection" {
+      Invoke-ConnectionAction -Requirement $CurrentRequirement
+    }
+    "PreInstallSoftware" {
+      Invoke-PreInstallAction -Requirement $CurrentRequirement
+    }
+    "Activity" {
+      Invoke-ActivityAction -Requirement $CurrentRequirement
+    }
+    Default {
+      Write-Error "$($CurrentRequirement.Type) not defined!!!"
+    }
+  }
+  Update-EnvPath
+  if ($CurrentRequirement.PostAction) {
+    Show-ButtonsPostAction $CurrentRequirement.PostAction
+  }
+  $script:IndexRequirement++
 }
 
-# Rimozione 'codearchitects.jfrog.io' da .npmrc
-$Npmrc = Get-Content -Path "$HOME\.npmrc" | Where-Object { $_ -notlike '*codearchitects.jfrog.io*' }
-Set-Content -Path "$HOME\.npmrc" -Value $Npmrc
+function Step-NextAction {
+  if ($IndexRequirement -lt $RequirementsList.Count) {
+    $Description.Text = "$($RequirementsList[$IndexRequirement].QuestionMessage)`r`n"
+    Show-Buttons @('$AcceptButton', '$DeclineButton')
+  }
+}
+
+function Invoke-DeclineRequirement {
+  $Requirement = $RequirementsList[$IndexRequirement]
+  $MessageDeclined = Invoke-Expression (New-CommandString $Requirement.DeclineMessage)
+  $Description.AppendText($MessageDeclined)
+  
+  if ($Requirement.MaxVersion) {
+    $Message = "DECLINED, Name = $($Requirement.Name), Version = $($Requirement.MaxVersion)`r`n$('-'*70)"
+  } else {
+    $Message = "DECLINED, Name = $($Requirement.Name)`r`n$('-'*70)"
+  }
+  Add-Content -Path $InstallRequirementsLogfile -Value $Message -Force
+
+  Show-Buttons @('$DoneButton')
+}
+
+# TODO
+# function Send-InstallationLogs {
+#   $UserLoginInfo = Get-Content -Path "$HOME\user-login-info.json" | ConvertFrom-Json -Depth 5
+
+#   # TODO aggiungere i datinel file $HOME\user-login-info.json
+#   $CAEPInstallationLogsPath = "C:\dev\scarface\CAEP-InstallationLogs"
+#   if (Test-Path $CAEPInstallationLogsPath) {
+#     Remove-Item -Path $CAEPInstallationLogsPath -Force
+#   }
+#
+#   # Elimina file che non contengono informazioni
+#   # ls "$HOME\.ca\" | ForEach-Object { if ($_.Length -eq 0) { Remove-Item -Path "$HOME\.ca\$($_.Name)" -Force } }
+#
+#   Set-Location "C:\dev\scarface"
+#   git clone "https://$($UserLoginInfo.username):$($UserLoginInfo.password)@devops.codearchitects.com:444/Code%20Architects/CAEP-InstallationLogs/_git/CAEP-InstallationLogs"
+#   Set-Location $CAEPInstallationLogsPath
+#   git checkout -b "logs/$($UserLoginInfo.username)_$CurrentDate"
+#   git config --global user.email "$($UserLoginInfo.email)"
+#   git config --global user.name "$($UserLoginInfo.username)"
+#   Start-Process msinfo32 -ArgumentList "/nfo $HOME\.ca\msinfo32-$env:username.nfo" -Wait -WindowStyle Hidden
+#   Compress-Archive -Path "$HOME\.ca" -DestinationPath "C:\dev\scarface\CAEP-InstallationLogs\support-bundle-$env:computername-$env:username-$CurrentDate.zip" -Force
+#   git add .
+#   git commit -m 'chore: upload installation log'
+#   git push -u origin "logs/$($UserLoginInfo.username)_$CurrentDate"
+#   Remove-Item -Path $CAEPInstallationLogsPath -Force
+# }
+
+function Invoke-LoginNpm {
+  Hide-LoginNpmScreen
+
+  # Variables Login npm
+  $NpmRegistry = "https://devops.codearchitects.com:444/Code%20Architects/_packaging/ca-npm/npm/registry/"
+  $NpmScope = "@ca"
+  $NpmLoginResultCheckRequirementLogfile = "$($HOME)\.ca\npm_login_resultCheckRequirement_$($CurrentDate).log"
+  Start-Process powershell.exe -ArgumentList "npm-login.ps1 -user $($UsernameTextBox.Text) -token $($TokenTextBox.Text) -registry $NpmRegistry -scope $NpmScope" -WindowStyle hidden -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrLogfile -Wait
+  Get-Content $ErrLogfile, $OutLogfile | Set-Content $NpmLoginResultCheckRequirementLogfile
+  npm config set '@ca:registry' $NpmRegistry
+  npm config set '@ca-codegen:registry' $NpmRegistry
+  $NpmLoginMessage = Get-Content $NpmLoginResultCheckRequirementLogfile
+  $Description.Lines = $NpmLoginMessage
+  Show-Buttons @('$NextButton', '$CancelButton')
+}
+
+function Remove-BackofficeProject {
+  if (Test-Path $BackofficeProjectPath) {
+    Remove-Item -Path $BackofficeProjectPath -Force -Recurse
+  }
+}
+
+function Resolve-Dependencies($Dependencies) {
+  $ResultRequirementDependencies = @()
+  if ($Dependencies.Count -ne 0) {
+    $ResultRequirementDependencies += $Dependencies
+    foreach ($Dependency in $Dependencies) {
+      foreach ($Requirement in $RequirementsList) {
+        if ($Requirement.Name -eq $Dependency) {
+          $ResultRequirementDependencies += Resolve-Dependencies $Requirement.Dependencies
+        }
+      }
+    }
+  }
+  return $ResultRequirementDependencies
+}
+
+function Invoke-CheckRequirements($Requirements) {
+  $ResultCheckRequirementList = @()
+  $MustCheckRequirementList = @("Npm Login")
+  foreach ($Requirement in $Requirements) {
+    New-Logfiles $Requirement
+    if ($Requirement.CheckRequirement) {
+      $ResultCheckRequirement = Invoke-Expression (New-CommandString $Requirement.CheckRequirement)
+      if (($ResultCheckRequirement[0] -eq $true) -and ($ResultCheckRequirement[1] -ne 'OK') -or $MustCheckRequirementList.Contains($Requirement.Name)) {
+        $ResultCheckRequirementList += $Requirement
+      } elseif ($ResultCheckRequirement[0] -eq $false) {
+        Write-Host $Requirement.Name -ForegroundColor DarkYellow
+      }
+    }
+  }
+
+  return $ResultCheckRequirementList
+}
+
+function Invoke-AppendRequirementDescription {
+  
+  $Description.AppendText("Requirement $(' ' * 16)| Status |`r`n$('-' * 37)|`r`n")
+  foreach ($Item in $RequirementsList) {
+    $NumberSpaces = 26 - ($Item.Name | Measure-Object -Character).Characters
+    $DescriptionMessage ="$($Item.Name) $(' ' * $NumberSpaces) |"
+    if ($RequirementsNotMetList.Contains($Item)) {
+      $Description.SelectionStart = $Description.TextLength
+      $Description.SelectionLength = 0
+      $Description.SelectionColor = "Red"
+      $Description.AppendText("$DescriptionMessage   KO   |")
+      $Description.AppendText([Environment]::NewLine)
+    } else {
+      $Description.SelectionStart = $Description.TextLength
+      $Description.SelectionLength = 0
+      $Description.SelectionColor = "Green"
+      $Description.AppendText("$DescriptionMessage   OK   |")
+      $Description.AppendText([Environment]::NewLine)
+    }
+  }
+}
+
+function New-Logfiles($Requirement) {
+  Invoke-NameLogfile $Requirement
+  
+  if (-not(Test-Path $OutLogfile)) {
+    New-Item -Path $OutLogfile -Force | Out-Null
+  }
+  if (-not(Test-Path $ErrLogfile)) {
+    New-Item -Path $ErrLogfile -Force | Out-Null
+  }
+  if (-not(Test-Path $Logfile)) {
+    New-Item -Path $Logfile -Force | Out-Null
+  }
+}
+
+function Invoke-NameLogfile($Requirement) {
+  $NameNoSpaces = $Requirement.Name -replace " ", ""
+  $script:Logfile = "$HOME\.ca\$RandomCode-$NameNoSpaces-$CurrentDate.log"
+  $script:OutLogfile = "$HOME\.ca\$RandomCode-$NameNoSpaces-$CurrentDate.out"
+  $script:ErrLogfile = "$HOME\.ca\$RandomCode-$NameNoSpaces-$CurrentDate.err"
+}
+
+function Update-EnvPath {
+  $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+  $Description.AppendText("`r`nEnv var Path reloaded correctly")
+}
+
+function Close-Installer {
+  $NetStat4200 = (netstat -ano | findstr :4200).split(" ") | Select-Object -Unique
+  $ClientPID = $NetStat4200[5]
+  taskkill /PID $ClientPID /F
+  $InstallForm.Close()
+}
+
+#---------------------------------------------------------[Logic]--------------------------------------------------------
+
+$CurrentDate = (Get-Date -Format yyyyMMdd-hhmm).ToString()
+$InstallRequirementsLogfile = "$($HOME)\.ca\install_requirements_$($CurrentDate).log"
+$RandomCode = New-RandomCode
+
+$Logfile
+$OutLogfile
+$ErrLogfile
+
+. .\requirement-actions.ps1 -RandomCode $RandomCode -CurrentDate $CurrentDate -ScarVersion $ScarVersion -ScarConfig $ScarConfig
+
+$IndexRequirement = 0
+$BackofficeProjectPath = "C:\dev\scarface\back-office"
+
+# Check principali
+
+$InternetStatus = Get-NetAdapter | Where-Object { ($_.Name -eq "Ethernet" -or $_.Name -eq "Wi-Fi") -and ($_.Status -eq "Up") }
+$AdminStatus = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+
+# Check if the user opened PowerShell as Admin, if not then stop the installation, otherwise check the requirements
+if (-not $AdminStatus) {
+  $Description.AppendText("PLEASE OPEN POWERSHELL AS ADMINISTRATOR!!!")
+  Show-Buttons @('$DoneButton')
+} elseif (-not $InternetStatus) {
+  $Description.AppendText("PLEASE CONNECT TO INTERNET!!!")
+  Show-Buttons @('$DoneButton')
+} else {
+  # Risoluzione delle dipendenze------------------------------------------------------------------
+  $RequirementsJsonPath = ".\requirements.json"
+
+  $RequirementsList = Get-Content $RequirementsJsonPath | ConvertFrom-Json
+
+  for ($i = 0; $i -lt $RequirementsList.Count; $i++) {
+    $RequirementsList[$i].Dependencies = (Resolve-Dependencies $RequirementsList[$i].Dependencies) | Select-Object -Unique
+  }
+
+  $RequirementsList = @($RequirementsList | Sort-Object -Property {$_.Dependencies.Count})
+
+  $RequirementsNotMetList = Invoke-CheckRequirements $RequirementsList
+
+  Invoke-AppendRequirementDescription
+
+  $RequirementsList = $RequirementsNotMetList
+
+  # Se esiste viene ripulito il progetto di Testing del funzionamento dell'installazione -----------
+  Remove-BackofficeProject
+}
 
 # SIG # Begin signature block
 # MIIk2wYJKoZIhvcNAQcCoIIkzDCCJMgCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUqbbNw7EtjnJf9V+yCNnYvw4g
-# 6Ieggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUkIa4IZa/YZIBIuNdBK0gj3kG
+# 3s2ggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -199,29 +435,29 @@ Set-Content -Path "$HOME\.npmrc" -Value $Npmrc
 # ZWQxJDAiBgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQQIQDue4N8WI
 # aRr2ZZle0AzJjDAJBgUrDgMCGgUAoIGEMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3
 # AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEW
-# BBTg0l3rbLFgfKzPsiwIew5dz1UE0TAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
-# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAGqNN7o4oKCm1CQy4JUVz3vy
-# Lkm2C6Pac6ebiXgJA6Gi83Ndf3vPizOODIv1LkuoVpRqb4g5FKjxdqUFTU093TUE
-# N5K4BdLgDWkRgGYX3hnODNEBWmmsArLGUXB6hUb+ZoGxX9RBWOC6hSLQP7FeSrtR
-# rhzpFZ3h4sFK6oDPSi86jxECzHt14nSWJrcn6shcOyKx5pt0jeGLnfLD+HkMzA4i
-# H3BiT+yrooJwGkFD2DDcJRlIEibEdLsAES8e2TNiErzj+OzQrekEDEYAFuZbIyAx
-# fTXjWUSJ0lJYn9Z3mqV+OQtfHpetMgQoiMsEYPoQtpVx5jqrX9/JcBlG0Ovt9GOh
+# BBTdTePyO0450jyhOV92cjI7weiU5jAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
+# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAHk4D1IeYHj/Mv244CbvJz+f
+# tpy7YpZfP9xBnFkr23Eg7BKaiodxCFOlyxQXRaKuBjRG1JV3flsjyvnjRR7x4F0p
+# Jh624wGJWIY9iXoGlosexCvLE2TjKRbCzjzOHKRhD58I7v3fRMiwMSYghEj6w9kC
+# VPYlQ3Zzb8fl6e/EVLh+YHf96p73sobhCbI3eJesmh8544OJluF/ZzrK1poDPHHv
+# gsVg+xwIg5ijjAy5becg32+66jovgw5bZDXkyROGkOPWwApTfxQx4Byhg/J/65uo
+# pMYtPWMylMPrhvcv5MRDbhpkU5i2QhYaz3qR9P8QOMoVV8kYbvWU2zNs/2+jituh
 # ggNMMIIDSAYJKoZIhvcNAQkGMYIDOTCCAzUCAQEwgZIwfTELMAkGA1UEBhMCR0Ix
 # GzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEY
 # MBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSUwIwYDVQQDExxTZWN0aWdvIFJTQSBU
 # aW1lIFN0YW1waW5nIENBAhEAjHegAI/00bDGPZ86SIONazANBglghkgBZQMEAgIF
 # AKB5MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTIy
-# MDMxODEzMzk0OFowPwYJKoZIhvcNAQkEMTIEMHamMG3mj40xoFrVbH9riKs7vBa6
-# zl1XpL2/WXwnhB75haWkVdkb/b4/vc5Oev1+xjANBgkqhkiG9w0BAQEFAASCAgBX
-# WRZ565m8ctOlfblq+4aNVabmFTcGl8CeL5XBJ/6Rsay9pfb/uoLi5xVjL0oGXtst
-# x+7XZXpdchuX2DHN+C4z9d1FNgKeiXEsJIIuiKW9z6EZ4jKJkMWdlCHZp/WckArJ
-# Ygib9Wgt2o44xe6Uss628TaWaPLG9BQ7xlnrhByzxtC+GSgeUhbHXJUXBQk0dFlU
-# fRP2eUIbbi+98CRd3qqKomhLWz9UMUT9nkj9n3KE8nXHjFbwfFMWMeLDK3hvJdZn
-# WZVjRQ40FItuG658XRnk2MGqyNlq8Y7cHoii8gp4NMm+YnUqPG17ke2y/mAJiPXo
-# C3zO4s8TUunTGP0Yxbyb0VXv48ZNozzNy15n83/2/YOuFzdPPHOC4V+478XKgaSg
-# kwVf4YnxJybfK9L89CMlzZy0D1hFScWmc48dWX8vk5GQ0haASCnlm/LSv4jtr7n0
-# fnaNuwUjpfGtN68JvPj05iI1CkpapCojVrc9WLJfHVN0pegBbnSK4ax01uCoictZ
-# prWV6iei7gj1jnKeSkxvRob7d8w+rXR2V9GgZqhBVvimwdjwjKEYW5zEIxeH5q6A
-# IRvQxXsuv0G1KwArWUHmz4Qqgl6g0hUglt7YvIn72azbQr3dAHTe1OjL6y6oFYPr
-# i9JObEW+LA5zZyi+RlV89PmTbLO4BFKEi8J2IFH5uQ==
+# MDMxODEzMzkxNlowPwYJKoZIhvcNAQkEMTIEMC2a76HCVE3TBo/I/VBQyJM4hw+s
+# /ecXmG+53yvfCVc5XBu0LZ/io+dbaqyQJcZDZjANBgkqhkiG9w0BAQEFAASCAgBc
+# 4dOZKQiiXt/ENF3z3Oll7REFPK7ROWAr1emK1QkwYJIdtW5Rm/fZxJrX05d2A/HE
+# LqL4V42qrElXbYOkufKtl5Ciciee8wSFaT3KK908yqrGd/gkXAp9CC5xSPGsxCSv
+# i8dZqaJkxSjd7MhvdIugxAVW+kAoMv8t0LvVsN+T5yIdHPOJNVWjthzNeYN1i7Oj
+# xJwOmNWQdPbarPbOUcLd5vTVn5N+sSPda/e8JdNt4We7aDWjpB0p1FMbs4PRXHRM
+# fRbprfKNOfGBj9aVrc3qufNzVxdniJgQBfJOb2UPYjpeEU+c7KWC9ImPHtxJWopY
+# JqTaCHTaDtFmmZJUQpCBccNuQdJIKQfDRFK/mGC53uypAk6l8eSLO/VL4DncNdDi
+# C58qMDjw+Fc3x+SrFfhOPO0jkI2qsADQ7oKCCPeOCK6fgbPCekEQmWZaVIIT4BfC
+# MSS2b7ZeN4zGelgNKL7xZH9qib43n99fyY8UtiuVg74XhLLYZu/crl6ryiuyMSXg
+# lYgRMfWGAXyFyosKSe9VWBO0AxtfuB/zXYohjjUtQne1TVs15wfvKJIrFCitudSZ
+# rVr+inIyOkxrtbYT6ZoHSWyl/JY6Sf429ZXoFx5Zm42npVTILqR3B8OXpybOQVXC
+# v6fJUJRL3dT41GPMft3Z1qtS8IoK1qjTaC/fYBJSVg==
 # SIG # End signature block
