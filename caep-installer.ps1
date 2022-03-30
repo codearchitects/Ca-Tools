@@ -265,7 +265,7 @@ Shows the login to npm screen to the userm
 if the CheckNpmLogin is successful then select the user credential and ask to login or change the credantials
 #>
 function Show-LoginNpmScreen {
-  $Description.Height = 50
+  $Description.Height = 70
   $UsernameLabel.Visible = $true
   $UsernameTextBox.Visible = $true
   $TokenLabel.Visible = $true

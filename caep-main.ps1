@@ -104,19 +104,33 @@ function Invoke-DeclineRequirement {
 # }
 
 function Invoke-LoginNpm {
-  Hide-LoginNpmScreen
-
   # Variables Login npm
   $NpmRegistry = "https://devops.codearchitects.com:444/Code%20Architects/_packaging/ca-npm/npm/registry/"
   $NpmScope = "@ca"
   $NpmLoginResultCheckRequirementLogfile = "$($HOME)\.ca\npm_login_resultCheckRequirement_$($CurrentDate).log"
-  Start-Process powershell.exe -ArgumentList "npm-login.ps1 -user $($UsernameTextBox.Text) -token $($TokenTextBox.Text) -registry $NpmRegistry -scope $NpmScope" -WindowStyle hidden -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrLogfile -Wait
-  Get-Content $ErrLogfile, $OutLogfile | Set-Content $NpmLoginResultCheckRequirementLogfile
-  npm config set '@ca:registry' $NpmRegistry
-  npm config set '@ca-codegen:registry' $NpmRegistry
-  $NpmLoginMessage = Get-Content $NpmLoginResultCheckRequirementLogfile
-  $Description.Lines = $NpmLoginMessage
-  Show-Buttons @('$NextButton', '$CancelButton')
+  if (($UsernameTextBox.Text -ne "") -and ($TokenTextBox.Text -ne "")) {
+    Hide-LoginNpmScreen
+    # Correct the Username inserted by the User
+    $UsernameSplitEmail = ($UsernameTextBox.Text).split("@")
+    $UsernameWithoutEmail = $UsernameSplitEmail[0]
+    $UsernameSplitCollab = $UsernameWithoutEmail.split("\")
+    $UsernameFinal = $UsernameSplitCollab[$UsernameSplitCollab.Length - 1]
+    $UsernameSplitCollab = $UsernameWithoutEmail.split("/")
+    $UsernameFinal = $UsernameSplitCollab[$UsernameSplitCollab.Length - 1]
+    Start-Process powershell.exe -ArgumentList "npm-login.ps1 -user $UsernameFinal -token $($TokenTextBox.Text) -registry $NpmRegistry -scope $NpmScope" -WindowStyle hidden -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrLogfile -Wait
+    Get-Content $ErrLogfile, $OutLogfile | Set-Content $NpmLoginResultCheckRequirementLogfile
+    npm config set '@ca:registry' $NpmRegistry
+    npm config set '@ca-codegen:registry' $NpmRegistry
+    $NpmLoginMessage = Get-Content $NpmLoginResultCheckRequirementLogfile
+    $Description.Lines = $NpmLoginMessage
+    Show-Buttons @('$NextButton', '$CancelButton')
+  } else {
+    $Description.Text = "We have not found any Azure DevOps account.`r`nPlease enter the Azure DevOps Username and the Token.`r`nPS: Insert the Username without the COLLABORATION\.`r`n"
+    $Description.SelectionStart = $Description.TextLength
+    $Description.SelectionLength = 0
+    $Description.SelectionColor = "Red"
+    $Description.AppendText("Username and Token can't be NULL! Please enter the Username and Password.")
+  }
 }
 
 function Remove-BackofficeProject {
