@@ -227,11 +227,28 @@ function Close-Installer {
   $InstallForm.Close()
 }
 
+function New-StartupCmd {
+  $ScriptPathParent = Split-Path -Parent $ScriptPath
+  $CaepInstallerName = "\caep-installer.ps1"
+  $ScriptPathQuotes = "start powershell -Command `"Start-Process powershell -verb runas -ArgumentList '-NoExit -file " + $ScriptPathParent + $CaepInstallerName + "'`""
+  if (!(Test-Path $StartupPath)) {
+    New-Item -Path $StartupPath | Out-Null
+    Add-Content -Path $StartupPath -Value "$ScriptPathQuotes"
+  }
+}
+
+function  Remove-StartupCmd {
+  Remove-Item -Path $StartupPath
+}
+
 #---------------------------------------------------------[Logic]--------------------------------------------------------
 
 $CurrentDate = (Get-Date -Format yyyyMMdd-hhmm).ToString()
 $InstallRequirementsLogfile = "$($HOME)\.ca\install_requirements_$($CurrentDate).log"
 $RandomCode = New-RandomCode
+
+$StartupPath = "$HOME\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\caep-startup.cmd"
+$ScriptPath = $MyInvocation.MyCommand.Path
 
 $Logfile
 $OutLogfile
@@ -274,6 +291,8 @@ if (-not $AdminStatus) {
 
   # Se esiste viene ripulito il progetto di Testing del funzionamento dell'installazione -----------
   Remove-BackofficeProject
+  # Crea il file caep-startup.cmd per l'esecuzione dello script allo startup del computer in caso non esiste -----------
+  New-StartupCmd
 }
 
 # SIG # Begin signature block

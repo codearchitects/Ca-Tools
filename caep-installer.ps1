@@ -313,6 +313,10 @@ function Show-ButtonsPostAction ($RequirementPostAction) {
   }
 }
 
+$ScriptPath = $MyInvocation.MyCommand.Path
+$ScriptPathParent = Split-Path -Parent $ScriptPath
+Set-Location $ScriptPathParent
+
 Unblock-File -Path .\caep-main.ps1
 Unblock-File -Path .\clean-jfrog.ps1
 Unblock-File -Path .\requirement-actions.ps1
