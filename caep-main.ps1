@@ -113,10 +113,10 @@ function Invoke-LoginNpm {
     # Correct the Username inserted by the User
     $UsernameSplitEmail = ($UsernameTextBox.Text).split("@")
     $UsernameWithoutEmail = $UsernameSplitEmail[0]
-    $UsernameSplitCollab = $UsernameWithoutEmail.split("\")
-    $UsernameFinal = $UsernameSplitCollab[$UsernameSplitCollab.Length - 1]
-    $UsernameSplitCollab = $UsernameWithoutEmail.split("/")
-    $UsernameFinal = $UsernameSplitCollab[$UsernameSplitCollab.Length - 1]
+    $UsernameSplitBS = $UsernameWithoutEmail.split("\")
+    $UsernameWithoutBS = $UsernameSplitBS[$UsernameSplitBS.Length - 1]
+    $UsernameSplitS = $UsernameWithoutBS.split("/")
+    $UsernameFinal = $UsernameSplitS[$UsernameSplitS.Length - 1]
     Start-Process powershell.exe -ArgumentList "npm-login.ps1 -user $UsernameFinal -token $($TokenTextBox.Text) -registry $NpmRegistry -scope $NpmScope" -WindowStyle hidden -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrLogfile -Wait
     Get-Content $ErrLogfile, $OutLogfile | Set-Content $NpmLoginResultCheckRequirementLogfile
     npm config set '@ca:registry' $NpmRegistry
@@ -261,7 +261,7 @@ $BackofficeProjectPath = "C:\dev\scarface\back-office"
 
 # Check principali
 
-$InternetStatus = Get-NetAdapter | Where-Object { ($_.Name -eq "Ethernet" -or $_.Name -eq "Wi-Fi") -and ($_.Status -eq "Up") }
+$InternetStatus = Get-NetAdapter | Where-Object { ($_.Name -like "*Ethernet*" -or $_.Name -like "*Wi-Fi*") -and ($_.Status -eq "Up") }
 $AdminStatus = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 
 # Check if the user opened PowerShell as Admin, if not then stop the installation, otherwise check the requirements
@@ -298,8 +298,8 @@ if (-not $AdminStatus) {
 # SIG # Begin signature block
 # MIIk2wYJKoZIhvcNAQcCoIIkzDCCJMgCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUkIa4IZa/YZIBIuNdBK0gj3kG
-# 3s2ggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUozKAoXu9qfHQxLNPUQIJdJwV
+# KgCggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -468,29 +468,29 @@ if (-not $AdminStatus) {
 # ZWQxJDAiBgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQQIQDue4N8WI
 # aRr2ZZle0AzJjDAJBgUrDgMCGgUAoIGEMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3
 # AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEW
-# BBTdTePyO0450jyhOV92cjI7weiU5jAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
-# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAHk4D1IeYHj/Mv244CbvJz+f
-# tpy7YpZfP9xBnFkr23Eg7BKaiodxCFOlyxQXRaKuBjRG1JV3flsjyvnjRR7x4F0p
-# Jh624wGJWIY9iXoGlosexCvLE2TjKRbCzjzOHKRhD58I7v3fRMiwMSYghEj6w9kC
-# VPYlQ3Zzb8fl6e/EVLh+YHf96p73sobhCbI3eJesmh8544OJluF/ZzrK1poDPHHv
-# gsVg+xwIg5ijjAy5becg32+66jovgw5bZDXkyROGkOPWwApTfxQx4Byhg/J/65uo
-# pMYtPWMylMPrhvcv5MRDbhpkU5i2QhYaz3qR9P8QOMoVV8kYbvWU2zNs/2+jituh
+# BBRAauOnW0lAn2i1C5RWMVMm1hDqpjAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
+# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAEoj9Igt+kuUUgW5l+HpAKbW
+# nl4o2E8S2kAFUIU5FPzD5T8l2KJerNFdsbcCAbtYlWxKUkXLj5/uqA1Itdg6E3fL
+# VZR/Hsct5NRYjXtgJlX+XoHFQUbbpI9bBWuecBnnkRkGuc1DZbAkn+58QTeuSldV
+# 3FtJU/y36ln0yTWlu5/klql01CTTDF6yx+9FTHEaqbphtY3wQcTsFc0i6j3Dp+U0
+# GByLSBoxBMo0dosiykWMmK41VFsF0M+R4RPgQNKwBAaG6Go7gyk/ja1oiFoNUD/Y
+# EgFbHk1D0hy4GKdAc/DgJ7TE4qD1Aur1kKfjd7NyLoNKAIdA9X3sg0KORzdMKLWh
 # ggNMMIIDSAYJKoZIhvcNAQkGMYIDOTCCAzUCAQEwgZIwfTELMAkGA1UEBhMCR0Ix
 # GzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEY
 # MBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSUwIwYDVQQDExxTZWN0aWdvIFJTQSBU
 # aW1lIFN0YW1waW5nIENBAhEAjHegAI/00bDGPZ86SIONazANBglghkgBZQMEAgIF
 # AKB5MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTIy
-# MDMxODEzMzkxNlowPwYJKoZIhvcNAQkEMTIEMC2a76HCVE3TBo/I/VBQyJM4hw+s
-# /ecXmG+53yvfCVc5XBu0LZ/io+dbaqyQJcZDZjANBgkqhkiG9w0BAQEFAASCAgBc
-# 4dOZKQiiXt/ENF3z3Oll7REFPK7ROWAr1emK1QkwYJIdtW5Rm/fZxJrX05d2A/HE
-# LqL4V42qrElXbYOkufKtl5Ciciee8wSFaT3KK908yqrGd/gkXAp9CC5xSPGsxCSv
-# i8dZqaJkxSjd7MhvdIugxAVW+kAoMv8t0LvVsN+T5yIdHPOJNVWjthzNeYN1i7Oj
-# xJwOmNWQdPbarPbOUcLd5vTVn5N+sSPda/e8JdNt4We7aDWjpB0p1FMbs4PRXHRM
-# fRbprfKNOfGBj9aVrc3qufNzVxdniJgQBfJOb2UPYjpeEU+c7KWC9ImPHtxJWopY
-# JqTaCHTaDtFmmZJUQpCBccNuQdJIKQfDRFK/mGC53uypAk6l8eSLO/VL4DncNdDi
-# C58qMDjw+Fc3x+SrFfhOPO0jkI2qsADQ7oKCCPeOCK6fgbPCekEQmWZaVIIT4BfC
-# MSS2b7ZeN4zGelgNKL7xZH9qib43n99fyY8UtiuVg74XhLLYZu/crl6ryiuyMSXg
-# lYgRMfWGAXyFyosKSe9VWBO0AxtfuB/zXYohjjUtQne1TVs15wfvKJIrFCitudSZ
-# rVr+inIyOkxrtbYT6ZoHSWyl/JY6Sf429ZXoFx5Zm42npVTILqR3B8OXpybOQVXC
-# v6fJUJRL3dT41GPMft3Z1qtS8IoK1qjTaC/fYBJSVg==
+# MDQwODE0MzQxNlowPwYJKoZIhvcNAQkEMTIEMMFLHTYtGD9JBOLcbNqQ7mr2vrrl
+# nuVk9EkLsQHMFg9Kh0ihOcMb7jU1xhYDFmxAgTANBgkqhkiG9w0BAQEFAASCAgB+
+# 3dtFAa0oIr45W4tfmZXkWtlb49Y0AuZBOhbgBidM3P+OEoss/rYZDIPnPe9v2Phd
+# 4YpmqRbqMtFj1Kf/8kUATpRn21aqjHVSmTZWuFz3qgZeBGBfxcZ79HGCT1huzIht
+# w9u00ifllPF/JfoI18A+9T3dzNFlxbOT5cipyu8m/pOg+2F23fbCYLS52+E/kSEL
+# x59Oi6hcUKi83PQBY9p7xRfhHwAG3x7/NXUKycSmRO1Dck0UZ7yD8zGwqLVh/Oqc
+# cOVWMQ56Xxm9nLGil7WpMU3XJqcBcpA3W7Q3vqkzN+TAORTYGs9XSG9HiYWJ48QA
+# 0qIyb7UoZdr2QENaaZcAXSqqA7df6aDJkaOcYcnpT3fp/SkE/rAlfOIplpBCVbIS
+# fMJJ34yartbof/odj3b9Y8NADtjsn+ko8K7CBAA/4sroD4xfYyZB2S0Imu32mcHr
+# 9Ze8URAVsQf3UcMYsaxsGLdoIqDJwevYYe7/1/0z4K7i1bJnSbkW99xvOYiCz7PL
+# k2t5cWuHa90+QtnjUayVJlnSczhCYC+8l25wOgFhg4YO2oo56Nqd/Kn/4s0JS1+h
+# sehMs11CTl5ZZ0iQKnWXqqMVmEFo4dCE8/8S0O7z3gZYgM3tcKZVvTdwHg9DArjZ
+# uqwfABPgJDLXF1cWfgSJ16pp7GfsG0FtY3H6yKSD0w==
 # SIG # End signature block
