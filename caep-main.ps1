@@ -109,7 +109,6 @@ function Invoke-LoginNpm {
   $NpmScope = "@ca"
   $NpmLoginResultCheckRequirementLogfile = "$($HOME)\.ca\npm_login_resultCheckRequirement_$($CurrentDate).log"
   if (($UsernameTextBox.Text -ne "") -and ($TokenTextBox.Text -ne "")) {
-    Hide-LoginNpmScreen
     # Correct the Username inserted by the User
     $UsernameSplitEmail = ($UsernameTextBox.Text).split("@")
     $UsernameWithoutEmail = $UsernameSplitEmail[0]
@@ -121,11 +120,22 @@ function Invoke-LoginNpm {
     Get-Content $ErrLogfile, $OutLogfile | Set-Content $NpmLoginResultCheckRequirementLogfile
     npm config set '@ca:registry' $NpmRegistry
     npm config set '@ca-codegen:registry' $NpmRegistry
-    $NpmLoginMessage = Get-Content $NpmLoginResultCheckRequirementLogfile
-    $Description.Lines = $NpmLoginMessage
-    Show-Buttons @('$NextButton', '$CancelButton')
+    $NpmViewCli = (npm view @ca/cli 2>&1) -join " "
+    $DoubleCheck = ($NpmViewCli -like "*ERR!*")
+    if (!$DoubleCheck) {
+      Hide-LoginNpmScreen
+      $NpmLoginMessage = Get-Content $NpmLoginResultCheckRequirementLogfile
+      $Description.Lines = $NpmLoginMessage
+      Show-Buttons @('$NextButton', '$CancelButton')
+    } else {
+      $Description.Text = ""
+      $Description.SelectionStart = $Description.TextLength
+      $Description.SelectionLength = 0
+      $Description.SelectionColor = "Red"
+      $Description.AppendText("Npm Login Error!`r`nThe Token or the Username are wrong. Check again your Username and Token.`r`nPS: Be sure that the token is setted as 'All Organization'.")
+    }
   } else {
-    $Description.Text = "We have not found any Azure DevOps account.`r`nPlease enter the Azure DevOps Username and the Token.`r`nPS: Insert the Username without the COLLABORATION\.`r`n"
+    $Description.Text = ""
     $Description.SelectionStart = $Description.TextLength
     $Description.SelectionLength = 0
     $Description.SelectionColor = "Red"
@@ -173,7 +183,7 @@ function Invoke-CheckRequirements($Requirements) {
 }
 
 function Invoke-AppendRequirementDescription {
-  
+
   $Description.AppendText("Requirement $(' ' * 16)| Status |`r`n$('-' * 37)|`r`n")
   foreach ($Item in $RequirementsList) {
     $NumberSpaces = 26 - ($Item.Name | Measure-Object -Character).Characters
@@ -224,13 +234,14 @@ function Close-Installer {
   $NetStat4200 = (netstat -ano | findstr :4200).split(" ") | Select-Object -Unique
   $ClientPID = $NetStat4200[5]
   taskkill /PID $ClientPID /F
+  Remove-StartupCmd
   $InstallForm.Close()
 }
 
 function New-StartupCmd {
   $ScriptPathParent = Split-Path -Parent $ScriptPath
   $CaepInstallerName = "\caep-installer.ps1"
-  $ScriptPathQuotes = "start powershell -Command `"Start-Process powershell -verb runas -ArgumentList '-NoExit -file " + $ScriptPathParent + $CaepInstallerName + "'`""
+  $ScriptPathQuotes = "start powershell -Command `"Start-Process powershell -verb runas -ArgumentList '-NoExit -file " + $ScriptPathParent + $CaepInstallerName + " -ScarVersion " + $ScarVersion + "'`""
   if (!(Test-Path $StartupPath)) {
     New-Item -Path $StartupPath | Out-Null
     Add-Content -Path $StartupPath -Value "$ScriptPathQuotes"
@@ -238,7 +249,7 @@ function New-StartupCmd {
 }
 
 function  Remove-StartupCmd {
-  Remove-Item -Path $StartupPath
+  Remove-Item -Path $StartupPath -Force -ErrorAction Ignore
 }
 
 #---------------------------------------------------------[Logic]--------------------------------------------------------
