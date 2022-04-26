@@ -433,6 +433,18 @@
         "PostAction": ""
     },
     {
+        "Name": "Log Repository",
+        "Type": "Connection",
+        "Dependencies": [  ],
+        "QuestionMessage": "Press 'Accept' to check if the Log Repository (ftps://casftp.blob.core.windows.net:22) is reachable.",
+        "OkMessage": "$($Requirement.Name) is reachable.",
+        "KoMessage": "$($Requirement.Name) is unreachable with FTPS protocol.",
+        "TcpMessage": "",
+        "DeclineMessage": "return 'You have declined Azure DevOps Connection'",
+        "CheckRequirement": "`$logRepoAvailable = (Test-NetConnection casftp.blob.core.windows.net -port 22).TcpTestSucceeded; if (`$logRepoAvailable -eq `$True) { return @(`$true, 'OK') } else { return @(`$false, 'KO') }",
+        "PostAction": ""
+    },
+    {
         "Name": "Npm Login",
         "Type": "Activity",
         "Dependencies": [
@@ -487,7 +499,7 @@
         "PathFile": "$HOME\\AppData\\Roaming\\npm\\ca.cmd",
         "ArgumentList": "scar -c C:\\dev\\scarface\\scarface.config.json",
         "ActivityOKCommand": "",
-        "ActivityKOCommand": "`$Description.Text += '`r`nExecuting the command ca scar...`r`nWait untill Visual Studio Code and your Browser open and then you can click the End Button.'; `$NameNoSpaces = (`\"$($Requirement.Name)`\".replace(' ', '')); `$Logfile = `\"$HOME\\.ca\\$RandomCode-`$NameNoSpaces-$CurrentDate.log`\"; `$OutLogfile = `\"$HOME\\.ca\\$RandomCode-`$NameNoSpaces-$CurrentDate.out`\"; `$ErrLogfile = `\"$HOME\\.ca\\$RandomCode-`$NameNoSpaces-$CurrentDate.err`\"; Set-Location 'C:\\dev\\scarface'; Start-Process `\"$($Requirement.PathFile)`\" -ArgumentList 'scar:setup' -WindowStyle hidden -RedirectStandardOutput `$OutLogfile -RedirectStandardError `$ErrLogfile -Wait; Start-Process `\"$($Requirement.PathFile)`\" -ArgumentList `\"$($Requirement.ArgumentList)`\" -WindowStyle hidden -RedirectStandardOutput `$OutLogfile -RedirectStandardError `$ErrLogfile",
+        "ActivityKOCommand": "`$Description.Text += '`r`nExecuting the command ca scar...'; `$NameNoSpaces = (`\"$($Requirement.Name)`\".replace(' ', '')); `$Logfile = `\"$HOME\\.ca\\$RandomCode-`$NameNoSpaces-$CurrentDate.log`\"; `$OutLogfile = `\"$HOME\\.ca\\$RandomCode-`$NameNoSpaces-$CurrentDate.out`\"; `$ErrLogfile = `\"$HOME\\.ca\\$RandomCode-`$NameNoSpaces-$CurrentDate.err`\"; Set-Location 'C:\\dev\\scarface'; Start-Process `\"$($Requirement.PathFile)`\" -ArgumentList 'scar:setup' -WindowStyle hidden -RedirectStandardOutput `$OutLogfile -RedirectStandardError `$ErrLogfile -Wait; Start-Process `\"$($Requirement.PathFile)`\" -ArgumentList `\"$($Requirement.ArgumentList)`\" -WindowStyle hidden -RedirectStandardOutput `$OutLogfile -RedirectStandardError `$ErrLogfile -Wait; `$Description.Text += '`r`The command ca scar was executed correctly.`r`nPress the End button to conclude the installation.'",
         "DeclineMessage": "return `\"You have declined to automatically execute 'ca scar'.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
         "CheckRequirement": "return @(`$true, 'KO')",
         "PostAction": "End"
