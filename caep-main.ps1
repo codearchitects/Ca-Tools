@@ -76,40 +76,12 @@ function Invoke-DeclineRequirement {
   Show-Buttons @('$DoneButton')
 }
 
-# TODO
-# function Send-InstallationLogs {
-#   $UserLoginInfo = Get-Content -Path "$HOME\user-login-info.json" | ConvertFrom-Json -Depth 5
-
-#   # TODO aggiungere i datinel file $HOME\user-login-info.json
-#   $CAEPInstallationLogsPath = "C:\dev\scarface\CAEP-InstallationLogs"
-#   if (Test-Path $CAEPInstallationLogsPath) {
-#     Remove-Item -Path $CAEPInstallationLogsPath -Force
-#   }
-#
-#   # Elimina file che non contengono informazioni
-#   # ls "$HOME\.ca\" | ForEach-Object { if ($_.Length -eq 0) { Remove-Item -Path "$HOME\.ca\$($_.Name)" -Force } }
-#
-#   Set-Location "C:\dev\scarface"
-#   git clone "https://$($UserLoginInfo.username):$($UserLoginInfo.password)@devops.codearchitects.com:444/Code%20Architects/CAEP-InstallationLogs/_git/CAEP-InstallationLogs"
-#   Set-Location $CAEPInstallationLogsPath
-#   git checkout -b "logs/$($UserLoginInfo.username)_$CurrentDate"
-#   git config --global user.email "$($UserLoginInfo.email)"
-#   git config --global user.name "$($UserLoginInfo.username)"
-#   Start-Process msinfo32 -ArgumentList "/nfo $HOME\.ca\msinfo32-$env:username.nfo" -Wait -WindowStyle Hidden
-#   Compress-Archive -Path "$HOME\.ca" -DestinationPath "C:\dev\scarface\CAEP-InstallationLogs\support-bundle-$env:computername-$env:username-$CurrentDate.zip" -Force
-#   git add .
-#   git commit -m 'chore: upload installation log'
-#   git push -u origin "logs/$($UserLoginInfo.username)_$CurrentDate"
-#   Remove-Item -Path $CAEPInstallationLogsPath -Force
-# }
-
 function Invoke-LoginNpm {
   # Variables Login npm
   $NpmRegistry = "https://devops.codearchitects.com:444/Code%20Architects/_packaging/ca-npm/npm/registry/"
   $NpmScope = "@ca"
   $NpmLoginResultCheckRequirementLogfile = "$($HOME)\.ca\npm_login_resultCheckRequirement_$($CurrentDate).log"
   if (($UsernameTextBox.Text -ne "") -and ($TokenTextBox.Text -ne "")) {
-    Hide-LoginNpmScreen
     # Correct the Username inserted by the User
     $UsernameSplitEmail = ($UsernameTextBox.Text).split("@")
     $UsernameWithoutEmail = $UsernameSplitEmail[0]
@@ -121,16 +93,40 @@ function Invoke-LoginNpm {
     Get-Content $ErrLogfile, $OutLogfile | Set-Content $NpmLoginResultCheckRequirementLogfile
     npm config set '@ca:registry' $NpmRegistry
     npm config set '@ca-codegen:registry' $NpmRegistry
-    $NpmLoginMessage = Get-Content $NpmLoginResultCheckRequirementLogfile
-    $Description.Lines = $NpmLoginMessage
-    Show-Buttons @('$NextButton', '$CancelButton')
+    $NpmViewCli = (npm view @ca/cli 2>&1) -join " "
+    $DoubleCheck = ($NpmViewCli -like "*ERR!*")
+    if (!$DoubleCheck) {
+      Hide-LoginNpmScreen
+      $NpmLoginMessage = Get-Content $NpmLoginResultCheckRequirementLogfile
+      $Description.Lines = $NpmLoginMessage
+      Remove-WrongToken($TokenTextBox.Text)
+      Show-Buttons @('$NextButton', '$CancelButton')
+    } else {
+      Show-NpmLoginError("Npm Login Error!`r`nThe Token or the Username are wrong. Check again your Username and Token.`r`nPS: Be sure that the token is setted as 'All Accessible Organization'.")
+    }
   } else {
-    $Description.Text = "We have not found any Azure DevOps account.`r`nPlease enter the Azure DevOps Username and the Token.`r`nPS: Insert the Username without the COLLABORATION\.`r`n"
-    $Description.SelectionStart = $Description.TextLength
-    $Description.SelectionLength = 0
-    $Description.SelectionColor = "Red"
-    $Description.AppendText("Username and Token can't be NULL! Please enter the Username and Password.")
+    Show-NpmLoginError("Username and Token can't be NULL! Please enter the Username and Password.")
   }
+}
+
+function Remove-WrongToken($CorrectToken) {
+  $TokenPath = "~\.token.json"
+  $TokenList = Get-Content $TokenPath | ConvertFrom-Json
+  $NewTokenList = @()
+  foreach ($t in $TokenList) {
+    if ($t.token -eq $CorrectToken) {
+      $NewTokenList += $t
+    }
+  }
+  $NewTokenList | ConvertTo-Json | Set-Content -Path $TokenPath -Force
+}
+
+function Show-NpmLoginError($Msg) {
+  $Description.Text = ""
+  $Description.SelectionStart = $Description.TextLength
+  $Description.SelectionLength = 0
+  $Description.SelectionColor = "Red"
+  $Description.AppendText($Msg)
 }
 
 function Remove-BackofficeProject {
@@ -161,19 +157,15 @@ function Invoke-CheckRequirements($Requirements) {
     New-Logfiles $Requirement
     if ($Requirement.CheckRequirement) {
       $ResultCheckRequirement = Invoke-Expression (New-CommandString $Requirement.CheckRequirement)
-      if (($ResultCheckRequirement[0] -eq $true) -and ($ResultCheckRequirement[1] -ne 'OK') -or $MustCheckRequirementList.Contains($Requirement.Name)) {
+      if (!(($ResultCheckRequirement[0] -eq $true) -and ($ResultCheckRequirement[1] -eq 'OK')) -or $MustCheckRequirementList.Contains($Requirement.Name)) {
         $ResultCheckRequirementList += $Requirement
-      } elseif ($ResultCheckRequirement[0] -eq $false) {
-        Write-Host $Requirement.Name -ForegroundColor DarkYellow
       }
     }
   }
-
   return $ResultCheckRequirementList
 }
 
 function Invoke-AppendRequirementDescription {
-  
   $Description.AppendText("Requirement $(' ' * 16)| Status |`r`n$('-' * 37)|`r`n")
   foreach ($Item in $RequirementsList) {
     $NumberSpaces = 26 - ($Item.Name | Measure-Object -Character).Characters
@@ -196,7 +188,6 @@ function Invoke-AppendRequirementDescription {
 
 function New-Logfiles($Requirement) {
   Invoke-NameLogfile $Requirement
-  
   if (-not(Test-Path $OutLogfile)) {
     New-Item -Path $OutLogfile -Force | Out-Null
   }
@@ -221,16 +212,39 @@ function Update-EnvPath {
 }
 
 function Close-Installer {
-  $NetStat4200 = (netstat -ano | findstr :4200).split(" ") | Select-Object -Unique
-  $ClientPID = $NetStat4200[5]
-  taskkill /PID $ClientPID /F
+  try {
+    $NetStat4200 = (netstat -ano | findstr :4200).split(" ") | Select-Object -Unique
+    $ClientPID = $NetStat4200[5]
+    taskkill /PID $ClientPID /F
+  }
+  catch {
+    Write-Host "No process running on port 4200"
+  }
+  Remove-StartupCmd
+  Update-ScarfaceConfigJson
+  Send-InstallationLogs
   $InstallForm.Close()
+}
+
+function Update-ScarfaceConfigJson {
+  $ScarfaceConfigJsonPath = "C:\dev\scarface\scarface.config.json"
+  $ScarfaceConfigJson = Get-Content -Path $ScarfaceConfigJsonPath -Raw | ConvertFrom-Json
+  $ElementsToRemove = @("application", "domain", "scenario", "author", "prefix")
+  foreach ($Element in $ElementsToRemove) {
+    $ScarfaceConfigJson.PSObject.Properties.Remove($Element)
+  }
+  $ScarfaceConfigJson | ConvertTo-Json -Depth 5 | Out-File -Encoding "ASCII" $ScarfaceConfigJsonPath -Force
 }
 
 function New-StartupCmd {
   $ScriptPathParent = Split-Path -Parent $ScriptPath
   $CaepInstallerName = "\caep-installer.ps1"
-  $ScriptPathQuotes = "start powershell -Command `"Start-Process powershell -verb runas -ArgumentList '-NoExit -file " + $ScriptPathParent + $CaepInstallerName + "'`""
+  if ($ScarVersion -ne "") {
+    $ScriptPathQuotes = "start powershell -Command `"Start-Process powershell -verb runas -ArgumentList '-NoExit -file " + $ScriptPathParent + $CaepInstallerName + " -ScarVersion " + $ScarVersion + "'`""
+  } else {
+    $ScriptPathQuotes = "start powershell -Command `"Start-Process powershell -verb runas -ArgumentList '-NoExit -file " + $ScriptPathParent + $CaepInstallerName + "'`""
+  }
+  
   if (!(Test-Path $StartupPath)) {
     New-Item -Path $StartupPath | Out-Null
     Add-Content -Path $StartupPath -Value "$ScriptPathQuotes"
@@ -238,7 +252,7 @@ function New-StartupCmd {
 }
 
 function  Remove-StartupCmd {
-  Remove-Item -Path $StartupPath
+  Remove-Item -Path $StartupPath -Force -ErrorAction Ignore
 }
 
 #---------------------------------------------------------[Logic]--------------------------------------------------------
@@ -255,6 +269,7 @@ $OutLogfile
 $ErrLogfile
 
 . .\requirement-actions.ps1 -RandomCode $RandomCode -CurrentDate $CurrentDate -ScarVersion $ScarVersion -ScarConfig $ScarConfig
+. .\send-logs.ps1 -ScriptPath $ScriptPath -CurrentDate $CurrentDate
 
 $IndexRequirement = 0
 $BackofficeProjectPath = "C:\dev\scarface\back-office"
@@ -298,8 +313,8 @@ if (-not $AdminStatus) {
 # SIG # Begin signature block
 # MIIk2wYJKoZIhvcNAQcCoIIkzDCCJMgCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUozKAoXu9qfHQxLNPUQIJdJwV
-# KgCggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUvD08vGNfqaMPweQ3C8GBVF3b
+# xniggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -468,29 +483,29 @@ if (-not $AdminStatus) {
 # ZWQxJDAiBgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQQIQDue4N8WI
 # aRr2ZZle0AzJjDAJBgUrDgMCGgUAoIGEMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3
 # AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEW
-# BBRAauOnW0lAn2i1C5RWMVMm1hDqpjAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
-# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAEoj9Igt+kuUUgW5l+HpAKbW
-# nl4o2E8S2kAFUIU5FPzD5T8l2KJerNFdsbcCAbtYlWxKUkXLj5/uqA1Itdg6E3fL
-# VZR/Hsct5NRYjXtgJlX+XoHFQUbbpI9bBWuecBnnkRkGuc1DZbAkn+58QTeuSldV
-# 3FtJU/y36ln0yTWlu5/klql01CTTDF6yx+9FTHEaqbphtY3wQcTsFc0i6j3Dp+U0
-# GByLSBoxBMo0dosiykWMmK41VFsF0M+R4RPgQNKwBAaG6Go7gyk/ja1oiFoNUD/Y
-# EgFbHk1D0hy4GKdAc/DgJ7TE4qD1Aur1kKfjd7NyLoNKAIdA9X3sg0KORzdMKLWh
+# BBQqL14NpDQE+cMsBEojgr2RhtcAdTAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
+# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAK2WwItCyQHncZm9Ol4x5iY7
+# qA6uzuNBddPTfcJJfGPML6Ubz75kKS4rAh3FpVEyBiF6JSXotwAuwnOxlGK3ywiX
+# xAzlZgh78QQCdhB/UuXWE1m5oKXZJV6xIzBONbD0DWVIRYKRPJakTn1s8n+RvoFi
+# //uRKplQCiZJ9ta3072OBAJWH3WMXUwINreAp345WHdu9TW77lOMGHsSRxBwfaV6
+# paCJ/zBmN56elMu9tC2N3rhSUcTEI885MdO3OYhGAdRd1yex5/hefK9PDWmEW/IB
+# nWz4sXCEl09IdE9H8ZR+R7ZwTS4qqQR0LVf1LvRJelamn3d29lThMgMRK59G3RGh
 # ggNMMIIDSAYJKoZIhvcNAQkGMYIDOTCCAzUCAQEwgZIwfTELMAkGA1UEBhMCR0Ix
 # GzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEY
 # MBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSUwIwYDVQQDExxTZWN0aWdvIFJTQSBU
 # aW1lIFN0YW1waW5nIENBAhEAjHegAI/00bDGPZ86SIONazANBglghkgBZQMEAgIF
 # AKB5MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTIy
-# MDQwODE1MzEzOFowPwYJKoZIhvcNAQkEMTIEMMFLHTYtGD9JBOLcbNqQ7mr2vrrl
-# nuVk9EkLsQHMFg9Kh0ihOcMb7jU1xhYDFmxAgTANBgkqhkiG9w0BAQEFAASCAgAY
-# PDSmjhTjzpVKtqILTQztJZD1G/6OhfwM3TLF2x0OhniqAnTglbQ9ucYoG6csS/JH
-# q5VAz0KGc6/L82IQckLnHPGKAa8pABEsvyOwde8kCen4mrfKn4Fk5NpBhSBEdou2
-# Dmmp2w3QnWFDKA297r8U4/KCY1RSv0umHpZwXnyrdTNsi3t9rJfR4wZ63wICRwBk
-# E05WrEYaUxWUgUkZjASWWsDOMwama2BazEuHAV5eAWlFbZapc1X7nZ1RJKAOsUI1
-# UP8NEiEKLNy3A8HiPHYP2I3TvjzQysBQ/+Rr9KrbH9BnEMix5tqHNMvnUG6DvlJi
-# HrOtig2643YjS5EWlTtJ+2nerfeoosJrWuUjICyCXJrUnNP1v8Z7dqI1o+owD1J4
-# 9uo8mOKrsErx/EVpPxClwdI8cmttf2AeFsRqxeSZ8tf2xUDmD4MSnnwmLNOEK1xV
-# ja3dcgHUXMx2NzuzRioxn9bnKsAlNVlyFiC7q5BxkPaQZIPOn0YjocL9UNUBnmmu
-# aQGwBzilOpdrBC2jOTp3uqI+7O8q4v8s55Kljhpt2jYCpECy+OIoxKkg+r6RP35W
-# 9jd+2pFGW29LtJz4xEaHGaU0HDZjegAThVEbPnPa22LAm0oxhUBteUAoBnXPRwGV
-# rj10aKq1TT4vtYyKEdVdRDa82eCjlDiTrlTx2Y4TiA==
+# MDQyNjEyNDY0NVowPwYJKoZIhvcNAQkEMTIEMAdZkiA7jMnVHIBev1o23nwxzg57
+# 9U6TbwUXbShhrnN3CCButgzm9ZUauAr0+gm9vjANBgkqhkiG9w0BAQEFAASCAgBn
+# EMqEFkLSpuWrpQ/MB5oovfhJ4InBOQ5nB8NkVrE00Fft/g56dgkLQtX0XnIs7yNm
+# CA79+VUJ75K9Sphd47yZGBqeArx/2Nx4Y3ApJTV5+f/ie4R37O43CvTJist7HuOG
+# yvKr/EYzWcANDyTdDknWZFdyfMDV30lS+x9cUWbO2Ci4PlpJoPm2OKjQfBNY1Lgn
+# qn4FacjuZyDWVljKplXCpLIDQdfENrU9Lgdmeyl9GTd928FyZU4YxIBKxQzw6LeX
+# M52+UCI+9qi2Ghh//6Zs2t3J0JSHD4f1RTC16jeQqeqMB1mDki+aNhb9TiT2qOTS
+# BWWN8h0cE3aJ+UmqBlE6yRYPcki1skGEXwO85fT7IqxQnpg1x1/3vwDYXjGC7pyZ
+# KqZoecdra3tiW8GSC4Bkihp0NiPNyjjEg/ENRnu1JtJHOEZOG2KiP2EDuZVqvOuq
+# 3sIcW5g3RwU5dy5cmbQcYcs/4tzAoN3gWSg5MlXJX7XesdaWpJrULDsmEyjTI+Al
+# tYvyo4LlR3IYKNUCiWLg6oC3zDSJoBPtpPojAUk7Jsbq6jakdWXz/Mc/+9ccOMDd
+# P9vBQIXmm40818r33Sx2J83G7xWFTPJ+U2k/2HJ8rd0m5muUZipcgTXWsXmD6ETW
+# GSqaO5rcCMGln9L0BYReuIticL5mXgah0guJvuRPxw==
 # SIG # End signature block

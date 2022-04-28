@@ -1,36 +1,54 @@
-try {
-    ca plugins:remove @ca/cli-plugin-scarface
+param(
+  [string]$ScriptPath = "",
+  [string]$CurrentDate = ""
+)
 
-    npm uninstall -g @ca/cli
-} catch {
-    Write-Host "@ca/cli-plugin-scarface already removed."
-}
+function Send-InstallationLogs {
+  $MaxDate = 0
+  $TokenPath = "~\.token.json"
+  $TokenList = Get-Content $TokenPath | ConvertFrom-Json
+  $UserLogin = ""
 
-# Rimozione 'codearchitects.jfrog.io' da NuGet.Config
-$NugetConfig = [XML](Get-Content -Path "$HOME\AppData\Roaming\NuGet\Nuget.Config")
-foreach ($PackageSource in $NugetConfig.configuration.packageSources.add) {
-    if ($PackageSource.value -like "*codearchitects.jfrog.io*") {
-        $NodePackageSources = $NugetConfig.SelectSingleNode("//configuration//packageSources//add[@key=`"$($packageSource.key)`"]")
+  if ($ScriptPath -eq "" -or $CurrentDate -eq "") {
+    $CurrentDate = (Get-Date -Format yyyyMMdd-hhmm).ToString()
+    $CurrentDirectory = Get-Location
+    $ScriptPath = Join-Path -Path $CurrentDirectory -ChildPath "Ca-Tools-main\"
+  }
+  
+  foreach($t in $TokenList) {
+    $TokenDate = $t.date.Replace("-", "")
+    if ($MaxDate -lt $TokenDate) {
+    $MaxDate = $TokenDate;
+    $UserLogin = $t.user
     }
-}
-if ($NodePackageSources) {
-    $NugetConfig.configuration.packageSources.RemoveChild($NodePackageSources) | Out-Null
-    $NodePackageCredentials = $NugetConfig.SelectSingleNode("//configuration//packageSourceCredentials//$($NodePackageSources.key)")
-    if ($NodePackageCredentials) {
-        $NugetConfig.configuration.packageSourceCredentials.RemoveChild($NodePackageCredentials) | Out-Null
-    }
-    $NugetConfig.Save("$HOME\AppData\Roaming\NuGet\NuGet.Config")
-}
+  }
 
-# Rimozione 'codearchitects.jfrog.io' da .npmrc
-$Npmrc = Get-Content -Path "$HOME\.npmrc" | Where-Object { $_ -notlike '*codearchitects.jfrog.io*' }
-Set-Content -Path "$HOME\.npmrc" -Value $Npmrc
+  $ScriptPathParent = Split-Path -Parent $ScriptPath
+  $HelperPath = Join-Path -Path $ScriptPathParent -ChildPath "helper\"
+  $HelperZipPath = Join-Path -Path $ScriptPathParent -ChildPath "helper.zip"
+  $ConnectPath = Join-Path -Path $ScriptPathParent -ChildPath "connect.sh"
+  $CaZipPath = Join-Path -Path $ScriptPathParent -ChildPath "$UserLogin-$CurrentDate.zip"
+  $Destination = "$HOME\.ssh\"
+
+  if (!(Test-Path $Destination)) {
+    New-Item -Path $Destination -ItemType Directory -Force 
+  }
+  Expand-Archive -Path $HelperZipPath -DestinationPath $ScriptPathParent -Force
+  Get-ChildItem -Path $HelperPath -File | Move-Item -Destination $Destination -Force
+  $Compress = @{
+    Path = "$HOME\.ca\"
+    CompressionLevel = "Fastest"
+    DestinationPath = $CaZipPath
+  }
+  Compress-Archive @Compress -Force
+  &"C:\Program Files\Git\usr\bin\bash.exe" $ConnectPath $CaZipPath
+}
 
 # SIG # Begin signature block
 # MIIk2wYJKoZIhvcNAQcCoIIkzDCCJMgCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUqbbNw7EtjnJf9V+yCNnYvw4g
-# 6Ieggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU+g7V5650oMaGS7CrfmLRZMbB
+# P6uggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -199,29 +217,29 @@ Set-Content -Path "$HOME\.npmrc" -Value $Npmrc
 # ZWQxJDAiBgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQQIQDue4N8WI
 # aRr2ZZle0AzJjDAJBgUrDgMCGgUAoIGEMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3
 # AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEW
-# BBTg0l3rbLFgfKzPsiwIew5dz1UE0TAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
-# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAGqNN7o4oKCm1CQy4JUVz3vy
-# Lkm2C6Pac6ebiXgJA6Gi83Ndf3vPizOODIv1LkuoVpRqb4g5FKjxdqUFTU093TUE
-# N5K4BdLgDWkRgGYX3hnODNEBWmmsArLGUXB6hUb+ZoGxX9RBWOC6hSLQP7FeSrtR
-# rhzpFZ3h4sFK6oDPSi86jxECzHt14nSWJrcn6shcOyKx5pt0jeGLnfLD+HkMzA4i
-# H3BiT+yrooJwGkFD2DDcJRlIEibEdLsAES8e2TNiErzj+OzQrekEDEYAFuZbIyAx
-# fTXjWUSJ0lJYn9Z3mqV+OQtfHpetMgQoiMsEYPoQtpVx5jqrX9/JcBlG0Ovt9GOh
+# BBRfN57S1uBlXJUly8gAN6qafhj3ozAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
+# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAFucCiDWCNkdLpLWrFwbSlpH
+# BO8sBebXdVdZJxNTWki78TadQhT5QAFVEkI8FCYCrYJ6Xv2L2Zl8Q4SFJh8zfBDy
+# uLMBuLHx1p/54ZDg+vacZE4A5D8K9pgAah5OBTizpYfTe+oxsJHdJe6yokC5TWCJ
+# Ji74oMZaRgUXL/UUuYpm8JWOjAFlr6Lg40OZBKz9lytDgsc500Xgc4asGrUaiEdv
+# EYCAZBVOvKOpBt34Jhn0KkFI1+1aCugM6iinVWUikHtAFVoH90AC9km9kbQ26og4
+# uR2lR4+gYYeO8hK9xP7bY0r3OC8kiNtYV3Rzm9U4UFXUZqAyGpNyRqCYKKyWxwOh
 # ggNMMIIDSAYJKoZIhvcNAQkGMYIDOTCCAzUCAQEwgZIwfTELMAkGA1UEBhMCR0Ix
 # GzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEY
 # MBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSUwIwYDVQQDExxTZWN0aWdvIFJTQSBU
 # aW1lIFN0YW1waW5nIENBAhEAjHegAI/00bDGPZ86SIONazANBglghkgBZQMEAgIF
 # AKB5MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTIy
-# MDQyNjEyNDY1MlowPwYJKoZIhvcNAQkEMTIEMHamMG3mj40xoFrVbH9riKs7vBa6
-# zl1XpL2/WXwnhB75haWkVdkb/b4/vc5Oev1+xjANBgkqhkiG9w0BAQEFAASCAgBN
-# iQjIk+8XOsIx2iI5prju4UTDde1o2oBaj2Q3HK9dvVqo62lDQ4bxFPKbIug2JuJp
-# zymXndRN5zIwBHRfMlfnyUvQ31S7AFtTdOEUkg/BDa2CV3Oexf4YKCs7dYHnW3z4
-# hGOM+dy6xb3y0kwc6ab4aRilYV1PFRVa0k7dlRT9L9gQUzagMnp1LpBmQiv2YjVo
-# TWRSKQhoyZKcJfu5y1WLDqtC1edRIR5gwNo9FY9aBJvH92Vek6tBFS0dFdlUlNCh
-# Bw8ePqrHobkXbLDNN0NbP8oOkYtZOqtleSi2UORY7qTJ+ytIYXfrpoGbKnucyK6c
-# B73YPvI5VEncYmnamsJMK55Z6BnvTCrD05TZOdbrMYKlUc16yg88cjZKJQoJgOeY
-# ZZ10PyBCbFqo9FUqXiK9HPV0jKh06cqFWIYH5YvgO1ygDRu3ePi566PIzyBhXhaY
-# +VXS6Hm4G1eksyu3SO4FXJufqotObuIMPm0xeYHmuL7ALZZz4JeqmLftSPWmXrkX
-# Qtc3mjogZH7ri2M1STzm+stB36te4EcvoTMO2tWYVy4uiNGfg80OlEqDE3pcn7ir
-# fFThDHytN80gtn9IuarqHnCGz7j8kQK/0HzO2LZt7Q65dNh33v4hYD0P+niGexrC
-# i7KZilNRAculr+QfTIBl4KB0LNBoEG0sk5iQ6v0V1w==
+# MDQyNjEyNTIwOVowPwYJKoZIhvcNAQkEMTIEMKFOy6bYuJP3ZuBr9oB1+Cl7Wz4d
+# s18HE6768dPvRxWbr6FKabnYO6Eq9TR9sujMADANBgkqhkiG9w0BAQEFAASCAgAs
+# tu52rU8A3L50wcvsWm48HNVLwPSzHDAh0e6vh3RKeoT/vBZl5rYLRSc1REqDnqTX
+# VcNW0D7WFExmiQC7S6RycKx/H+3J49GKvLclar5MeoVAW7qmx/oUzHUdgzrPSbkx
+# gOtmDGQIdn8fXv0PuZhr6nlPKbigXSIPv+ZLw5Izx2/q6WK0bQRpzzg+Qf7AKCRP
+# xUSldweq8rKtBOGV4DOm05v79FoFJeogvo5Dyjf3NSQ5z7eNzXX9pTukmdNN7vdE
+# 7pAZBLfGnCHh+b9c8YwCAOVJ2d/1gTm0S4KOWZ7OdF5SCFrmQF74JxVkizuaxr7W
+# XD6L/I/zxyTtXALiYPkGLsRBotf8MSCdxEd7Dy7hIWgcTvZ1Fb9s/nrFAMZ4n7nG
+# aneWuaHjCH8UyjZTS/SmSsiTuYW3TQLAlteK00JJ1+1iZpA4OOqOEdM/kVQC3uaD
+# ksA5HyYvJw0We2xmt3RKz/9TDP5/mzZ2o+2f222lJbj3fNNPXs5Vd8mLTSxajLum
+# U0uY3ElFOVbKodeI0pX2aHr9fMUHoHESHNhnYYRV2e573w3yXORdohhbc2tNlGet
+# zMsFDyMkPTg1FIAD85uqiXeNzY2+QP/FAaQYhsjlGqZffFnTbxHHFbkSeMW25TB2
+# UTVAqTeeR2T+QEqhGYrnx4MzDJlX79ht6Pe5Ie31Hw==
 # SIG # End signature block
