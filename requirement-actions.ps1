@@ -8,8 +8,8 @@ param(
 $Logfile
 $OutLogfile
 $ErrLogfile
-# Contiene l'estensione da installare in VS Code. Da utilizzare nel metodo New-CommandString. Deve essere globale altrimenti sarà utilizzabile soltanto nella funzione 
-# Invoke-PostInstallAction e non nella funzione New-CommandString
+# The variable item contains the extensions that needs to be installed on VS Code.
+# To be used on the New-CommandString it needs to be global, otherwise it'll be only used on the Invoke-PostInstallAction and not in the New-CommandString function.
 $item
 
 function Invoke-ActivityAction {
@@ -306,6 +306,12 @@ function Invoke-PreInstallAction {
 }
 
 function New-CommandString($String) {
+  <#
+  .SYNOPSIS
+  Resolve the Requirement's command, subsituting the variables inside the string with his concrete value
+  .DESCRIPTION
+  Resolves the Requirement's command, subsituting the variables inside the string with his concrete value
+  #>
   $StringWithValue = $String
   do {
     Invoke-Expression("Set-Variable -name StringWithValue -Value `"$StringWithValue`"")
@@ -316,8 +322,8 @@ function New-CommandString($String) {
 # SIG # Begin signature block
 # MIIk2wYJKoZIhvcNAQcCoIIkzDCCJMgCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUgbxCm17veDVL8gLUKetfZrU/
-# AKuggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUqds1AGNFbEJ8/W2y3ilEcVHL
+# Y5yggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -486,29 +492,29 @@ function New-CommandString($String) {
 # ZWQxJDAiBgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQQIQDue4N8WI
 # aRr2ZZle0AzJjDAJBgUrDgMCGgUAoIGEMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3
 # AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEW
-# BBThFXojX8wwGi4Erx4ESHBuavzGvzAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
-# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAGpZbl4XY+BbUCcK9vKZnmb5
-# 0dP9DZcqcb74/48fyC8W4+aqTlnBdrwQPt0BoEAmlRIX8PHKbUiznf2G73KmdCEp
-# LjZOJankDMbeCX5ep2Ah9ik7jL41f56NoMxU6XLhTdLlQm16azjPeslQ6fbf7P4P
-# DoRQ7VwiTporwMWZpFMZpXZQddWGnPcK/HDTBV6OUNNiGA6AURYTCnuMs4wJCPeG
-# WQ2I99xN9rNGqenyONgiW2ZJU/3jiSgMS2uC8fhChR7YTrKgiUKZ2A3PKy+bt08+
-# ir5D7d4TDZk6b5Z8yu+9ce/ZFugx6EW61YQgdwAQ5Te4AepWh9u2LCloXlgOF2eh
+# BBTZYQNGvVLhoELsTaN3DU4zWS9QwzAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
+# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBADVtnknxN5ZzGqfE4dD2AhQC
+# NtUQG+WcSlRbIplNQhC6OhWHv0QVcZEFunQgurnHc8vhx+nNCmSMdi0vKvBU+CBF
+# K6ab8epZi3ezyTzHS299YjYeiADILlLQb8nLtORMH7fBQTTqMDLl/tvgbA5beOSD
+# pT80iDBirZeQGuIOAbfhNcMSu9ObKBBs47mK6miH033Q1ob1Rqhp/ADWxohkE82T
+# Lbexs9D+WnksExOprl+L3FNhgpgZ40sBFL+8KcyoFEI3IYO45p4w9mswQ6tB/3TZ
+# IjXSmk1yEFIoH2JOaUenaB/IMgBHEF7CiHBHvOiOiZWiYQoNuvGsMRuZxedxyZ2h
 # ggNMMIIDSAYJKoZIhvcNAQkGMYIDOTCCAzUCAQEwgZIwfTELMAkGA1UEBhMCR0Ix
 # GzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEY
 # MBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSUwIwYDVQQDExxTZWN0aWdvIFJTQSBU
 # aW1lIFN0YW1waW5nIENBAhEAjHegAI/00bDGPZ86SIONazANBglghkgBZQMEAgIF
 # AKB5MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTIy
-# MDQyNjEyNDcyMlowPwYJKoZIhvcNAQkEMTIEMKofGoZm10yvVyD2SXZFzADgTVYJ
-# OACJc7HKfbnAR/kTMplnGb4hGuhyyAjDaTzPUjANBgkqhkiG9w0BAQEFAASCAgCI
-# AY1C8SwiG7K1QBSkrc0dI8wNyCnD/6Ac4zXPFZOqx6PAfGnY/RciKQjBd628L315
-# yB6wPZN8JUER2MzYuXpZPNfj/Hr4IUpkEbqRriPyvE+31BGPWFZI5JVCfn1Yx3bg
-# dXGGhOnjJHb/+zM5Zkpq1qXufxje0USP40zCSaSFc8kA+8UwFIh7HcUAOHDp5w9X
-# ply4xPrzIGMLFZKOWzgXx4M2GQc0vBTk1EQ28/FSlew1FU7RBx40UuL3EAyh1qdT
-# D5WhnvJfKmrewUh4/n7dHB3y8DQuKJGcmtgGMVOiBwf9grsYlp4nS4QBxphecKQq
-# DVNoMVrZFiP7RMB2+WDM/f8+JtM8QJbJpZJpHDGdnDClmukJzD+fSkauXMYXTRiB
-# Tv33s2Ok3h2BcSlvkSys8YIlpKGF/OMsdBaRpYitSIo6xlId2MfbqoSWyetjt2wr
-# hu1cBLLYuHwt69sOqZEJ+7I1KlQhyTZ4Luq1VIc3+JHuuu9PNFYjZfR84aSzru/x
-# aTi8sVv9h4nisLLTL7OoXAlMfP6FLvNp9hZQXSQXSQkV1vwyg1ZoUWxZu2FjeAw/
-# /Ky4CdsdZ1QlRHkChwQUKY+LLJ/O7xXj0/1japIuM1b4LNGsvSm8X3v6Xpw7RKb1
-# C8GivK6ILx5Is+p6i1pjvppPFEizwcL7iWhB/Ziphg==
+# MDUwMzE0MjkxNlowPwYJKoZIhvcNAQkEMTIEMAas3EQlZKRhl9AnHxAefIPbKYTw
+# woP5yjFOz1RdsSpExA1S4xWD2QCRzowCrpBl+zANBgkqhkiG9w0BAQEFAASCAgAr
+# peK9RrN2SynR+alnq6zRBM+0eFv/g/dTGWTHAXACvrZc3fT95Tn3jh5J54A6eK+5
+# 5AJyxX+GOHfyU4XVAp/wTdPiTQ672/bKEiR9ZhlRcPaLZUTVcccr5oQG05EHay+c
+# AZZ035DfgWRehIGbDNab2RftkhBF1Me4rmwAPb8OUFct9lDflC/h+xCaRA0QK6LQ
+# /lw/g8JBraU59tg+hKeJ6Ui1CXTyuJ5PZXmcL3GX050W5YeJdtD371/d+2PChr86
+# c+jq8TMlUK3w7uxlSGIviIxIHvmHs2bsgpXzCd32n+HHkVkOGZ4YFEAB1cO5+3Yl
+# em1K+O/hI0ss+TQa7fEZZUV3k/Hw6KKZFaXqhqcoBpHkqUGXWdt1uSPvleuEFNAk
+# NyXENxVAK7wnj4Dc1FrnkmryqVq3uh+wdN/egK5rDfDGdopQAIZz/DHSNb3Y4kkS
+# D4Z8Ok7rz8JRaX0ta7KV8mUxXksVvmiVEkp8sRDgoRFTSwXVCRHmbt62ZlxtIVrj
+# d5+1T6/6ZOp1hlyL0gxz7IJB/8oNze+/UiRRQ7nYclPCQLBkc0hteVmXu0eQEYP8
+# RLqa7PvnTGYyNDFYXNDTXpg+EAPuylKTlt31Zl33J4fw6XwJaXjmNUa/1waHfN8J
+# SxH2Wm+gLrkbZXAHB1AEulOB+bZC4+VZ8+EdL6mC9w==
 # SIG # End signature block
