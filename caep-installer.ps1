@@ -243,6 +243,13 @@ $NoButton))
 
 
 function Show-Buttons ([string[]]$ButtonsName) {  
+  <#
+  .SYNOPSIS
+  Show the Buttons requested on the GUI
+
+  .DESCRIPTION
+  Turns Invisible every Button present on the GUI and then turns Visible only the requested Buttons
+  #>
   $CancelButton.Visible = $false
   $NextButton.Visible = $false
   $DeclineButton.Visible = $false
@@ -260,11 +267,14 @@ function Show-Buttons ([string[]]$ButtonsName) {
   }
 }
 
-<# ShowLoginNpm
-Shows the login to npm screen to the userm
-if the CheckNpmLogin is successful then select the user credential and ask to login or change the credantials
-#>
 function Show-LoginNpmScreen {
+  <#
+  .SYNOPSIS
+  Show the Npm Login Screen
+
+  .DESCRIPTION
+  Shows the Npm Login Screen
+  #>
   $Description.Height = 70
   $UsernameLabel.Visible = $true
   $UsernameTextBox.Visible = $true
@@ -280,7 +290,13 @@ function Show-LoginNpmScreen {
 }
 
 function Hide-LoginNpmScreen {
-  $Description.Text = ""
+  <#
+  .SYNOPSIS
+  Hide the Npm Login Screen
+
+  .DESCRIPTION
+  hides the Npm Login Screen
+  #>ion.Text = ""
   $Description.Height = 150
   $UsernameLabel.Visible = $false
   $UsernameTextBox.Visible = $false
@@ -296,6 +312,13 @@ function Hide-LoginNpmScreen {
 }
 
 function Show-ButtonsPostAction ($RequirementPostAction) {
+  <#
+  .SYNOPSIS
+  Show a specific Button based on the Post Action of the Requirement
+
+  .DESCRIPTION
+  Shows a specific Button based on the Post Action of the Requirement
+  #>
   switch ($RequirementPostAction) {
     "End" {
       Show-Buttons @('$EndButton')
@@ -313,10 +336,12 @@ function Show-ButtonsPostAction ($RequirementPostAction) {
   }
 }
 
+# ScriptPath will contain the Script's path, once done that it will take only the path's parent and set the current Location to that path
 $ScriptPath = $MyInvocation.MyCommand.Path
 $ScriptPathParent = Split-Path -Parent $ScriptPath
 Set-Location $ScriptPathParent
 
+# Unlocks all the scripts needed for the installation
 Unblock-File -Path .\caep-main.ps1
 Unblock-File -Path .\clean-jfrog.ps1
 Unblock-File -Path .\requirement-actions.ps1
@@ -341,8 +366,8 @@ $NoButton.Add_Click({ OutFileAnswerNestedVirtualization $false })
 # SIG # Begin signature block
 # MIIk2wYJKoZIhvcNAQcCoIIkzDCCJMgCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUSzrBgiRaOEefGPGrPSMswdOl
-# 2+eggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUqjwdm99kDqnYDH0rnZp8blUT
+# BHSggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -511,29 +536,29 @@ $NoButton.Add_Click({ OutFileAnswerNestedVirtualization $false })
 # ZWQxJDAiBgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQQIQDue4N8WI
 # aRr2ZZle0AzJjDAJBgUrDgMCGgUAoIGEMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3
 # AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEW
-# BBTj1JABWRtBhpU9Cqo0VgAAHezM0DAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
-# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAHlv0GYS143ep2s3DSSKW975
-# 1brG6NqDnGHVejmJWjuZkXRgx5vc3vTc3H/0y2ZUstkdzj/R6MFoKrqCk6EFZtwz
-# J1H3XfCpkxgM5/RywhJ7bx3O19Oeu8IV8Eu/8xF9BFQUdZH00ZHvyYEFNsVRrNUp
-# ZMdj3RQ7O16lW62XXMSYkRn4KN8f0uGySUedL1N9+sjTdY7moOIJ2evb+QymQ+fW
-# 64Z/G0kV5x79xQmQd6Id8PvhGwijS4/RD6x2cmYxdtPx0+R/ec8jpkF0sN+rQUge
-# j+TCBWLHnLmWEDs/u/X9amhrZyuOTitEck6YrXACyQbIW6n6/VeiY+I9EXBUdoqh
+# BBT+4lh01DERU7mVAh2TNh14AnTgIjAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
+# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAC0JKru2m3J+/co4w3wdNNN5
+# 6qjc1cnEbMpcfW2U54MhAfg8DXdXrTezQQALVVrxqbSXX++8jy/DQiBri5dCNjQe
+# yjhfghgirjDUo+D1sq+eP+Gh0Uubf1/dozL355xTTsjigxuFabb4q9PDT+KQO+vO
+# YP4uBqaJ7imMswAkprAdk6PCJ9ZrAKQAgk5vwCFZl0yLUhvS4WMfsXLZHAo1REpE
+# ij6Z8OfJvBM5ZpMqqSuJWoFeYw8NMBil1ANJ9k7HR73Bvep/hKszVpWq2AV0hn1N
+# ro2aiTS9md7G8/jaZB87u0xy3jEargxQtN8bLnxXELEMWik0NeDHPe8ZSE7QI8Wh
 # ggNMMIIDSAYJKoZIhvcNAQkGMYIDOTCCAzUCAQEwgZIwfTELMAkGA1UEBhMCR0Ix
 # GzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEY
 # MBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSUwIwYDVQQDExxTZWN0aWdvIFJTQSBU
 # aW1lIFN0YW1waW5nIENBAhEAjHegAI/00bDGPZ86SIONazANBglghkgBZQMEAgIF
 # AKB5MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTIy
-# MDQyNjEyNTI0M1owPwYJKoZIhvcNAQkEMTIEMFcER3ygHNFr1j4qjWIBZXoWkTZJ
-# piMxUii0ZdnNz5XWK4lcWMFfYmX9YbU+vrNGWTANBgkqhkiG9w0BAQEFAASCAgAi
-# 75l1soM/PzgKzeO9gnPyQkoyNWepcB8RRQyCCcHoQ1RrbOaVmmHNBnfCq4nEZ+Rg
-# HZa1zd33I6sZPTfS0w403VMQ8X6XXPoKTYeOw2BfV/SGGoN07iZigAcI4XpPPaay
-# N5PHEWGisrpAsyyouged5MHo3sIe8v8pxPdQTJ54MzQLLN6nMt12KNQowO8a+KMS
-# IWNS1KuzEsp3esnWw7bpGtCcaLOyHnn0bgiujxztOLFMBbwWseiiGQjAXxYSzJZQ
-# Jm+MkYQ9EeMNocWeUS0s6FtNYotTkVWxUmJ+pbWlCaStMl5zBT1uImi4DNmzqG3c
-# K/pIx/t69NJDxTjTj2/vQRGzBxoJ3TII45YlqD797X496FME+9jTvf2Ev7FYFP9i
-# ByGeRqsHEThTfIOGZ+d5oL16VGDvb4jVimnJwcR01HOBdGCLRxtFSWE0WO5yLrTd
-# PeQjg+hfd6QjrGvHsLUQYXdYHQO7AYvV6MCbP9U5OFRkjqk3YNt6qZypUwIXz1IY
-# Ou/uPg5Y5sGzGhwFzml7BNSxaorv2bsyoy1r6sbhikCaxqAaVhuS0V4Wjh8LAbng
-# iJ84qF3NReexvcnjm1Y9OlANP1U9GBxk82lrfFMjy8fdNJ9sdLSG11BJK+Zy11e3
-# 6jtKH1x5U/pvALV3MRZ18s0sCQ5cf/q+IVEqSVa1vw==
+# MDUwMzE0Mjg1MVowPwYJKoZIhvcNAQkEMTIEMMQvCAegc+TbxD9QI/lgo6ZOBWCP
+# KjrtxTwIGawvwiKiVr1Ti3PBTnrXICkNnmwlHzANBgkqhkiG9w0BAQEFAASCAgBg
+# fZdos47mvEqhvMw2FOLqP8BoF9kl//0w2mk3RYCjIAiRW4UjguGuPW4GD42AxH/H
+# V7w4UYzh7JmzdH3EoShLyR7ximm5sMkr7xCAGfq2HVfdKmTYHn54Ly+tG3Z/PD0v
+# zWzH+EN4PMZHKW38dR0SMw3xQufg1M21l+tevFVIvppFyIl1vB+rlt+zbys7Sm/9
+# xrIL3Pw/0VVS0amL7a2JZbWToe9ZIbcjhiZ83ZILc1Gr3CIRdbTqTwYTutZLluV4
+# f0jk/+Kxe15S9lNrbrY4VQO81ZNWh5UXXoY5VVTQJbSy2Wyb0CKfvj5nOpWlWFhd
+# c10OPUowkZNwQmw+yvh2GFeu/5StbbibwWG/L/DrOaFyLN5gDjKkaNwHD56VZ1p7
+# IIccePzDNnK17zwPJDf7BZy+TydktOwcyMlGoUqsTbG28jxP0qmoykHbgDpFiJiw
+# BGGjK6Tz9CRGq6j4z2w9j0TdOaTOn2M1d8hCyfdMsjBDkBwpeZRsGAVdZX6mPGvw
+# Z9jgl74LT2l81Z8HcV+TLXVtAnUweFsVJ9AgpStBLBWHT9stAMZ+nWpw0qVtmGv5
+# KfnP++hNDqjJ5wTa+qQ4LPo1LdNY91+hLW+qxAavNAr0iDq0ra3+n4a4WrY9wzWV
+# 6Gj7uZqRN8ilthmhwqTF5MrGKwom2H8dsDZ0VtpZdQ==
 # SIG # End signature block

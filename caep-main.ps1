@@ -4,20 +4,36 @@ param(
 )
 
 function New-RandomCode {
-    return -join (((48..57)+(65..90)+(97..122)) * 80 | Get-Random -Count 32 | ForEach-Object{ [char]$_ })
+  <#
+  .SYNOPSIS
+  Generate a random code for the installation
+
+  .DESCRIPTION
+  Generates a random code for the installation every time the script is executed
+  #>
+  return -join (((48..57)+(65..90)+(97..122)) * 80 | Get-Random -Count 32 | ForEach-Object{ [char]$_ })
 }
 
 function Invoke-AcceptRequirement {
+  <#
+  .SYNOPSIS
+  Execute a specific Action based on the type of Requirement
+  .DESCRIPTION
+  Once the user press the Accept button it will execute the Action specific to that Requirement
+  #>
+  # Get the current Requirement
   $CurrentRequirement = $RequirementsList[$IndexRequirement]
-  
+  # Save a message that will take track of the Requirements accepted by the user
   if ($CurrentRequirement.MaxVersion) {
     $Message = "ACCEPTED, Name = $($CurrentRequirement.Name), Version = $($CurrentRequirement.MaxVersion)`r`n$('-'*70)"
   } else {
     $Message = "ACCEPTED, Name = $($CurrentRequirement.Name)`r`n$('-'*70)"
   }
   Add-Content -Path $InstallRequirementsLogfile -Value $Message -Force
-  
+
+  # Calling only Show-Buttons will hide all the buttons
   Show-Buttons
+  # It will execute a determinatedd function based on the type of the current requirement
   switch ($CurrentRequirement.Type) {
     "Software" {
       Invoke-DownloadInstallRequirementAction -Requirement $CurrentRequirement
@@ -47,40 +63,61 @@ function Invoke-AcceptRequirement {
       Write-Error "$($CurrentRequirement.Type) not defined!!!"
     }
   }
+  # Updates the Environment Variables
   Update-EnvPath
+  # Execute the post action for the current Requirement if present.
   if ($CurrentRequirement.PostAction) {
     Show-ButtonsPostAction $CurrentRequirement.PostAction
   }
+  # Once everything has been done the index of the current requirement will be incremented
   $script:IndexRequirement++
 }
 
 function Step-NextAction {
+  <#
+  .SYNOPSIS
+  Show the Accept/Decline question for the next Requirement
+  .DESCRIPTION
+  Shows the Accept/Decline question for the next Requirement
+  #>
   if ($IndexRequirement -lt $RequirementsList.Count) {
     $Description.Text = "$($RequirementsList[$IndexRequirement].QuestionMessage)`r`n"
     Show-Buttons @('$AcceptButton', '$DeclineButton')
   }
 }
-
 function Invoke-DeclineRequirement {
+  <#
+  .SYNOPSIS
+  Append the declined message to the GUI
+  .DESCRIPTION
+  Shows on the GUI the decline message of the current Requirement
+  #>
   $Requirement = $RequirementsList[$IndexRequirement]
   $MessageDeclined = Invoke-Expression (New-CommandString $Requirement.DeclineMessage)
   $Description.AppendText($MessageDeclined)
-  
+  # Save a message that will take track of the Requirements declined by the user
   if ($Requirement.MaxVersion) {
     $Message = "DECLINED, Name = $($Requirement.Name), Version = $($Requirement.MaxVersion)`r`n$('-'*70)"
   } else {
     $Message = "DECLINED, Name = $($Requirement.Name)`r`n$('-'*70)"
   }
   Add-Content -Path $InstallRequirementsLogfile -Value $Message -Force
-
+  # Shows the Done button to close the installer
   Show-Buttons @('$DoneButton')
 }
 
 function Invoke-LoginNpm {
+  <#
+  .SYNOPSIS
+  Login to npm
+  .DESCRIPTION
+  Takes the input inserted by the user and will try to login to npm
+  #>
   # Variables Login npm
   $NpmRegistry = "https://devops.codearchitects.com:444/Code%20Architects/_packaging/ca-npm/npm/registry/"
   $NpmScope = "@ca"
   $NpmLoginResultCheckRequirementLogfile = "$($HOME)\.ca\npm_login_resultCheckRequirement_$($CurrentDate).log"
+  # Check if the fields are empty it won't login
   if (($UsernameTextBox.Text -ne "") -and ($TokenTextBox.Text -ne "")) {
     # Correct the Username inserted by the User
     $UsernameSplitEmail = ($UsernameTextBox.Text).split("@")
@@ -89,12 +126,14 @@ function Invoke-LoginNpm {
     $UsernameWithoutBS = $UsernameSplitBS[$UsernameSplitBS.Length - 1]
     $UsernameSplitS = $UsernameWithoutBS.split("/")
     $UsernameFinal = $UsernameSplitS[$UsernameSplitS.Length - 1]
+    # Execute the login
     Start-Process powershell.exe -ArgumentList "npm-login.ps1 -user $UsernameFinal -token $($TokenTextBox.Text) -registry $NpmRegistry -scope $NpmScope" -WindowStyle hidden -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrLogfile -Wait
     Get-Content $ErrLogfile, $OutLogfile | Set-Content $NpmLoginResultCheckRequirementLogfile
     npm config set '@ca:registry' $NpmRegistry
     npm config set '@ca-codegen:registry' $NpmRegistry
     $NpmViewCli = (npm view @ca/cli 2>&1) -join " "
     $DoubleCheck = ($NpmViewCli -like "*ERR!*")
+    # Double check if the credentials inserted are correct or not, if they are then go to the next step of the installation, otherwise ask for the correct credentials.
     if (!$DoubleCheck) {
       Hide-LoginNpmScreen
       $NpmLoginMessage = Get-Content $NpmLoginResultCheckRequirementLogfile
@@ -110,6 +149,12 @@ function Invoke-LoginNpm {
 }
 
 function Remove-WrongToken($CorrectToken) {
+  <#
+  .SYNOPSIS
+  Remove the wrong tokens from the .tokens.json
+  .DESCRIPTION
+  If the login to npm was successful it will remove all the wrong tokens in the .tokens.json file
+  #>
   $TokenPath = "~\.token.json"
   $TokenList = Get-Content $TokenPath | ConvertFrom-Json
   $NewTokenList = @()
@@ -122,6 +167,12 @@ function Remove-WrongToken($CorrectToken) {
 }
 
 function Show-NpmLoginError($Msg) {
+  <#
+  .SYNOPSIS
+  Show a message of error for the login to npm
+  .DESCRIPTION
+  Append to the Textbox the message of error for the npm login
+  #>
   $Description.Text = ""
   $Description.SelectionStart = $Description.TextLength
   $Description.SelectionLength = 0
@@ -130,12 +181,24 @@ function Show-NpmLoginError($Msg) {
 }
 
 function Remove-BackofficeProject {
+  <#
+  .SYNOPSIS
+  Remove the back-office project
+  .DESCRIPTION
+  If the project of test "back-office" was already create, delete it
+  #>
   if (Test-Path $BackofficeProjectPath) {
     Remove-Item -Path $BackofficeProjectPath -Force -Recurse
   }
 }
 
 function Resolve-Dependencies($Dependencies) {
+  <#
+  .SYNOPSIS
+  Resolve the dependencies of all the Requirements
+  .DESCRIPTION
+  Creates a new list of Requirements with their dependencies resolved
+  #>
   $ResultRequirementDependencies = @()
   if ($Dependencies.Count -ne 0) {
     $ResultRequirementDependencies += $Dependencies
@@ -151,7 +214,15 @@ function Resolve-Dependencies($Dependencies) {
 }
 
 function Invoke-CheckRequirements($Requirements) {
+  <#
+  .SYNOPSIS
+  Check if the Requirement was satisfied or not
+  .DESCRIPTION
+  For each Requirement it will check if it's satisfied or not,
+  if the Requirement isn't satisfied then add it to the list of Requirements that have to be satisfied through the installer
+  #>
   $ResultCheckRequirementList = @()
+  # List of Requirements that have to be executed, no matter what
   $MustCheckRequirementList = @("Npm Login")
   foreach ($Requirement in $Requirements) {
     New-Logfiles $Requirement
@@ -166,6 +237,12 @@ function Invoke-CheckRequirements($Requirements) {
 }
 
 function Invoke-AppendRequirementDescription {
+  <#
+  .SYNOPSIS
+  Show on the GUI, each Requirement and their status
+  .DESCRIPTION
+  Shows each Requirement and their status that indicates if they were satisfied (OK) or not satisfied (KO) on the GUI
+  #>
   $Description.AppendText("Requirement $(' ' * 16)| Status |`r`n$('-' * 37)|`r`n")
   foreach ($Item in $RequirementsList) {
     $NumberSpaces = 26 - ($Item.Name | Measure-Object -Character).Characters
@@ -187,6 +264,13 @@ function Invoke-AppendRequirementDescription {
 }
 
 function New-Logfiles($Requirement) {
+  <#
+  .SYNOPSIS
+  Create the log files
+  
+  .DESCRIPTION
+  Creates the files .out, .err and .log for the specific Requirement
+  #>
   Invoke-NameLogfile $Requirement
   if (-not(Test-Path $OutLogfile)) {
     New-Item -Path $OutLogfile -Force | Out-Null
@@ -200,6 +284,12 @@ function New-Logfiles($Requirement) {
 }
 
 function Invoke-NameLogfile($Requirement) {
+  <#
+  .SYNOPSIS
+  Create the logfiles' names
+  .DESCRIPTION
+  Creates the full path of the file for a specific Requirement
+  #>
   $NameNoSpaces = $Requirement.Name -replace " ", ""
   $script:Logfile = "$HOME\.ca\$RandomCode-$NameNoSpaces-$CurrentDate.log"
   $script:OutLogfile = "$HOME\.ca\$RandomCode-$NameNoSpaces-$CurrentDate.out"
@@ -207,11 +297,24 @@ function Invoke-NameLogfile($Requirement) {
 }
 
 function Update-EnvPath {
+  <#
+  .SYNOPSIS
+  Update the Environment Variables
+  .DESCRIPTION
+  Update the Environment Variables without closing PowerShell
+  #>
   $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
   $Description.AppendText("`r`nEnv var Path reloaded correctly")
 }
 
 function Close-Installer {
+  <#
+  .SYNOPSIS
+  Actions to clean the computer before closing the installer
+  .DESCRIPTION
+  Actions needed to be run before cloging the installer, such as:
+  kill the client's side process, removing the startup command, update the scarface.config.json and send the installation's results
+  #>
   try {
     $NetStat4200 = (netstat -ano | findstr :4200).split(" ") | Select-Object -Unique
     $ClientPID = $NetStat4200[5]
@@ -227,6 +330,14 @@ function Close-Installer {
 }
 
 function Update-ScarfaceConfigJson {
+  <#
+  .SYNOPSIS
+  Update the scarface.config.json
+  .DESCRIPTION
+  Removes some of the elements inside the file, such as:
+  application, domain, scenario, author and prefix
+  So that the next time the user execute the command "ca scar" those fields will be asked to them
+  #>
   $ScarfaceConfigJsonPath = "C:\dev\scarface\scarface.config.json"
   $ScarfaceConfigJson = Get-Content -Path $ScarfaceConfigJsonPath -Raw | ConvertFrom-Json
   $ElementsToRemove = @("application", "domain", "scenario", "author", "prefix")
@@ -237,6 +348,12 @@ function Update-ScarfaceConfigJson {
 }
 
 function New-StartupCmd {
+  <#
+  .SYNOPSIS
+  Create a .cmd that will execute the CAEP installer at startup
+  .DESCRIPTION
+  Creates a .cmd that will execute the CAEP installer at startup until they won't complete it
+  #>
   $ScriptPathParent = Split-Path -Parent $ScriptPath
   $CaepInstallerName = "\caep-installer.ps1"
   if ($ScarVersion -ne "") {
@@ -252,11 +369,18 @@ function New-StartupCmd {
 }
 
 function  Remove-StartupCmd {
+  <#
+  .SYNOPSIS
+  Remove the caep-startup.cmd
+  .DESCRIPTION
+  Removes the caep-startup.cmd once the user finished the installation
+  #>
   Remove-Item -Path $StartupPath -Force -ErrorAction Ignore
 }
 
 #---------------------------------------------------------[Logic]--------------------------------------------------------
 
+# Variables
 $CurrentDate = (Get-Date -Format yyyyMMdd-hhmm).ToString()
 $InstallRequirementsLogfile = "$($HOME)\.ca\install_requirements_$($CurrentDate).log"
 $RandomCode = New-RandomCode
@@ -268,14 +392,14 @@ $Logfile
 $OutLogfile
 $ErrLogfile
 
+$IndexRequirement = 0
+$BackofficeProjectPath = "C:\dev\scarface\back-office"
+# Import scripts
 . .\requirement-actions.ps1 -RandomCode $RandomCode -CurrentDate $CurrentDate -ScarVersion $ScarVersion -ScarConfig $ScarConfig
 . .\send-logs.ps1 -ScriptPath $ScriptPath -CurrentDate $CurrentDate
 
-$IndexRequirement = 0
-$BackofficeProjectPath = "C:\dev\scarface\back-office"
 
-# Check principali
-
+# Main checks
 $InternetStatus = Get-NetAdapter | Where-Object { ($_.Name -like "*Ethernet*" -or $_.Name -like "*Wi-Fi*") -and ($_.Status -eq "Up") }
 $AdminStatus = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 
@@ -287,7 +411,7 @@ if (-not $AdminStatus) {
   $Description.AppendText("PLEASE CONNECT TO INTERNET!!!")
   Show-Buttons @('$DoneButton')
 } else {
-  # Risoluzione delle dipendenze------------------------------------------------------------------
+  # Resolve the Requirement's dependencies
   $RequirementsJsonPath = ".\requirements.json"
 
   $RequirementsList = Get-Content $RequirementsJsonPath | ConvertFrom-Json
@@ -304,17 +428,15 @@ if (-not $AdminStatus) {
 
   $RequirementsList = $RequirementsNotMetList
 
-  # Se esiste viene ripulito il progetto di Testing del funzionamento dell'installazione -----------
   Remove-BackofficeProject
-  # Crea il file caep-startup.cmd per l'esecuzione dello script allo startup del computer in caso non esiste -----------
   New-StartupCmd
 }
 
 # SIG # Begin signature block
 # MIIk2wYJKoZIhvcNAQcCoIIkzDCCJMgCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUvD08vGNfqaMPweQ3C8GBVF3b
-# xniggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUvEmJ9Mb/pD1gcRggVBbwOOKK
+# CQaggh62MIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -483,29 +605,29 @@ if (-not $AdminStatus) {
 # ZWQxJDAiBgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQQIQDue4N8WI
 # aRr2ZZle0AzJjDAJBgUrDgMCGgUAoIGEMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3
 # AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEW
-# BBQqL14NpDQE+cMsBEojgr2RhtcAdTAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
-# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAK2WwItCyQHncZm9Ol4x5iY7
-# qA6uzuNBddPTfcJJfGPML6Ubz75kKS4rAh3FpVEyBiF6JSXotwAuwnOxlGK3ywiX
-# xAzlZgh78QQCdhB/UuXWE1m5oKXZJV6xIzBONbD0DWVIRYKRPJakTn1s8n+RvoFi
-# //uRKplQCiZJ9ta3072OBAJWH3WMXUwINreAp345WHdu9TW77lOMGHsSRxBwfaV6
-# paCJ/zBmN56elMu9tC2N3rhSUcTEI885MdO3OYhGAdRd1yex5/hefK9PDWmEW/IB
-# nWz4sXCEl09IdE9H8ZR+R7ZwTS4qqQR0LVf1LvRJelamn3d29lThMgMRK59G3RGh
+# BBS8QuTCDHW5607yY0xdUAXOyET2sjAkBgorBgEEAYI3AgEMMRYwFKASgBAAQwBB
+# ACAAVABvAG8AbABzMA0GCSqGSIb3DQEBAQUABIIBAG/EJCKfjZlgZ8ZTy8Jk9jhi
+# Z5KzWXwK4Sqjbcq+t+dvU4greOzoMFMSGytGmPLTldx5a+YKsaSdF6uLnaE95hfx
+# a367Qu6P9IIpeRbLuIo/ZBa1RdBWroypVb7K96DaFI8B5MYuRpyv0gm0Rvy0hkkV
+# E1t3CZ0256oFBqFfo0CAG57w9gJtxbdXFIrW3XG2j7veCMl9alaiFy+ZGyfodcf3
+# 1LQzrHAsaU7h34SXbtbsvE8KKmNv4HiEcUDW1s6l0QvpJ3hBm+cyoT7XQ4rYA9Gy
+# ePlJTT9djFph/In0C773wR2Z+iX4rEsUTZNCTADxl+Yd30YiTzHKGdg59yS68ZGh
 # ggNMMIIDSAYJKoZIhvcNAQkGMYIDOTCCAzUCAQEwgZIwfTELMAkGA1UEBhMCR0Ix
 # GzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEY
 # MBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSUwIwYDVQQDExxTZWN0aWdvIFJTQSBU
 # aW1lIFN0YW1waW5nIENBAhEAjHegAI/00bDGPZ86SIONazANBglghkgBZQMEAgIF
 # AKB5MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTIy
-# MDQyNjEyNDY0NVowPwYJKoZIhvcNAQkEMTIEMAdZkiA7jMnVHIBev1o23nwxzg57
-# 9U6TbwUXbShhrnN3CCButgzm9ZUauAr0+gm9vjANBgkqhkiG9w0BAQEFAASCAgBn
-# EMqEFkLSpuWrpQ/MB5oovfhJ4InBOQ5nB8NkVrE00Fft/g56dgkLQtX0XnIs7yNm
-# CA79+VUJ75K9Sphd47yZGBqeArx/2Nx4Y3ApJTV5+f/ie4R37O43CvTJist7HuOG
-# yvKr/EYzWcANDyTdDknWZFdyfMDV30lS+x9cUWbO2Ci4PlpJoPm2OKjQfBNY1Lgn
-# qn4FacjuZyDWVljKplXCpLIDQdfENrU9Lgdmeyl9GTd928FyZU4YxIBKxQzw6LeX
-# M52+UCI+9qi2Ghh//6Zs2t3J0JSHD4f1RTC16jeQqeqMB1mDki+aNhb9TiT2qOTS
-# BWWN8h0cE3aJ+UmqBlE6yRYPcki1skGEXwO85fT7IqxQnpg1x1/3vwDYXjGC7pyZ
-# KqZoecdra3tiW8GSC4Bkihp0NiPNyjjEg/ENRnu1JtJHOEZOG2KiP2EDuZVqvOuq
-# 3sIcW5g3RwU5dy5cmbQcYcs/4tzAoN3gWSg5MlXJX7XesdaWpJrULDsmEyjTI+Al
-# tYvyo4LlR3IYKNUCiWLg6oC3zDSJoBPtpPojAUk7Jsbq6jakdWXz/Mc/+9ccOMDd
-# P9vBQIXmm40818r33Sx2J83G7xWFTPJ+U2k/2HJ8rd0m5muUZipcgTXWsXmD6ETW
-# GSqaO5rcCMGln9L0BYReuIticL5mXgah0guJvuRPxw==
+# MDUwMzE0MjkwN1owPwYJKoZIhvcNAQkEMTIEMDyoqyotaIVmRAi6qlshq8DXL3RP
+# 4sjsTl2HQaRUcmdl37HXna+OipSkcgaZwS7gezANBgkqhkiG9w0BAQEFAASCAgAV
+# ekh2AgcQQO/LdKoCAWRgBtE/1bRKNVSuvKGss8YgSkqSfoyjonudvQLZiCxno9KZ
+# qIjX0HQv7ucMQlT14LklWMTjg1uRspeeo4i2fg2Ei2hP79Dji9geGSBU+7i81W2s
+# QxPPboq/2L/7tlCt7LRCZaTGTPpeCXsdyx9I+sAtbH4tXQI9doSE0z6cd317KkkK
+# xcRpij/fHjf8eUy+KvNvbL+NI0IETqaskQ0wsXP7DoC8ZArRKseRM6cUsOO/AjYC
+# yk++U8EwCsNnf04cvclYeDxfuRv14OZfXfD446xRVm2SfuJv4T4ITnhu78Bngd2X
+# 8qpGT0d8ibdJ58F95mN4KeLzpfDG2h2y+MD4INnEgNAzM55RFy/SlhZKlgWCMtbI
+# 9/S6e9Ot/iJGwqMhpOo+UKhtiHfMontzG3MuJdmSvmSLHShz+xMh36k29enO9fnM
+# llsysqFAf69ekGef/KHo3QFXcUBp8kEAn+128NCgHbwJOaqG7ud+GpiPi17vTCPa
+# cw+HSt95n5hJsAmjHEWZThkOYE+7sdPOczPIK/R9zDZOFLz8j6/Vv1wHV0sx/Yrs
+# SvzNEaWT9m64i/KLmPUX0a7Pa1QNYK9IAgs4AL9AP1RDVKWlxN9bVMNBMZdL5ooQ
+# 0iYthBPTZr0FlbD46n7KVy0Hhd6Zl6R5CUGIoKIJog==
 # SIG # End signature block
