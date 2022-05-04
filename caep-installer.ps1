@@ -296,7 +296,8 @@ function Hide-LoginNpmScreen {
 
   .DESCRIPTION
   hides the Npm Login Screen
-  #>ion.Text = ""
+  #>
+  $Description.Text = ""
   $Description.Height = 150
   $UsernameLabel.Visible = $false
   $UsernameTextBox.Visible = $false
