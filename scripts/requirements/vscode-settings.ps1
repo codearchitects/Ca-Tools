@@ -1,5 +1,5 @@
 $VSCodeSettingsPath = "~\AppData\Roaming\Code\User"
-$VSCodeSettingsJsonPath = "~\AppData\Roaming\Code\User\settings.json\"
+$VSCodeSettingsJsonPath = "~\AppData\Roaming\Code\User\settings.json"
 
 if (Test-Path $VSCodeSettingsPath) {
     if (-not (Test-Path $VSCodeSettingsJsonPath)) {
