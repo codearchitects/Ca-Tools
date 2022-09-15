@@ -143,7 +143,7 @@
             "Gruntfuggly.triggertaskonsave",
             "Angular.ng-template"
         ],
-        "CheckRequirement": "`$NotInstalled = `$false; try { `$InstalledVSCodeExtensions = (code --list-extensions); foreach (`$Extension in `\"$($Requirement.Attributes)`\".Split(' ')) { if ((`$InstalledVSCodeExtensions -like (`\"`$Extension*`\").ToLower()).Count -eq 0) { `$NotInstalled = `$true } } } catch { return @(`$true, 'KO') }; if (`$NotInstalled) { return @(`$true, 'KO') } else { return @(`$true, 'OK') }",
+        "CheckRequirement": "return ./scripts/requirements/vscode-extensions.ps1",
         "PostAction": ""
     },
     {
