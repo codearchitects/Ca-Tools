@@ -267,7 +267,7 @@
         "InstallCommand": "```$NameNoSpaces = (```\"$($Requirement.Name)```\".replace(' ', '')); ```$Logfile = ```\"~\\.ca\\$RandomCode-```$NameNoSpaces-$CurrentDate.log```\"; ```$OutLogfile = ```\"~\\.ca\\$RandomCode-```$NameNoSpaces-$CurrentDate.out```\"; ```$ErrLogfile = ```\"~\\.ca\\$RandomCode-```$NameNoSpaces-$CurrentDate.err```\"; Start-Process $($Requirement.DownloadOutfile) -ArgumentList $($Requirement.ArgumentList) -RedirectStandardOutput ```$OutLogfile -RedirectStandardError ```$ErrLogfile -Wait",
         "DeleteCommand": "Remove-Item (`\"$($Requirement.DownloadOutfile)`\").replace('`\"','')",
         "DeclineMessage": "return `\"You have declined to automatically download and install Visual Studio.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
-        "CheckRequirement": "return ./scripts/requirements/vs.ps1",
+        "CheckRequirement": "return ./scripts/requirements/visualstudio.ps1",
         "PostAction": ""
     },
     {
@@ -286,7 +286,7 @@
         "InstallCommand": "`$NameNoSpaces = (`\"$($Requirement.Name)`\".replace(' ', '')); `$Logfile = `\"~\\.ca\\$RandomCode-`$NameNoSpaces-$CurrentDate.log`\"; `$OutLogfile = `\"~\\.ca\\$RandomCode-`$NameNoSpaces-$CurrentDate.out`\"; `$ErrLogfile = `\"~\\.ca\\$RandomCode-`$NameNoSpaces-$CurrentDate.err`\"; Start-Process $($Requirement.DownloadOutfile) -ArgumentList $($Requirement.ArgumentList) -RedirectStandardOutput `$OutLogfile -RedirectStandardError `$ErrLogfile -Wait; `$env:Path = [System.Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path','User'); code; `$CodeProcesses = (Get-Process Code -ErrorAction SilentlyContinue); if (`$CodeProcesses) { foreach (`$CodeProcess in `$CodeProcesses) { `$CodeProcess.CloseMainWindow() } };",
         "DeleteCommand": "Remove-Item (`\"$($Requirement.DownloadOutfile)`\").replace('`\"','')",
         "DeclineMessage": "return `\"You have declined to automatically download and install Visual Studio Code.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
-        "CheckRequirement": "return ./scripts/requirements/vs-code.ps1",
+        "CheckRequirement": "return ./scripts/requirements/vscode.ps1",
         "PostAction": ""
     },
     {
