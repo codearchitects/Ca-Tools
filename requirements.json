@@ -439,7 +439,7 @@
         "KoMessage": "$($Requirement.Name) is unreachable with FTPS protocol.",
         "TcpMessage": "",
         "DeclineMessage": "return 'You have declined Azure DevOps Connection'",
-        "CheckRequirement": "`$logRepoAvailable = (Test-NetConnection casftp.blob.core.windows.net -port 22).TcpTestSucceeded; if (`$logRepoAvailable -eq `$True) { return @(`$true, 'OK') } else { return @(`$false, 'KO') }",
+        "CheckRequirement": "return ./scripts/requirements/log-repository.ps1",
         "PostAction": ""
     },
     {
