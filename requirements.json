@@ -76,7 +76,7 @@
         "DeclineMessage": "return `\"You have declined to automatically set your default WSL Version.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
         "PostInstallCommand": "wsl --set-default-version 2",
         "Attributes": [ ],
-        "CheckRequirement": "if (!`$ScarConfig.Contains('terranova')) { `$WslStatus = (wsl --status); `$WslStatusSplit = ([System.Text.Encoding]::Unicode.GetString([System.Text.Encoding]::Default.GetBytes(`$WslStatus))).split(' '); `$WslVersionResult = `$false; foreach (`$item in `$WslStatusSplit) { if (`$item -eq '2') { `$WslVersionResult = `$true } }; if (`$WslVersionResult) { return @(`$true, 'OK') } else { return @(`$true, 'KO') } } else { return @(`$true, 'OK') }",
+        "CheckRequirement": "return ./scripts/requirements/proxy-docker.ps1 -scarConfig `$ScarConfig",
         "PostAction": ""
     },
     {
