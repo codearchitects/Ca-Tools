@@ -154,7 +154,7 @@
         "OkMessage": "You have the $($Requirement.Name) permission.",
         "KoMessage": "You don't have the $($Requirement.Name) permission.",
         "DeclineMessage": "return 'You have declined Administrator Permission'",
-        "CheckRequirement": "`$WhoAmI = `\"$(whoami)`\"; `$WhoAmILower = `$WhoAmI.ToLower(); `$ResultPermission = `$false; `$ListAdministrators = (net localgroup Administrators); `$temp = @(); foreach (`$item in `$ListAdministrators) { if ((`$item -match '\\S') -and (`$item -ne 'Administrator') -and (`$item -ne 'user1') -and (`$item -ne 'user2')) { `$temp += `$item } }; `$ListAdministrators = `$temp | Select-Object -Skip 4 | Select-Object -SkipLast 1; foreach(`$item in `$ListAdministrators) { if(`$item.ToLower() -like `\"*`$WhoAmILower`\") { `$ResultPermission = `$true } }; if (`$ResultPermission) { return @(`$true, 'OK') } else { return @(`$true, 'KO') }",
+        "CheckRequirement": "return ./scripts/requirements/administrator.ps1",
         "PostAction": ""
     },
     {
