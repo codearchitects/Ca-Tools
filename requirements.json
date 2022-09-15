@@ -415,7 +415,7 @@
         "KoMessage": "$($Requirement.Name) is unreachable with HTTPS protocol.",
         "TcpMessage": "$($Requirement.Name) is unreachable with TCP protocol.",
         "DeclineMessage": "return 'You have declined Registry Nuget Connection'",
-        "CheckRequirement": "try {`$nugetRegistryAvailable = (Invoke-WebRequest -Uri https://api.nuget.org/v3/index.json -UseBasicParsing -DisableKeepAlive).StatusCode; if (`$nugetRegistryAvailable -eq 200) { return @(`$true, 'OK') } else { return @(`$false, 'KO') } } catch { return @(`$false, 'KO') }",
+        "CheckRequirement": "return ./scripts/requirements/nuget-registry.ps1",
         "PostAction": ""
     },
     {
