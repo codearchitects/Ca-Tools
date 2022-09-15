@@ -20,7 +20,7 @@
         "WarningMessage": "'The machine you are running the installer is a Virtual Machine.`r`nPlease be sure to have executed the command:`r`n`\"Set-VMProcessor -VMName <VMName> -ExposeVirtualizationExtensions `$true`\"`r`non Powershell of your Host Machine as Administrator`r`nRemember to Turn Off your Virtual Machine and to replace the <VMName> with the name of the YOUR Virtual Machine.'",
         "WarningMessage2": "",
         "DeclineMessage": "return 'You have declined Virtual Machine'",
-        "CheckRequirement": "`$ComputerModel = (Get-CimInstance win32_computersystem).model; if ((`$ComputerModel -ne 'VMware Virtual Platform') -and (`$ComputerModel -ne 'Virtual Machine') -and (`$ComputerModel -ne 'Macchina Virtuale')) { return @(`$true, 'OK') } else { return @(`$true, 'KO') }",
+        "CheckRequirement": "return ./scripts/requirements/virtual-machine.ps1",
         "PostAction": ""
     },
     {
