@@ -2,7 +2,7 @@ param(
   [string]$scarConfig
 )
 
-if (!$scarConfig.Contains('terranova')) {
+if ( !$scarConfig.Contains('terranova') ) {
   $InternetSettings = (Get-ItemProperty -Path 'Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings')
   $ProxyDataSplit = $InternetSettings.ProxyServer -split ':'
   if ($ProxyDataSplit.Count -eq 2) {
@@ -16,7 +16,7 @@ if (!$scarConfig.Contains('terranova')) {
   if ($InternetSettings.ProxyEnable -eq 0) {
     return @($true, 'OK')
   }
-  elseif ((Test-NetConnection -ComputerName $ProxyAddress -Port $ProxyPort).TcpTestSucceeded) {
+  elseif ( (Test-NetConnection -ComputerName $ProxyAddress -Port $ProxyPort).TcpTestSucceeded ) {
     return @($true, 'KO')
   }
   else {

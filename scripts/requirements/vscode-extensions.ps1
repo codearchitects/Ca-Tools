@@ -3,9 +3,9 @@ $NotInstalled = $false
 try {
     $InstalledVSCodeExtensions = (code --list-extensions)
 
-    foreach ($Extension in "$($Requirement.Attributes)".Split(' ')) {
+    foreach ( $Extension in "$($Requirement.Attributes)".Split(' ') ) {
 
-        if (($InstalledVSCodeExtensions -like ("$Extension*").ToLower()).Count -eq 0) {
+        if ( ($InstalledVSCodeExtensions -like ("$Extension*").ToLower()).Count -eq 0 ) {
             $NotInstalled = $true
         }
     }

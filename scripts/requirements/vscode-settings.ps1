@@ -11,7 +11,7 @@ if (Test-Path $VSCodeSettingsPath) {
         if (($null -ne $SettingsContent.'terminal.integrated.defaultProfile.windows') -or ($null -ne $SettingsContent.'terminal.integrated.shellArgs.windows') -or ($null -ne $SettingsContent.'terminal.integrated.profiles.windows')) {
             return @($true, 'KO')
         }
-        elseif (($SettingsContent.'terminal.integrated.shell.windows' -eq 'C:\WINDOWS\System32\cmd.exe') -and ($SettingsContent.'update.mode' -eq 'manual')) {
+        elseif ( ($SettingsContent.'terminal.integrated.shell.windows' -eq 'C:\WINDOWS\System32\cmd.exe') -and ($SettingsContent.'update.mode' -eq 'manual') ) {
             return @($true, 'OK')
         }
         else {
