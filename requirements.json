@@ -178,7 +178,7 @@
         "ExtraMessage": "",
         "EnableCommand": "& dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart",
         "DeclineMessage": "return `\"You have declined to automatically enable the Windows feature 'Windows Subsystem Linux'.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
-        "CheckRequirement": "if (!`$ScarConfig.Contains('terranova')) { `$Result = `$true; `$WslFeature = dism /online /get-featureinfo /featurename:Microsoft-Windows-Subsystem-Linux; foreach (`$Item in `$WslFeature) { if ((`$Item -like '*Disabled*') -or (`$Item -like '*Disattivata*')) { `$Result = `$false } }; if (`$Result) { return @(`$true, 'OK') } else { return @(`$true, 'KO') } } else { return @(`$true, 'OK') }",
+        "CheckRequirement": "return ./scripts/requirements/wsl.ps1 -scarConfig `$ScarConfig",
         "PostAction": "Restart"
     },
     {
