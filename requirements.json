@@ -370,7 +370,7 @@
         "InstallCommand": "wsl --update",
         "DeleteCommand": "",
         "DeclineMessage": "return `\"You have declined to automatically download and install Wsl Update.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
-        "CheckRequirement": "if (!`$ScarConfig.Contains('terranova')) { `$WslStatus = (wsl --status); `$WslStatusSplit = ([System.Text.Encoding]::Unicode.GetString([System.Text.Encoding]::Default.GetBytes(`$WslStatus))).split(' '); `$Result = `$false; for (`$i = 0; `$i -lt `$WslStatusSplit.Count; `$i++) { if (`$WslStatusSplit[`$i] -like 'Kernel') { `$j = `$i + 1; if (`$WslStatusSplit[`$j] -like '*version*') { `$Result = `$true } } elseif (`$WslStatusSplit[`$i] -like 'Versione') { `$j = `$i + 1; `$k = `$j + 1;  if ((`$WslStatusSplit[`$j] -like 'del') -and  (`$WslStatusSplit[`$k] -like '*kernel*')) { `$Result = `$true } } };  if (`$Result) { return @(`$true, 'OK') } else { return @(`$true, 'KO') } } else { return @(`$true, 'OK') }",
+        "CheckRequirement": "return ./scripts/requirements/wsl-update.ps1 -scarConfig `$ScarConfig",
         "PostAction": ""
     },
     {
