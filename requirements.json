@@ -403,7 +403,7 @@
         "KoMessage": "$($Requirement.Name) is unreachable with HTTPS protocol.",
         "TcpMessage": "$($Requirement.Name) is unreachable with TCP protocol.",
         "DeclineMessage": "return 'You have declined Registry npm Connection'",
-        "CheckRequirement": "try {`$npmRegistryAvailable = (Invoke-WebRequest -Uri https://registry.npmjs.org -UseBasicParsing -DisableKeepAlive).StatusCode; if (`$npmRegistryAvailable -eq 200) { return @(`$true, 'OK') } else { return @(`$false, 'KO') } } catch { return @(`$false, 'KO') }",
+        "CheckRequirement": "return ./scripts/requirements/npm-registry.ps1",
         "PostAction": ""
     },
     {
