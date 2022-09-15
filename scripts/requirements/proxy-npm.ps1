@@ -13,7 +13,7 @@ elseif ($ProxyDataSplit.Count -eq 3) {
 if ($InternetSettings.ProxyEnable -eq 0) {
     return @($true, 'OK')
 }
-elseif ((Test-NetConnection -ComputerName $ProxyAddress -Port $ProxyPort).TcpTestSucceeded) {
+elseif ( (Test-NetConnection -ComputerName $ProxyAddress -Port $ProxyPort).TcpTestSucceeded ) {
     return @($true, 'KO')
 }
 else {
