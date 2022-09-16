@@ -375,15 +375,7 @@ function New-StartupCmd {
   }
 }
 
-function  Remove-StartupCmd {
-  <#
-  .SYNOPSIS
-  Remove the caep-startup.cmd
-  .DESCRIPTION
-  Removes the caep-startup.cmd once the user finished the installation
-  #>
-  Remove-Item -Path $StartupPath -Force -ErrorAction Ignore
-}
+. .\scripts\common.ps1
 
 #---------------------------------------------------------[Logic]--------------------------------------------------------
 
@@ -392,7 +384,6 @@ $CurrentDate = (Get-Date -Format yyyyMMdd-hhmm).ToString()
 $InstallRequirementsLogfile = "$($HOME)\.ca\install_requirements_$($CurrentDate).log"
 $RandomCode = New-RandomCode
 
-$StartupPath = "$HOME\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\caep-startup.cmd"
 $ScriptPath = $MyInvocation.MyCommand.Path
 
 $Logfile
