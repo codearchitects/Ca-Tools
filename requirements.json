@@ -35,9 +35,9 @@
         "PostInstallMessage": "return 'PostInstallMessage'",
         "PostInstallCompleteMessage": "return 'PostInstallCompleteMessage'",
         "PostInstallTrueOkMessage": "return 'The proxy is not active (npm).'",
-        "PostInstallTrueOkCommand": "`$NpmrcFilePath = `\"~\\.npmrc`\"; if (Test-Path `$NpmrcFilePath) { Get-Content `$NpmrcFilePath | Out-File `\"`$NpmrcFilePath.old.$CurrentDate`\"; Start-Process powershell.exe -ArgumentList `\"npm config delete proxy`\" -WindowStyle hidden -Wait; Start-Process powershell.exe -ArgumentList `\"npm config delete https-proxy`\" -WindowStyle hidden -Wait; Start-Process powershell.exe -ArgumentList `\"npm config delete cafile`\" -WindowStyle hidden -Wait }",
+        "PostInstallTrueOkCommand": "./scripts/postInstallTrueOk/proxy-npm.ps1 -currentDate `$CurrentDate",
         "DeclineMessage": "return `\"You have declined to automatically set your proxy for npm.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
-        "PostInstallCommand": "`$InternetSettings = (Get-ItemProperty -Path 'Registry::HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings'); `$ProxyServer = (`$InternetSettings.ProxyServer); Start-Process powershell.exe -ArgumentList `\"npm config set proxy `$ProxyServer`\" -WindowStyle hidden -Wait; Start-Process powershell.exe -ArgumentList `\"npm config set https-proxy `$ProxyServer`\" -WindowStyle hidden -Wait;",
+        "PostInstallCommand": "./scripts/postInstall/proxy-npm.ps1",
         "Attributes": [ ],
         "CheckRequirement": "return ./scripts/requirements/proxy-npm.ps1",
         "PostAction": ""
@@ -54,9 +54,9 @@
         "PostInstallMessage": "return 'PostInstallMessage'",
         "PostInstallCompleteMessage": "return 'PostInstallCompleteMessage'",
         "PostInstallTrueOkMessage": "return 'The proxy is not active (Docker).'",
-        "PostInstallTrueOkCommand": "`$DockerConfigPath = `\"~\\.docker\\config.json`\"; if (Test-Path `$DockerConfigPath) { `$DockerConfigJson = Get-Content `$DockerConfigPath; `$DockerConfigJson | Out-File `\"`$DockerConfigPath.old.$CurrentDate`\"; `$DockerConfigObj = `$DockerConfigJson | ConvertFrom-Json; `$DockerConfigObj.PSObject.Properties.Remove('proxies'); Set-Content -Path `$DockerConfigPath -Value (`$DockerConfigObj | ConvertTo-Json -Depth 5) }",
+        "PostInstallTrueOkCommand": "./scripts/postInstallTrueOk/proxy-docker.ps1 -currentDate `$CurrentDate",
         "DeclineMessage": "return `\"You have declined to automatically set your proxy for Docker.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
-        "PostInstallCommand": "`$InternetSettings = (Get-ItemProperty -Path `\"Registry::HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings`\"); `$ProxyServer = (`$InternetSettings.ProxyServer); `$DockerConfigPath = `\"~\\.docker\\config.json`\"; if (Test-Path `$DockerConfigPath) { `$DockerConfigJson = Get-Content `$DockerConfigPath; if (-not [String]::IsNullOrWhiteSpace(`$DockerConfigJson)) { `$DockerConfigJson | Out-File `\"`$DockerConfigPath.old.$CurrentDate`\" } else { New-Item -Path `\"`$DockerConfigPath.old.$CurrentDate`\" } `$DockerConfigObj = `$DockerConfigJson | ConvertFrom-Json; `$DockerConfigObj.PSObject.Properties.Remove('proxies'); `$Proxies = @{ 'defalut' = @{ 'httpProxy'  = `$InternetSettings.ProxyServer; 'httpsProxy' = `$InternetSettings.ProxyServer } }; `$DockerConfigObj | Add-Member -NotePropertyName proxies -NotePropertyValue `$Proxies -Force; Set-Content -Path `$DockerConfigPath -Value (`$DockerConfigObj | ConvertTo-Json -Depth 5) }",
+        "PostInstallCommand": "./scripts/postInstall/proxy-docker.ps1 -currentDate `$CurrentDate",
         "Attributes": [ ],
         "CheckRequirement": "return ./scripts/requirements/proxy-docker.ps1 -scarConfig `$ScarConfig",
         "PostAction": ""
@@ -92,7 +92,7 @@
         "PostInstallTrueOkMessage": "`$WslLV = (wsl -l -v); `$WslLVSplit = ([System.Text.Encoding]::Unicode.GetString([System.Text.Encoding]::Default.GetBytes(`$WslLV))).split(' '); foreach(`$item in `$WslLVSplit) { if(`$item -like '*Ubuntu*') { `$UbuntuDistro = `$item } }; return `\"Wsl distribution already setted to `$UbuntuDistro.`\"",
         "PostInstallTrueOkCommand": "",
         "DeclineMessage": "return `\"You have declined to automatically set your default WSL Distribution.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
-        "PostInstallCommand": "`$WslLV = (wsl -l -v); `$WslLVSplit = ([System.Text.Encoding]::Unicode.GetString([System.Text.Encoding]::Default.GetBytes(`$WslLV))).split(' '); foreach(`$item in `$WslLVSplit) { if(`$item -like '*Ubuntu*') { `$UbuntuDistro = `$item } }; wsl --set-default `$UbuntuDistro",
+        "PostInstallCommand": "./scripts/postInstall/wsl-distribution.ps1",
         "Attributes": [ ],
         "CheckRequirement": "return ./scripts/requirements/wsl-distribution.ps1 -scarConfig `$ScarConfig",
         "PostAction": ""
@@ -110,7 +110,7 @@
         "PostInstallTrueOkMessage": "",
         "PostInstallTrueOkCommand": "",
         "DeclineMessage": "return `\"You have declined to automatically Update Visual Studio Code Settings.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
-        "PostInstallCommand": "`$VSCodeSettingsJsonPath = `\"`~\\AppData\\Roaming\\Code\\User\\settings.json`\"; if (-not (Get-Content `$VSCodeSettingsJsonPath)) { Set-Content -Path `$VSCodeSettingsJsonPath -Value '{ }' }; `$VSCodeSettingObj = Get-Content `$VSCodeSettingsJsonPath | ConvertFrom-Json; `$VSCodeSettingObj = `$VSCodeSettingObj | Select-Object * -ExcludeProperty 'terminal.integrated.shell.windows', 'terminal.integrated.defaultProfile.windows', 'terminal.integrated.shellArgs.windows', 'terminal.integrated.profiles.windows'; `$VSCodeSettingObj | Add-Member -NotePropertyName 'terminal.integrated.shell.windows' -NotePropertyValue 'C:\\WINDOWS\\System32\\cmd.exe' -Force; `$VSCodeSettingObj | Add-Member -NotePropertyName 'update.mode' -NotePropertyValue 'manual' -Force; `$VSCodeSettingObj.PsObject.Properties.Remove('*'); Set-Content -Path `$VSCodeSettingsJsonPath -Value (`$VSCodeSettingObj | ConvertTo-Json -Depth 5)",
+        "PostInstallCommand": "./scripts/postInstall/vscode-settings.ps1",
         "Attributes": [ ],
         "CheckRequirement": "return ./scripts/requirements/vscode-settings.ps1",
         "PostAction": ""
@@ -128,7 +128,7 @@
         "PostInstallTrueOkMessage": "",
         "PostInstallTrueOkCommand": "",
         "DeclineMessage": "return `\"You have declined to automatically Install Visual Studio Code Extensions.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
-        "PostInstallCommand": "`$NameNoSpaces = (`\"$($Requirement.Name)`\".replace(' ', '')); `$Logfile = `\"~\\.ca\\$RandomCode-`$NameNoSpaces-$CurrentDate.log`\"; `$OutLogfile = `\"~\\.ca\\$RandomCode-`$NameNoSpaces-$CurrentDate.out`\"; `$ErrLogfile = `\"~\\.ca\\$RandomCode-`$NameNoSpaces-$CurrentDate.err`\"; try { Start-Process code -ArgumentList `\"--install-extension $item --force`\" -WindowStyle hidden -RedirectStandardOutput `$OutLogfile -RedirectStandardError `$ErrLogfile -Wait } catch { return @(`$false, 'KO') }",
+        "PostInstallCommand": "./scripts/postInstall/vscode-extensions.ps1 -nameNoSpaces `$NameNoSpaces -name `$($Requirement.Name) -randomCode `$RandomCode -currentDate `$CurrentDate",
         "Attributes": [
             "Mikael.Angular-BeastCode",
             "steoates.autoimport",
