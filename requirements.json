@@ -87,9 +87,9 @@
         ],
         "QuestionMessage": "Press 'Accept' to change the default Linux Distribution of WSL.",
         "ExtraMessage": "",
-        "PostInstallMessage": "`$WslLV = (wsl -l -v); `$WslLVSplit = ([System.Text.Encoding]::Unicode.GetString([System.Text.Encoding]::Default.GetBytes(`$WslLV))).split(' '); foreach(`$item in `$WslLVSplit) { if(`$item -like '*Ubuntu*') { `$UbuntuDistro = `$item } }; return `\"Setting wsl distribution to `$UbuntuDistro...`\"",
-        "PostInstallCompleteMessage": "`$WslLV = (wsl -l -v); `$WslLVSplit = ([System.Text.Encoding]::Unicode.GetString([System.Text.Encoding]::Default.GetBytes(`$WslLV))).split(' '); foreach(`$item in `$WslLVSplit) { if(`$item -like '*Ubuntu*') { `$UbuntuDistro = `$item } }; return `\"Set wsl distribution to `$UbuntuDistro complete.`\"",
-        "PostInstallTrueOkMessage": "`$WslLV = (wsl -l -v); `$WslLVSplit = ([System.Text.Encoding]::Unicode.GetString([System.Text.Encoding]::Default.GetBytes(`$WslLV))).split(' '); foreach(`$item in `$WslLVSplit) { if(`$item -like '*Ubuntu*') { `$UbuntuDistro = `$item } }; return `\"Wsl distribution already setted to `$UbuntuDistro.`\"",
+        "PostInstallMessage": "return ./scripts/messages/wsl-distribution.ps1 -message 'Setting wsl distribution to'",
+        "PostInstallCompleteMessage": "return ./scripts/messages/wsl-distribution.ps1 -message 'Set wsl distribution to' complete.",
+        "PostInstallTrueOkMessage": "return ./scripts/messages/wsl-distribution.ps1 -message 'Wsl distribution already setted to'",
         "PostInstallTrueOkCommand": "",
         "DeclineMessage": "return `\"You have declined to automatically set your default WSL Distribution.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
         "PostInstallCommand": "./scripts/postInstall/wsl-distribution.ps1",
@@ -208,7 +208,7 @@
         "DownloadCommand": "Invoke-RestMethod (((Invoke-RestMethod $($Requirement.DownloadLink)).assets[0]).browser_download_url) -OutFile $($Requirement.DownloadOutfile)",
         "ArgumentList": "",
         "InstallCommand": "./scripts/install/setup-catool.ps1 -randomCode `$RandomCode -nameNoSpaces `$NameNoSpaces -currentDate `$CurrentDate -downloadOutfile $($Requirement.DownloadOutfile) -name $($Requirement.Name)",
-        "DeleteCommand": "Remove-Item (`\"$($Requirement.DownloadOutfile)`\").replace('`\"','')",
+        "DeleteCommand": "",
         "DeclineMessage": "return `\"You have declined to automatically download and install Ca-Tools.msi.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
         "CheckRequirement": "return ./scripts/requirements/setup-catools.ps1",
         "PostAction": "Reinstall"
@@ -227,7 +227,7 @@
         "DownloadCommand": "./scripts/download-binary.ps1 -link $($Requirement.DownloadLink) -outPath $($Requirement.DownloadOutfile)",
         "ArgumentList": "",
         "InstallCommand": "./scripts/install/git.ps1 -randomCode `$RandomCode -nameNoSpaces `$NameNoSpaces -currentDate `$CurrentDate -name $($Requirement.Name) -downloadOutFile $($Requirement.DownloadOutFile)",
-        "DeleteCommand": "Remove-Item (`\"$($Requirement.DownloadOutfile)`\").replace('`\"','')",
+        "DeleteCommand": "./scripts/remove-binary.ps1 -downloadOutFile `$($Requirement.DownloadOutfile)",
         "DeclineMessage": "return `\"You have declined to automatically download and install Git.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
         "CheckRequirement": "return ./scripts/requirements/git.ps1",
         "PostAction": ""
@@ -246,7 +246,7 @@
         "DownloadCommand": "./scripts/download-binary.ps1 -link $($Requirement.DownloadLink) -outPath $($Requirement.DownloadOutfile)",
         "ArgumentList": "",
         "InstallCommand": "./scripts/install/nodejs.ps1 -randomCode `$RandomCode -nameNoSpaces `$NameNoSpaces -currentDate `$CurrentDate -name $($Requirement.Name) -downloadOutfile $($Requirement.DownloadOutfile)",
-        "DeleteCommand": "Remove-Item (`\"$($Requirement.DownloadOutfile)`\").replace('`\"','')",
+        "DeleteCommand": "./scripts/remove-binary.ps1 -downloadOutFile `$($Requirement.DownloadOutfile)",
         "DeclineMessage": "return `\"You have declined to automatically download and install Node.js.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
         "CheckRequirement": "return ./scripts/requirements/nodejs.ps1",
         "PostAction": ""
@@ -265,7 +265,7 @@
         "DownloadCommand": "./scripts/download-binary.ps1 -link $($Requirement.DownloadLink) -outPath $($Requirement.DownloadOutfile)",
         "ArgumentList": "",
         "InstallCommand": "./scripts/install/visual-studio.ps1 -randomCode `$RandomCode -nameNoSpaces `$NameNoSpaces -currentDate `$CurrentDate -name $($Requirement.Name) -downloadOutFile $($Requirement.DownloadOutFile)",
-        "DeleteCommand": "Remove-Item (`\"$($Requirement.DownloadOutfile)`\").replace('`\"','')",
+        "DeleteCommand": "./scripts/remove-binary.ps1 -downloadOutFile `$($Requirement.DownloadOutfile)",
         "DeclineMessage": "return `\"You have declined to automatically download and install Visual Studio.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
         "CheckRequirement": "return ./scripts/requirements/visual-studio.ps1",
         "PostAction": ""
@@ -284,7 +284,7 @@
         "DownloadCommand": "./scripts/download-binary.ps1 -link $($Requirement.DownloadLink) -outPath $($Requirement.DownloadOutfile)",
         "ArgumentList": "",
         "InstallCommand": "./scripts/install/vscode.ps1 -randomCode `$RandomCode -nameNoSpaces `$NameNoSpaces -currentDate `$CurrentDate -name $($Requirement.Name) -downloadOutFile $($Requirement.DownloadOutFile)",
-        "DeleteCommand": "Remove-Item (`\"$($Requirement.DownloadOutfile)`\").replace('`\"','')",
+        "DeleteCommand": "./scripts/remove-binary.ps1 -downloadOutFile `$($Requirement.DownloadOutfile)",
         "DeclineMessage": "return `\"You have declined to automatically download and install Visual Studio Code.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
         "CheckRequirement": "return ./scripts/requirements/vscode.ps1",
         "PostAction": ""
@@ -303,7 +303,7 @@
         "DownloadCommand": "./scripts/download-binary.ps1 -link $($Requirement.DownloadLink) -outPath $($Requirement.DownloadOutfile)",
         "ArgumentList": "",
         "InstallCommand": "./scripts/install/dotnet-core.ps1 -randomCode `$RandomCode -nameNoSpaces `$NameNoSpaces -currentDate `$CurrentDate -name $($Requirement.Name) -downloadOutFile $($Requirement.DownloadOutFile)",
-        "DeleteCommand": "Remove-Item (`\"$($Requirement.DownloadOutfile)`\").replace('`\"','')",
+        "DeleteCommand": "./scripts/remove-binary.ps1 -downloadOutFile `$($Requirement.DownloadOutfile)",
         "DeclineMessage": "return `\"You have declined to automatically download and install .NET Core.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
         "CheckRequirement": "return ./scripts/requirements/dotnet-core.ps1",
         "PostAction": ""
@@ -326,7 +326,7 @@
         "DownloadCommand": "./scripts/download-binary.ps1 -link $($Requirement.DownloadLink) -outPath $($Requirement.DownloadOutfile)",
         "ArgumentList": "",
         "InstallCommand": "./scripts/install/docker.ps1 -randomCode `$RandomCode -nameNoSpaces `$NameNoSpaces -currentDate `$CurrentDate -name $($Requirement.Name) -downloadOutFile $($Requirement.DownloadOutFile)",
-        "DeleteCommand": "Remove-Item (`\"$($Requirement.DownloadOutfile)`\").replace('`\"','')",
+        "DeleteCommand": "./scripts/remove-binary.ps1 -downloadOutFile `$($Requirement.DownloadOutfile)",
         "DeclineMessage": "return `\"You have declined to automatically download and install Docker.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
         "CheckRequirement": "return ./scripts/requirements/docker.ps1 -scarConfig `$ScarConfig",
         "PostAction": "Logout"
