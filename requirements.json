@@ -128,7 +128,7 @@
         "PostInstallTrueOkMessage": "",
         "PostInstallTrueOkCommand": "",
         "DeclineMessage": "return `\"You have declined to automatically Install Visual Studio Code Extensions.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
-        "PostInstallCommand": "./scripts/postInstall/vscode-extensions.ps1 -nameNoSpaces `$NameNoSpaces -name `$($Requirement.Name) -randomCode `$RandomCode -currentDate `$CurrentDate",
+        "PostInstallCommand": "./scripts/postInstall/vscode-extensions.ps1 -nameNoSpaces `$NameNoSpaces -name $($Requirement.Name) -randomCode `$RandomCode -currentDate `$CurrentDate",
         "Attributes": [
             "Mikael.Angular-BeastCode",
             "steoates.autoimport",
@@ -154,7 +154,7 @@
         "OkMessage": "You have the $($Requirement.Name) permission.",
         "KoMessage": "You don't have the $($Requirement.Name) permission.",
         "DeclineMessage": "return 'You have declined Administrator Permission'",
-        "CheckRequirement": "return ./scripts/requirements/administrator.ps1",
+        "CheckRequirement": "return ./scripts/requirements/administrator.ps1 -resultPermission `$ResultPermission",
         "PostAction": ""
     },
     {
@@ -203,7 +203,7 @@
         "MaxVersion": "latest",
         "MajorVersion": "",
         "DownloadLink": "https://api.github.com/repos/codearchitects/Ca-Tools/releases/$($Requirement.MaxVersion)",
-        "DownloadOutfile": "~\\Downloads\\$RandomCode-Setup-CaTools.msi",
+        "DownloadOutfile": "`\"$HOME\\Downloads\\$RandomCode-Setup-CaTools.msi`\"",
         "ExtraMessage": "",
         "DownloadCommand": "Invoke-RestMethod (((Invoke-RestMethod $($Requirement.DownloadLink)).assets[0]).browser_download_url) -OutFile $($Requirement.DownloadOutfile)",
         "ArgumentList": "",
@@ -227,7 +227,7 @@
         "DownloadCommand": "./scripts/download-binary.ps1 -link $($Requirement.DownloadLink) -outPath $($Requirement.DownloadOutfile)",
         "ArgumentList": "",
         "InstallCommand": "./scripts/install/git.ps1 -randomCode `$RandomCode -nameNoSpaces `$NameNoSpaces -currentDate `$CurrentDate -name $($Requirement.Name) -downloadOutFile $($Requirement.DownloadOutFile)",
-        "DeleteCommand": "./scripts/remove-binary.ps1 -downloadOutFile `$($Requirement.DownloadOutfile)",
+        "DeleteCommand": "./scripts/remove-binary.ps1 -downloadOutFile $($Requirement.DownloadOutfile)",
         "DeclineMessage": "return `\"You have declined to automatically download and install Git.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
         "CheckRequirement": "return ./scripts/requirements/git.ps1",
         "PostAction": ""
@@ -241,14 +241,14 @@
         "MaxVersion": "16.13.1",
         "MajorVersion": "16",
         "DownloadLink": "https://nodejs.org/dist/v$($Requirement.MaxVersion)/node-v$($Requirement.MaxVersion)-x64.msi",
-        "DownloadOutfile": "~\\Downloads\\$RandomCode-Nodejs-x64.msi",
+        "DownloadOutfile": "`\"$HOME\\Downloads\\$RandomCode-Nodejs-x64.msi`\"",
         "ExtraMessage": "",
         "DownloadCommand": "./scripts/download-binary.ps1 -link $($Requirement.DownloadLink) -outPath $($Requirement.DownloadOutfile)",
         "ArgumentList": "",
-        "InstallCommand": "./scripts/install/nodejs.ps1 -randomCode `$RandomCode -nameNoSpaces `$NameNoSpaces -currentDate `$CurrentDate -name $($Requirement.Name) -downloadOutfile $($Requirement.DownloadOutfile)",
-        "DeleteCommand": "./scripts/remove-binary.ps1 -downloadOutFile `$($Requirement.DownloadOutfile)",
+        "InstallCommand": "./scripts/install/nodejs.ps1 -randomCode `$RandomCode -nameNoSpaces `$NameNoSpaces -currentDate `$CurrentDate -name $($Requirement.Name) -downloadOutFile $($Requirement.DownloadOutfile)",
+        "DeleteCommand": "./scripts/remove-binary.ps1 -downloadOutFile $($Requirement.DownloadOutfile)",
         "DeclineMessage": "return `\"You have declined to automatically download and install Node.js.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
-        "CheckRequirement": "return ./scripts/requirements/nodejs.ps1",
+        "CheckRequirement": "return ./scripts/requirements/nodejs.ps1 -majorVersion $($Requirement.MajorVersion) ",
         "PostAction": ""
     },
     {
@@ -265,7 +265,7 @@
         "DownloadCommand": "./scripts/download-binary.ps1 -link $($Requirement.DownloadLink) -outPath $($Requirement.DownloadOutfile)",
         "ArgumentList": "",
         "InstallCommand": "./scripts/install/visual-studio.ps1 -randomCode `$RandomCode -nameNoSpaces `$NameNoSpaces -currentDate `$CurrentDate -name $($Requirement.Name) -downloadOutFile $($Requirement.DownloadOutFile)",
-        "DeleteCommand": "./scripts/remove-binary.ps1 -downloadOutFile `$($Requirement.DownloadOutfile)",
+        "DeleteCommand": "./scripts/remove-binary.ps1 -downloadOutFile $($Requirement.DownloadOutfile)",
         "DeclineMessage": "return `\"You have declined to automatically download and install Visual Studio.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
         "CheckRequirement": "return ./scripts/requirements/visual-studio.ps1",
         "PostAction": ""
@@ -284,7 +284,7 @@
         "DownloadCommand": "./scripts/download-binary.ps1 -link $($Requirement.DownloadLink) -outPath $($Requirement.DownloadOutfile)",
         "ArgumentList": "",
         "InstallCommand": "./scripts/install/vscode.ps1 -randomCode `$RandomCode -nameNoSpaces `$NameNoSpaces -currentDate `$CurrentDate -name $($Requirement.Name) -downloadOutFile $($Requirement.DownloadOutFile)",
-        "DeleteCommand": "./scripts/remove-binary.ps1 -downloadOutFile `$($Requirement.DownloadOutfile)",
+        "DeleteCommand": "./scripts/remove-binary.ps1 -downloadOutFile $($Requirement.DownloadOutfile)",
         "DeclineMessage": "return `\"You have declined to automatically download and install Visual Studio Code.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
         "CheckRequirement": "return ./scripts/requirements/vscode.ps1",
         "PostAction": ""
@@ -303,7 +303,7 @@
         "DownloadCommand": "./scripts/download-binary.ps1 -link $($Requirement.DownloadLink) -outPath $($Requirement.DownloadOutfile)",
         "ArgumentList": "",
         "InstallCommand": "./scripts/install/dotnet-core.ps1 -randomCode `$RandomCode -nameNoSpaces `$NameNoSpaces -currentDate `$CurrentDate -name $($Requirement.Name) -downloadOutFile $($Requirement.DownloadOutFile)",
-        "DeleteCommand": "./scripts/remove-binary.ps1 -downloadOutFile `$($Requirement.DownloadOutfile)",
+        "DeleteCommand": "./scripts/remove-binary.ps1 -downloadOutFile $($Requirement.DownloadOutfile)",
         "DeclineMessage": "return `\"You have declined to automatically download and install .NET Core.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
         "CheckRequirement": "return ./scripts/requirements/dotnet-core.ps1",
         "PostAction": ""
@@ -326,7 +326,7 @@
         "DownloadCommand": "./scripts/download-binary.ps1 -link $($Requirement.DownloadLink) -outPath $($Requirement.DownloadOutfile)",
         "ArgumentList": "",
         "InstallCommand": "./scripts/install/docker.ps1 -randomCode `$RandomCode -nameNoSpaces `$NameNoSpaces -currentDate `$CurrentDate -name $($Requirement.Name) -downloadOutFile $($Requirement.DownloadOutFile)",
-        "DeleteCommand": "./scripts/remove-binary.ps1 -downloadOutFile `$($Requirement.DownloadOutfile)",
+        "DeleteCommand": "./scripts/remove-binary.ps1 -downloadOutFile $($Requirement.DownloadOutfile)",
         "DeclineMessage": "return `\"You have declined to automatically download and install Docker.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
         "CheckRequirement": "return ./scripts/requirements/docker.ps1 -scarConfig `$ScarConfig",
         "PostAction": "Logout"

@@ -1,8 +1,12 @@
+param(
+    [string]$majorVersion
+)
+    
 try {
 
     $nodeJsVersion = (node --version).replace('v','').split('.')[0]
     
-    if ($nodeJsVersion -eq "$($Requirement.MajorVersion)") {
+    if ($nodeJsVersion -eq $majorVersion) {
         return @($true, 'OK')
     }
     else {

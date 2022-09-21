@@ -8,7 +8,7 @@ param(
 
 $argumentList = @(
     '/I',
-    $downloadOutfile, # $($Requirement.DownloadOutfile)
+    $downloadOutfile,
     '/passive'
 )
 
