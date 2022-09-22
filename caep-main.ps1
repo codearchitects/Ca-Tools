@@ -228,7 +228,7 @@ function Invoke-CheckRequirements($Requirements) {
     New-Logfiles $Requirement
     if ($Requirement.CheckRequirement) {
       $ResultCheckRequirement = Invoke-Expression (New-CommandString $Requirement.CheckRequirement)
-      if (!(($ResultCheckRequirement[0] -eq $true) -and ($ResultCheckRequirement[1] -eq 'OK')) -or $MustCheckRequirementList.Contains($Requirement.Name)) {
+      if (!(($ResultCheckRequirement[0] -eq $true) -and ($ResultCheckRequirement[1] -eq 'OK'))) {
         $ResultCheckRequirementList += $Requirement
       }
     }

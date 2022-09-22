@@ -128,7 +128,7 @@
         "PostInstallTrueOkMessage": "",
         "PostInstallTrueOkCommand": "",
         "DeclineMessage": "return `\"You have declined to automatically Install Visual Studio Code Extensions.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
-        "PostInstallCommand": "./scripts/postInstall/vscode-extensions.ps1 -nameNoSpaces `$NameNoSpaces -name $($Requirement.Name) -randomCode `$RandomCode -currentDate `$CurrentDate",
+        "PostInstallCommand": "./scripts/postInstall/vscode-extensions.ps1 -name $($Requirement.Name) -randomCode `$RandomCode -currentDate `$CurrentDate",
         "Attributes": [
             "Mikael.Angular-BeastCode",
             "steoates.autoimport",

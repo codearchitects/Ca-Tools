@@ -2,7 +2,9 @@ param(
     [string]$attributes #$($Requirement.Attributes)
 )   
 
-    $NotInstalled = $false
+$attributes
+
+$NotInstalled = $false
 
 try {
     $InstalledVSCodeExtensions = (code --list-extensions)
