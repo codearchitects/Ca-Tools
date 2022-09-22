@@ -286,7 +286,7 @@
         "InstallCommand": "./scripts/install/vscode.ps1 -randomCode `$RandomCode -nameNoSpaces `$NameNoSpaces -currentDate `$CurrentDate -name $($Requirement.Name) -downloadOutFile $($Requirement.DownloadOutFile)",
         "DeleteCommand": "./scripts/remove-binary.ps1 -downloadOutFile $($Requirement.DownloadOutfile)",
         "DeclineMessage": "return `\"You have declined to automatically download and install Visual Studio Code.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
-        "CheckRequirement": "return ./scripts/requirements/vscode.ps1",
+        "CheckRequirement": "return ./scripts/requirements/vscode.ps1 -attributes $($Requirement.Attributes)",
         "PostAction": ""
     },
     {
