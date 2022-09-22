@@ -1,6 +1,5 @@
 param(
     [string]$randomCode,
-    [string]$nameNoSpaces,
     [string]$currentDate,
     [string]$name,
     [string]$downloadOutFile
