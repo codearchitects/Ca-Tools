@@ -1,8 +1,12 @@
+param(
+    [string]$minVersion #$($Requirement.MinVersion)
+)
+
 try {
 
     $vsCodeVersion = (code --version)[0]
     
-    if ( $vsCodeVersion -ge "$($Requirement.MinVersion)" ) {
+    if ( $vsCodeVersion -ge $minVersion ) {
         return @($true, 'OK')
     }
     else {

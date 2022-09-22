@@ -1,8 +1,12 @@
+param(
+    [string]$maxVersion # $($Requirement.MajorVersion)
+)  
+
 try {
     
     $dotNetVersion = (dotnet --version).split('.')[0]
     
-    if ( $dotNetVersion -eq "$($Requirement.MajorVersion)" ) {
+    if ( $dotNetVersion -eq $maxVersion ) {
         
         return @($true, 'OK')
     

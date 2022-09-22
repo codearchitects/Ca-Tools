@@ -1,5 +1,7 @@
 param(
-    [string]$scarConfig
+    [string]$scarConfig,
+    [string]$maxVersion,
+    [string]$minVersion
 )
 
 if (!$scarConfig.Contains('terranova')) {
@@ -8,7 +10,7 @@ if (!$scarConfig.Contains('terranova')) {
         
         $dockerVersion = (docker --version).replace(',', '').replace('Docker version', '').replace('build', '').Trim().Split(' ')[0]
         
-        if ( ($dockerVersion -ge "$($Requirement.MinVersion)") -and ($dockerVersion -le "$($Requirement.MaxVersion)") ) {
+        if ( ($dockerVersion -ge $minVersion) -and ($dockerVersion -le $maxVersion) ) {
 
             return @($true, 'OK')
 

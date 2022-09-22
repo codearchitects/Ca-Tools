@@ -1,6 +1,7 @@
 param(
-    [string]$scarConfig
-
+    [string]$scarConfig,
+    [string]$maxVersion, # $($Requirement.MaxVersion)
+    [string]$minVersion  # $($Requirement.MinVersion)
 )
 if ( !$scarConfig.Contains('terranova') ) {
     
@@ -10,7 +11,7 @@ if ( !$scarConfig.Contains('terranova') ) {
     
     for ($i = 0; $i -lt $wslLVSplit.Count; $i++) {
         
-        if ( ($wslLVSplit[$i] -like "*Ubuntu-$($Requirement.MaxVersion)*") -or ($wslLVSplit[$i] -like "*Ubuntu-$($Requirement.MinVersion)*") ) {
+        if ( ($wslLVSplit[$i] -like "*Ubuntu-$maxVersion*") -or ($wslLVSplit[$i] -like "*Ubuntu-$minVersion*") ) {
             
             $result = $true
         }

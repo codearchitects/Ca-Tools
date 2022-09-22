@@ -1,8 +1,12 @@
+param(
+    [string]$majorVersion # $($Requirement.MajorVersion)
+) 
+
 try {
 
     $npmVersion = (npm --version).split('.')[0]
 
-    if ( $npmVersion -eq "$($Requirement.MajorVersion)" ) {
+    if ( $npmVersion -eq $majorVersion) {
 
         return @($true, 'OK')
     }
