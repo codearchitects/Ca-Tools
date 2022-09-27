@@ -1,8 +1,6 @@
 param(
-    [string]$attributes #$($Requirement.Attributes)
+    $attributes #$($Requirement.Attributes)
 )   
-
-$attributes
 
 $NotInstalled = $false
 
@@ -11,7 +9,7 @@ try {
 
     foreach ( $Extension in "$attributes".Split(' ') ) {
 
-        if ( ($InstalledVSCodeExtensions -like ("$Extension*").ToLower()).Count -eq 0 ) {
+        if ( ($InstalledVSCodeExtensions -like ("*$Extension*").ToLower()).Count -eq 0 ) {
             $NotInstalled = $true
         }
     }

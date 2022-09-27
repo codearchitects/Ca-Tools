@@ -315,6 +315,9 @@ function New-CommandString($String) {
   $StringWithValue = $String
   do {
     Invoke-Expression("Set-Variable -name StringWithValue -Value `"$StringWithValue`"")
+
+    # TODO LOGGING TASK Write-Host "$StringWithValue"
+
   } while ($StringWithValue -like '*$(*)*')
   return $StringWithValue
 }
