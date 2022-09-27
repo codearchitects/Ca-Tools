@@ -355,8 +355,10 @@ function New-StartupCmd {
   Creates a .cmd that will execute the CAEP installer at startup until they won't complete it
   #>
   $ScriptPathParent = Split-Path -Parent $ScriptPath
-  $CaepInstallerName = "\caep-installer.ps1"
+  $CaepInstallerName = "caep-installer.ps1"
+  $CaepInstallerPath = "\`"$(Join-Path $ScriptPathParent $CaepInstallerName)\`""
   $ScriptArgs = ""
+  $ScriptCaepContent = ""
   if ($ScarConfig -ne "") {
     $ScriptArgs += " -ScarConfig " + $ScarConfig
   }
@@ -364,14 +366,15 @@ function New-StartupCmd {
     $ScriptArgs += " -ScarVersion " + $ScarVersion
   }
   if ($ScriptArgs -ne "") {
-    $ScriptPathQuotes = "start powershell -Command `"Start-Process powershell -verb runas -ArgumentList '-NoExit -file " + $ScriptPathParent + $CaepInstallerName + $ScriptArgs +  "'`""
+    $ScriptCaepContent = $CaepInstallerPath + $ScriptArgs
   } else {
-    $ScriptPathQuotes = "start powershell -Command `"Start-Process powershell -verb runas -ArgumentList '-NoExit -file " + $ScriptPathParent + $CaepInstallerName + "'`""
+    $ScriptCaepContent = $CaepInstallerPath
   }
-  
+
+  $ScriptCmdContent = "start powershell -Command `"Start-Process powershell -verb runas -ArgumentList '-NoExit -file " + $ScriptCaepContent + "'`""
   if (!(Test-Path $StartupPath)) {
     New-Item -Path $StartupPath | Out-Null
-    Add-Content -Path $StartupPath -Value "$ScriptPathQuotes"
+    Add-Content -Path $StartupPath -Value "$ScriptCmdContent"
   }
 }
 
