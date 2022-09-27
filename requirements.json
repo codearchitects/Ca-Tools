@@ -163,7 +163,7 @@
         "Dependencies": [  ],
         "QuestionMessage": "Press 'Accept' to add the missing Environement Variable Path.",
         "Variable": "Path",
-        "Values": "C:\\windows\\system32;C:\\windows\\system32\\wbem;C:\\windows;C:\\windows\\system32\\windowspowershell\\v1.0;C:\\Program Files\\Git\\usr\\bin;",
+        "Values": "`\"C:\\windows\\system32;C:\\windows\\system32\\wbem;C:\\windows;C:\\windows\\system32\\windowspowershell\\v1.0;C:\\Program Files\\Git\\usr\\bin;`\"",
         "Scope": "Machine",
         "AddCommand": "[System.Environment]::SetEnvironmentVariable(`\"$($Requirement.Variable)`\", `\"$env:Path;`\"+`\"$item`\", `\"$($Requirement.Scope)`\")",
         "DeclineMessage": "return `\"You have declined to automatically set your Environement Variable Path.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",

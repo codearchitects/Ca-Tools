@@ -158,7 +158,7 @@ function Invoke-EnvironmentVariableAction {
     $Requirement
   )
 
-  foreach ($item in $Requirement.Values) {
+  foreach ($item in ($Requirement.Values -replace "```"","")) {
     $EnvVarResult = Invoke-Expression (New-CommandString $Requirement.CheckRequirement)
     if ($EnvVarResult[1] -eq 'KO') {
       $Description.AppendText("Setting Environement Variable: $item")

@@ -3,7 +3,8 @@ param(
 )
 
 $envValues = $reqValues.Split(';')
-$notFound = $false; $envPath = "$env:PATH"
+$notFound = $false
+$envPath = "$env:PATH"
 
 foreach ($value in $envValues) {
     if ( (($envPath.ToLower()).Split(';') -notcontains ("$Value").ToLower()) -and (($envPath.ToLower()).Split(';') -notcontains ("$value\").ToLower()) ) {
