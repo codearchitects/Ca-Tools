@@ -3,9 +3,7 @@ param(
 )
 
 try {
-    
     $gitVersion = (git --version).replace('git version ', '').replace('.windows.1', '').split('.')[0]
-
     if ($gitVersion -eq $maxVersion) {
         return @($true, 'OK')
     }
