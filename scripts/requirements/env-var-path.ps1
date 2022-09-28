@@ -2,12 +2,13 @@ param(
     [string]$reqValues # $($Requirement.Values)
 )
 
-$envValues = $reqValues.Split(';')
+$envToCheck = ($reqValues -replace "`"" , "").Split(';')
 $notFound = $false
 $envPath = "$env:PATH"
 
-foreach ($value in $envValues) {
+foreach ($value in $envToCheck) {
     if ( (($envPath.ToLower()).Split(';') -notcontains ("$Value").ToLower()) -and (($envPath.ToLower()).Split(';') -notcontains ("$value\").ToLower()) ) {
+        Write-Host "non trovo un caz: " + $value
         $notFound = $true
     }
 }
