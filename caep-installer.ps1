@@ -343,11 +343,10 @@ $ScriptPathParent = Split-Path -Parent $ScriptPath
 Set-Location $ScriptPathParent
 
 # Unlocks all the scripts needed for the installation
-Unblock-File -Path .\caep-main.ps1
-Unblock-File -Path .\clean-jfrog.ps1
-Unblock-File -Path .\requirement-actions.ps1
-Unblock-File -Path .\requirements.json
-Unblock-File -Path .\send-logs.ps1
+$ps1Files = Get-ChildItem *.ps1 -Recurse
+foreach ($ps1File in $ps1Files) {
+  Unblock-File -Path $ps1File
+}
 
 . .\caep-main.ps1 -ScarVersion $ScarVersion -ScarConfig $ScarConfig
 
