@@ -1,6 +1,6 @@
 param(
-    [string]$link,   # $($Requirement.DownloadLink)
-    [string]$outPath # $($Requirement.DownloadOutfile)
+    [string]$link,
+    [string]$outPath
 )
 
 Invoke-RestMethod (((Invoke-RestMethod $link).assets[0]).browser_download_url) -OutFile $outPath

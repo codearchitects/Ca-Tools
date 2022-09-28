@@ -4,7 +4,7 @@ param(
     [string]$currentDate
 )
     
-$nameNoSpaces = ($name.replace(' ', ''))       #$NameNoSpaces = ("$($Requirement.Name)".replace(' ', ''))
+$nameNoSpaces = ($name.replace(' ', ''))
 $Logfile = "~\.ca\$randomCode-$nameNoSpaces-$currentDate.log"
 $OutLogfile = "~\.ca\$randomCode-$nameNoSpaces-$currentDate.out"
 $ErrLogfile = "~\.ca\$randomCode-$nameNoSpaces-$currentDate.err"

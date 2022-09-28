@@ -8,7 +8,6 @@ try {
     $InstalledVSCodeExtensions = (code --list-extensions)
 
     foreach ( $Extension in "$attributes".Split(' ') ) {
-
         if ( ($InstalledVSCodeExtensions -like ("*$Extension*").ToLower()).Count -eq 0 ) {
             $NotInstalled = $true
         }

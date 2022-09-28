@@ -3,7 +3,6 @@ param(
 )
     
 try {
-
     $nodeJsVersion = (node --version).replace('v','').split('.')[0]
     
     if ($nodeJsVersion -eq $majorVersion) {
@@ -12,7 +11,6 @@ try {
     else {
         return @($true, 'VER')
     }
-
 }
 catch {
     return @($true, 'KO')

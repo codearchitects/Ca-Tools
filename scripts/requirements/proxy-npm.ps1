@@ -1,5 +1,4 @@
 $InternetSettings = (Get-ItemProperty -Path 'Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings')
-
 $ProxyDataSplit = $InternetSettings.ProxyServer -split ':'
 
 if ($ProxyDataSplit.Count -eq 2) {

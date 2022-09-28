@@ -3,7 +3,7 @@ param(
     [string]$currentDate,
     [string]$name,
     [string]$downloadOutfile
-) #presenti nel main, da passare come param in "InstallCommand" (ricorda la MAIUSC iniziale!)
+)
 
 $argumentList = @(
     'install',

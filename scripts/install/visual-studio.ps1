@@ -3,7 +3,7 @@ param(
     [string]$currentDate,
     [string]$name,
     [string]$downloadOutFile
-) #presenti nel main, da passare come param in "InstallCommand" (ricorda la MAIUSC iniziale!)
+)
 
 $argumentList = @(
     '--add Microsoft.VisualStudio.Workload.NetWeb',

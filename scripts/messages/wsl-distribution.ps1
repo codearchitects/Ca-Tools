@@ -1,5 +1,3 @@
-#WSL Distribution "CheckRequirement" .json property
-
 param(
     [string]$message
 )

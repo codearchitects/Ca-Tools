@@ -1,25 +1,18 @@
 param(
-    [string]$majorVersion # $($Requirement.MajorVersion)
+    [string]$majorVersion
 ) 
 
 try {
-
     $npmVersion = (npm --version).split('.')[0]
-
     if ( $npmVersion -eq $majorVersion) {
-
         return @($true, 'OK')
     }
     else {
-
         return @($true, 'VER')
-
     }
 }
 catch {
-
     return @($true, 'KO')
-    
 }
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

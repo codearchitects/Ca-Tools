@@ -1,9 +1,9 @@
 param(
     [string]$randomCode,
     [string]$currentDate,
-    [string]$name, # $($Requirement.Name)
-    [string]$pathFile, # $($Requirement.PathFile)
-    [string]$arguments # $($Requirement.ArgumentList)
+    [string]$name,
+    [string]$pathFile,
+    [string]$arguments
 )
 
 $npmLoginNoSpace = $name.replace(' ', '')

@@ -1,7 +1,7 @@
 param(
     [string]$scarConfig,
-    [string]$maxVersion, # $($Requirement.MaxVersion)
-    [string]$minVersion  # $($Requirement.MinVersion)
+    [string]$maxVersion,
+    [string]$minVersion
 )
 if ( !$scarConfig.Contains('terranova') ) {
     

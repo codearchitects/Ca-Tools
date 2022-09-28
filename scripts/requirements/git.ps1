@@ -1,5 +1,5 @@
 param(
-    [string]$maxVersion # $($Requirement.MajorVersion)
+    [string]$maxVersion
 )
 
 try {

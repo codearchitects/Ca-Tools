@@ -30,7 +30,6 @@ if ( !$scarConfig.Contains('terranova') ) {
     }
     else {
         return @($true, 'KO')
-
     }
 }
 else {

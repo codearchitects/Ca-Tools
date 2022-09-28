@@ -1,5 +1,5 @@
 param(
-    [string]$reqValues # $($Requirement.Values)
+    [string]$reqValues
 )
 
 $envToCheck = ($reqValues -replace "`"" , "").Split(';')
@@ -8,7 +8,6 @@ $envPath = "$env:PATH"
 
 foreach ($value in $envToCheck) {
     if ( (($envPath.ToLower()).Split(';') -notcontains ("$Value").ToLower()) -and (($envPath.ToLower()).Split(';') -notcontains ("$value\").ToLower()) ) {
-        Write-Host "non trovo un caz: " + $value
         $notFound = $true
     }
 }
