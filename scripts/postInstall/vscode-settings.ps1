@@ -1,36 +1,20 @@
-try {
-    ca plugins:remove @ca/cli-plugin-scarface
+$VSCodeSettingsJsonPath = "~\AppData\Roaming\Code\User\settings.json"
 
-    npm uninstall -g @ca/cli
-} catch {
-    Write-Host "@ca/cli-plugin-scarface already removed."
+if (-not (Get-Content $VSCodeSettingsJsonPath)) {
+    Set-Content -Path $VSCodeSettingsJsonPath -Value '{ }'
 }
 
-# Removing 'codearchitects.jfrog.io' from NuGet.Config
-$NugetConfig = [XML](Get-Content -Path "$HOME\AppData\Roaming\NuGet\Nuget.Config")
-foreach ($PackageSource in $NugetConfig.configuration.packageSources.add) {
-    if ($PackageSource.value -like "*codearchitects.jfrog.io*") {
-        $NodePackageSources = $NugetConfig.SelectSingleNode("//configuration//packageSources//add[@key=`"$($packageSource.key)`"]")
-    }
-}
-if ($NodePackageSources) {
-    $NugetConfig.configuration.packageSources.RemoveChild($NodePackageSources) | Out-Null
-    $NodePackageCredentials = $NugetConfig.SelectSingleNode("//configuration//packageSourceCredentials//$($NodePackageSources.key)")
-    if ($NodePackageCredentials) {
-        $NugetConfig.configuration.packageSourceCredentials.RemoveChild($NodePackageCredentials) | Out-Null
-    }
-    $NugetConfig.Save("$HOME\AppData\Roaming\NuGet\NuGet.Config")
-}
-
-# Removing 'codearchitects.jfrog.io' from .npmrc
-$Npmrc = Get-Content -Path "$HOME\.npmrc" | Where-Object { $_ -notlike '*codearchitects.jfrog.io*' }
-Set-Content -Path "$HOME\.npmrc" -Value $Npmrc
-
+$VSCodeSettingObj = Get-Content $VSCodeSettingsJsonPath | ConvertFrom-Json
+$VSCodeSettingObj = $VSCodeSettingObj | Select-Object * -ExcludeProperty 'terminal.integrated.shell.windows', 'terminal.integrated.defaultProfile.windows', 'terminal.integrated.shellArgs.windows', 'terminal.integrated.profiles.windows'
+$VSCodeSettingObj | Add-Member -NotePropertyName 'terminal.integrated.shell.windows' -NotePropertyValue 'C:\WINDOWS\System32\cmd.exe' -Force
+$VSCodeSettingObj | Add-Member -NotePropertyName 'update.mode' -NotePropertyValue 'manual' -Force
+$VSCodeSettingObj.PsObject.Properties.Remove('*')
+Set-Content -Path $VSCodeSettingsJsonPath -Value ($VSCodeSettingObj | ConvertTo-Json -Depth 5)
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUAzTCE0WbHQaCP4rUtizZromv
-# 93Gggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUW9a87DYCRsmwVxdnwx+nWick
+# ncWggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -198,30 +182,30 @@ Set-Content -Path "$HOME\.npmrc" -Value $Npmrc
 # U2FsZm9yZDEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSQwIgYDVQQDExtTZWN0
 # aWdvIFJTQSBDb2RlIFNpZ25pbmcgQ0ECEA7nuDfFiGka9mWZXtAMyYwwCQYFKw4D
 # AhoFAKCBhDAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgEL
-# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUlea4YgyKdbQOzEAp4jbl
-# gYQWoj0wJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
-# hkiG9w0BAQEFAASCAQCKbisyp/+vNnVton87q8O5y2RwrgJvykLMduZ5srksddo5
-# y1FcJ16t3Ah9UMMO6+zNEIl0L3cF4xGO4kTVdLpz/7gNPL2kXg49E8jhMXFRaD+N
-# 4SgI0rJTX8ETNFHdG8s/RPGF2vsTyF+fL7bes2vNx/Y1+aTJLJ9xBI8E0SN5pLO8
-# pJNoO9gDx9VDSn//uuyvxsIQIlw6jc2IqaYxWIjP+8zGsAe6tNZU9L5xm3abFWWA
-# 78pYNaj1d5emqZeZXg1toyYdi6M+hFfad7MxgSY1r5wjhe6FmYjo6QnJo/8QmWB6
-# zxaELIL7MZidpDqso57GUJqJo/LA17EYyMEpbXesoYIDTDCCA0gGCSqGSIb3DQEJ
+# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUZ4CRZE1GpmjL2wfPHqJT
+# dYporzswJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
+# hkiG9w0BAQEFAASCAQA8MvEDXPr9NbR6kmJo9rewQAx4y62ZFmiPVq+3yiR4DBBf
+# 78fGe3IfFL2+EEl4Xez3PXYF3YVsZOQHcpa8j1klW63BeZSwasHSeKwljRNxn6Pi
+# KFnWohoC7j6AhpGi45JvN1qUFgbRddbZJfIEJDUJsMzgsqA4f3DN8tl+S7WAaSiQ
+# D8J70kMdnSHOPzbPUmbEWrmwwpOBUS2Lr0ulxjJbkti1noPurShwBfBIK4wx3Dwu
+# dGK15eWVAYtLZ6ZdPeDQhlI+Zrc7zR2Nj9/kQ+MlfYfA89NxrEOQygAjs0iROEks
+# 42ne42UTSNsKJt5wJ7iYmU+Pe3kdt8nTMEAVmDAGoYIDTDCCA0gGCSqGSIb3DQEJ
 # BjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVy
 # IE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28g
 # TGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBTdGFtcGluZyBDQQIR
 # AJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAYBgkqhkiG9w0BCQMx
-# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjA5MjkwNzI3NTNaMD8GCSqG
-# SIb3DQEJBDEyBDCXZFEw17TraiceSoDTmlS53M54GhjY8LWarFheLQHVLR0AYX9u
-# Ibn99VckwvSDoNUwDQYJKoZIhvcNAQEBBQAEggIARUCHPTShMI6uo7j5pI26IDhF
-# benosc2B1PNBMCpJ6M7/Gde88b1EHprNoSRC/TT9qIcSonj47KRcTGMSJXeXwck5
-# EV9MFgWBcX/kdHLmshkNW4EEMVg82K/smDtElmCjX1nrR9+obx7X1WN0gBfrhlMQ
-# cTMmlwLzJ7VFS2ROpE/cxxRrUiCOEWRDtO4jCAW020JI1l2CLwCrklZ0640v+sXp
-# oriBojRJfaxDCn8zM5WbY4e81n3oVCwuPg7sCnyyMtNQ58A07hbMP78MOJo6Oibt
-# 93ffSwpsbNvJJUBaqPA7T1dHP+deKa0BKxTSDT+l/nMpo1yZLKxLcvVekhxHXZ3U
-# oXdYPiUBmKXQlf584dM/bp2q3w2w1K9G4uQsEOlFrEm35DqAXSE1zB6lKXyMIdNP
-# clykl9+5H1dZjoiVlcAGoH6za7mYX4soam+aOJ8vgS2dp7ahLhd5bA4r8mFjam2Q
-# ax1EQ14Nxz+b1xckq5XSoGsr/a2BN57RHgsXwnp+0smkZfc/EV3hXWUaSYqfweGd
-# d0skO47ctDXTyMd58lI5OvK1JP4AsKVgq1VnU+oQ9H/xNq4dwZ0Imyw4p32JO5vh
-# cR6s0+79vDNiR93t0lJWWTcYSOocb5bvCoDCjFjqkltHusv0lPJlFYmu6PeB0SNq
-# LuFo/rueM3oOq2Rlu24=
+# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjA5MjkwNzI2MDFaMD8GCSqG
+# SIb3DQEJBDEyBDDNjTlLoJ/Ia9MAviQZ4w55KU0Kr3WkrAqKKj1czqq9w7JZTtdv
+# 6stOPnYhouCnbJ8wDQYJKoZIhvcNAQEBBQAEggIAHGCHLbkGJOF/QSmuK6x2mqnN
+# eAGBeUHEYh9Ob7dv9UlvK+uYlMAUZ0kAfj2/6gsVSosozqxntrLKoXaztPgOTWOq
+# xrB6x57jn4yB5aZ3S6jFCfnxdYnZ3evyZAUSqN7RhBuJGBBFOa2SvM8/txGWpGUe
+# kMbEERb8HhfLvsgfCLZEdDH1pbnh/TNcJT/Ictrrup+juf8QIT4ma6LbDwkYEr2q
+# W553iumIaQ8tvEVK1qZFSuOUzsVQ1pWvmwhd3rAJTmvF08ik5dXacmelatEvg8t+
+# C89B+F9HHUYGimauG7Jediex+oDEyQunKttA0Wh9+tuwvmFXcmCcKBCz/MBDwmW3
+# Es2oAfX/yy0m7Eqjimd90UYfQgfpMflwOMceMEwr1aCtNuz5IxTagG6p56YyrAEW
+# f3nt2W5IvldVITCPTrl0k4KB1+fbD5kc0SfzzhaSQdQ2qtKL7nx0xrJozocy/DZk
+# XmEDE+vicrG9/QdO5Bx/vALqKoxX84papMcbnUP8SERGN7OORTSdsh/8KyDLRLVM
+# Tk6rZJzhD9Hrwx58PrL7rgA3UqwkiwklS8EeXzqgKHDx0Ys9bpBYtJeo/ssAyT4o
+# h0MCAzWoS/VhLWRn7qXbmk2VxpKGz2VN8cISa61C3SY4jxwdQhu6uiyXrqua7Ocg
+# velimfxiJ1B/HKs8r1U=
 # SIG # End signature block

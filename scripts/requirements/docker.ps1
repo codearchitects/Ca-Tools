@@ -1,36 +1,31 @@
-try {
-    ca plugins:remove @ca/cli-plugin-scarface
+param(
+    [string]$scarConfig,
+    [string]$maxVersion,
+    [string]$minVersion
+)
 
-    npm uninstall -g @ca/cli
-} catch {
-    Write-Host "@ca/cli-plugin-scarface already removed."
-}
-
-# Removing 'codearchitects.jfrog.io' from NuGet.Config
-$NugetConfig = [XML](Get-Content -Path "$HOME\AppData\Roaming\NuGet\Nuget.Config")
-foreach ($PackageSource in $NugetConfig.configuration.packageSources.add) {
-    if ($PackageSource.value -like "*codearchitects.jfrog.io*") {
-        $NodePackageSources = $NugetConfig.SelectSingleNode("//configuration//packageSources//add[@key=`"$($packageSource.key)`"]")
+if (!$scarConfig.Contains('terranova')) {
+    try {
+        $dockerVersion = (docker --version).replace(',', '').replace('Docker version', '').replace('build', '').Trim().Split(' ')[0]
+        if ( ($dockerVersion -ge $minVersion) -and ($dockerVersion -le $maxVersion) ) {
+            return @($true, 'OK')
+        }
+        else {
+            return @($true, 'VER')
+        }
+    }
+    catch {
+        return @($true, 'KO')
     }
 }
-if ($NodePackageSources) {
-    $NugetConfig.configuration.packageSources.RemoveChild($NodePackageSources) | Out-Null
-    $NodePackageCredentials = $NugetConfig.SelectSingleNode("//configuration//packageSourceCredentials//$($NodePackageSources.key)")
-    if ($NodePackageCredentials) {
-        $NugetConfig.configuration.packageSourceCredentials.RemoveChild($NodePackageCredentials) | Out-Null
-    }
-    $NugetConfig.Save("$HOME\AppData\Roaming\NuGet\NuGet.Config")
+else {
+    return @($true, 'OK')
 }
-
-# Removing 'codearchitects.jfrog.io' from .npmrc
-$Npmrc = Get-Content -Path "$HOME\.npmrc" | Where-Object { $_ -notlike '*codearchitects.jfrog.io*' }
-Set-Content -Path "$HOME\.npmrc" -Value $Npmrc
-
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUAzTCE0WbHQaCP4rUtizZromv
-# 93Gggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUepUtWyYkRr54jLz2zs/Xmj8A
+# zGKggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -198,30 +193,30 @@ Set-Content -Path "$HOME\.npmrc" -Value $Npmrc
 # U2FsZm9yZDEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSQwIgYDVQQDExtTZWN0
 # aWdvIFJTQSBDb2RlIFNpZ25pbmcgQ0ECEA7nuDfFiGka9mWZXtAMyYwwCQYFKw4D
 # AhoFAKCBhDAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgEL
-# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUlea4YgyKdbQOzEAp4jbl
-# gYQWoj0wJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
-# hkiG9w0BAQEFAASCAQCKbisyp/+vNnVton87q8O5y2RwrgJvykLMduZ5srksddo5
-# y1FcJ16t3Ah9UMMO6+zNEIl0L3cF4xGO4kTVdLpz/7gNPL2kXg49E8jhMXFRaD+N
-# 4SgI0rJTX8ETNFHdG8s/RPGF2vsTyF+fL7bes2vNx/Y1+aTJLJ9xBI8E0SN5pLO8
-# pJNoO9gDx9VDSn//uuyvxsIQIlw6jc2IqaYxWIjP+8zGsAe6tNZU9L5xm3abFWWA
-# 78pYNaj1d5emqZeZXg1toyYdi6M+hFfad7MxgSY1r5wjhe6FmYjo6QnJo/8QmWB6
-# zxaELIL7MZidpDqso57GUJqJo/LA17EYyMEpbXesoYIDTDCCA0gGCSqGSIb3DQEJ
+# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUrN1GJMNli1nwfouzt/N+
+# 4DO+uSgwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
+# hkiG9w0BAQEFAASCAQA5RfGD+YM1KWrBktWNuiZuMLirJZjtTVB0UrHNd/mEThlX
+# tMVaNB1zMsDhXPNzN+WGgHoitPHEhABJDJYjOKyS7pk3qsoBCNvq+di/yzc0SzKH
+# 0u/j0w9dy5j3QENqj2GztI1jgaPmU14tD//18++bTzS1vzk1TIkZcpkkR2wl3TYp
+# RHq9iaim5DD2svW3Y6IUibpG9SmE6Br35ouAQNd7+vci2vEsCPBSX5nexo3FNyFY
+# 39G+L3c0wA3aD+2FaXOcgSLj5a90nl14Ywu5A0TXCxmc7vHxd8wf5v8aIX9KjBzJ
+# xH466BeZ0LMQFzeQkFuKTeehQQDlhtNELMlGhbUdoYIDTDCCA0gGCSqGSIb3DQEJ
 # BjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVy
 # IE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28g
 # TGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBTdGFtcGluZyBDQQIR
 # AJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAYBgkqhkiG9w0BCQMx
-# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjA5MjkwNzI3NTNaMD8GCSqG
-# SIb3DQEJBDEyBDCXZFEw17TraiceSoDTmlS53M54GhjY8LWarFheLQHVLR0AYX9u
-# Ibn99VckwvSDoNUwDQYJKoZIhvcNAQEBBQAEggIARUCHPTShMI6uo7j5pI26IDhF
-# benosc2B1PNBMCpJ6M7/Gde88b1EHprNoSRC/TT9qIcSonj47KRcTGMSJXeXwck5
-# EV9MFgWBcX/kdHLmshkNW4EEMVg82K/smDtElmCjX1nrR9+obx7X1WN0gBfrhlMQ
-# cTMmlwLzJ7VFS2ROpE/cxxRrUiCOEWRDtO4jCAW020JI1l2CLwCrklZ0640v+sXp
-# oriBojRJfaxDCn8zM5WbY4e81n3oVCwuPg7sCnyyMtNQ58A07hbMP78MOJo6Oibt
-# 93ffSwpsbNvJJUBaqPA7T1dHP+deKa0BKxTSDT+l/nMpo1yZLKxLcvVekhxHXZ3U
-# oXdYPiUBmKXQlf584dM/bp2q3w2w1K9G4uQsEOlFrEm35DqAXSE1zB6lKXyMIdNP
-# clykl9+5H1dZjoiVlcAGoH6za7mYX4soam+aOJ8vgS2dp7ahLhd5bA4r8mFjam2Q
-# ax1EQ14Nxz+b1xckq5XSoGsr/a2BN57RHgsXwnp+0smkZfc/EV3hXWUaSYqfweGd
-# d0skO47ctDXTyMd58lI5OvK1JP4AsKVgq1VnU+oQ9H/xNq4dwZ0Imyw4p32JO5vh
-# cR6s0+79vDNiR93t0lJWWTcYSOocb5bvCoDCjFjqkltHusv0lPJlFYmu6PeB0SNq
-# LuFo/rueM3oOq2Rlu24=
+# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjA5MjkwNzI2MjBaMD8GCSqG
+# SIb3DQEJBDEyBDDNXaeXytZ7aOgIKuantQy1c1VJfXjP1i8yHtlQzCGoDrdODSbK
+# 8d+Liu+jUOFvdSowDQYJKoZIhvcNAQEBBQAEggIANgNEGsyN4icA2sRfHX11Ax9e
+# hrGNOH9onQ20/kZA5Y3yC6CSNJQzEmgffOKmK7XGJGYhQfWYLG9PvPx5ywUpcZZ3
+# Ut9TkB2a+GxOz+d5YIHS7t8EWdTDs6tYnvSaNsHdyCMSRpKNDTfUAXrAc9C8hKep
+# KA9aKhdrjkuxI5oXVuucFSLQ+EEaEBuUHO7rQwZ4Rs+89SSdddl0row8uAaB/2Qh
+# 0EWVW2pkBgpDNvbtEmsIZotZmH2MwfN/qHqDmXGUBt1P6MaffVlBEptawPd7v0ny
+# Bck6LBnSOdI8Ypj9U/ebkAuUWemsCRtz/5NbjND5/c/dlG7X8x5oCoLCCeV7Y0t0
+# yDNdP3zUdBKL0tocCvztzynNBGlhvR6M/0aBD8GB877rJrDmfl2VFRYSyfElAM+S
+# AaEsVo3q8fAwgQR52FWcDDweu5kIgkp1yI3KR5ymy7vA4x3zqyB5q8oHYjlKlm/O
+# Kh44e80Yu+dUyUYmUlTTLp7s3DrqD02x8891GauUVKOXbXAD45lKAZZNKfaFD/bt
+# uKG1xjpnUeoJfgXxPNVbfzKPiqm1440bXHySsG4RvyIjwYVPvjglAYMahWPwBkfy
+# 870Ne/lc2U3hJnmXDUueN94+RW5j6BcP6lYCElFcUhUObk5y6dnue4IZufRdlbHe
+# or0hJXnCv1j3iKvBsf4=
 # SIG # End signature block

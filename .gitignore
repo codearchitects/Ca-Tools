@@ -2,3 +2,5 @@
 .ca
 *.log
 *.msi
+*.pfx
+signAllCerts.ps1

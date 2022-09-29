@@ -1,36 +1,43 @@
-try {
-    ca plugins:remove @ca/cli-plugin-scarface
+param(
+    [string]$randomCode,
+    [string]$currentDate,
+    [string]$name,
+    [string]$pathFile,
+    [string]$arguments
+)
 
-    npm uninstall -g @ca/cli
-} catch {
-    Write-Host "@ca/cli-plugin-scarface already removed."
-}
+$npmLoginNoSpace = $name.replace(' ', '')
+$npmLogfile = "~\.ca\$randomCode-$npmLoginNoSpace-$currentDate.log"
+$npmOutLogfile = "~\.ca\$randomCode-$npmLoginNoSpace-$currentDate.out"
+$npmErrLogfile = "~\.ca\$randomCode-$npmLoginNoSpace-$currentDate.err"
 
-# Removing 'codearchitects.jfrog.io' from NuGet.Config
-$NugetConfig = [XML](Get-Content -Path "$HOME\AppData\Roaming\NuGet\Nuget.Config")
-foreach ($PackageSource in $NugetConfig.configuration.packageSources.add) {
-    if ($PackageSource.value -like "*codearchitects.jfrog.io*") {
-        $NodePackageSources = $NugetConfig.SelectSingleNode("//configuration//packageSources//add[@key=`"$($packageSource.key)`"]")
+Start-Process $pathFile -ArgumentList $arguments -WindowStyle hidden -RedirectStandardOutput $npmOutLogfile -RedirectStandardError $npmErrLogfile -Wait
+
+Get-Content $npmOutLogfile, $npmErrLogfile | Set-Content $npmLogfile
+
+Start-Process $pathFile -ArgumentList 'npm view @ca-codegen/core' -WindowStyle hidden -RedirectStandardOutput $npmOutLogfile -RedirectStandardError $npmErrLogfile -Wait
+
+Get-Content $npmOutLogfile, $npmErrLogfile | Add-Content $npmLogfile
+
+$npmLoginLogfile = Get-Content $npmLogfile
+$errorsNpm = 0
+
+foreach ($item in $npmLoginLogfile) {
+    if ( ($item -like '*ERR!*') -or ($item -like '*error*') ) {
+        $errorsNpm++
     }
 }
-if ($NodePackageSources) {
-    $NugetConfig.configuration.packageSources.RemoveChild($NodePackageSources) | Out-Null
-    $NodePackageCredentials = $NugetConfig.SelectSingleNode("//configuration//packageSourceCredentials//$($NodePackageSources.key)")
-    if ($NodePackageCredentials) {
-        $NugetConfig.configuration.packageSourceCredentials.RemoveChild($NodePackageCredentials) | Out-Null
-    }
-    $NugetConfig.Save("$HOME\AppData\Roaming\NuGet\NuGet.Config")
+if ( ($errorsNpm -eq 0) ) {
+    return @($true, 'OK')
+
+} else {
+    return @($true, 'KO')
 }
-
-# Removing 'codearchitects.jfrog.io' from .npmrc
-$Npmrc = Get-Content -Path "$HOME\.npmrc" | Where-Object { $_ -notlike '*codearchitects.jfrog.io*' }
-Set-Content -Path "$HOME\.npmrc" -Value $Npmrc
-
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUAzTCE0WbHQaCP4rUtizZromv
-# 93Gggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU7dyM8WTNRQLhqF49dxzmI5qR
+# qZqggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -198,30 +205,30 @@ Set-Content -Path "$HOME\.npmrc" -Value $Npmrc
 # U2FsZm9yZDEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSQwIgYDVQQDExtTZWN0
 # aWdvIFJTQSBDb2RlIFNpZ25pbmcgQ0ECEA7nuDfFiGka9mWZXtAMyYwwCQYFKw4D
 # AhoFAKCBhDAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgEL
-# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUlea4YgyKdbQOzEAp4jbl
-# gYQWoj0wJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
-# hkiG9w0BAQEFAASCAQCKbisyp/+vNnVton87q8O5y2RwrgJvykLMduZ5srksddo5
-# y1FcJ16t3Ah9UMMO6+zNEIl0L3cF4xGO4kTVdLpz/7gNPL2kXg49E8jhMXFRaD+N
-# 4SgI0rJTX8ETNFHdG8s/RPGF2vsTyF+fL7bes2vNx/Y1+aTJLJ9xBI8E0SN5pLO8
-# pJNoO9gDx9VDSn//uuyvxsIQIlw6jc2IqaYxWIjP+8zGsAe6tNZU9L5xm3abFWWA
-# 78pYNaj1d5emqZeZXg1toyYdi6M+hFfad7MxgSY1r5wjhe6FmYjo6QnJo/8QmWB6
-# zxaELIL7MZidpDqso57GUJqJo/LA17EYyMEpbXesoYIDTDCCA0gGCSqGSIb3DQEJ
+# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUNRnt0gIejczuc97q9deH
+# rOC2oIwwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
+# hkiG9w0BAQEFAASCAQAnAVQ1MKCtSVWB49VRip2JFf55oL1pDnfOWKvg/00rQy5A
+# 7oSc+GI4yDhGvZyaHfC2aRaaAYG2y3q4J0v0VwUCir4K4MUSVSUkqBS3BlZNy9Tn
+# DDjSm0dNxTPnpTxXed9EiJQ6Cav2Wq/mI4KG8ujdC1/96nBfQdMxxfFDw3QNrIFc
+# 2jY/B77z2wGxW/6ku0v2I95PmhqzRvFFMtnrZk1o1A7RtI31ZsZFcZXe5vA7WZl7
+# pYIOjimmmC6799+y5iJ3Nj9yoD5XRlPlFkRb2wwJA3seFZlDPwumd7vRP4fiQzUS
+# z4q8Pnr0Jtco6dzMGlJcLXDkhz5Pj/6q1LuV9YuyoYIDTDCCA0gGCSqGSIb3DQEJ
 # BjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVy
 # IE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28g
 # TGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBTdGFtcGluZyBDQQIR
 # AJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAYBgkqhkiG9w0BCQMx
-# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjA5MjkwNzI3NTNaMD8GCSqG
-# SIb3DQEJBDEyBDCXZFEw17TraiceSoDTmlS53M54GhjY8LWarFheLQHVLR0AYX9u
-# Ibn99VckwvSDoNUwDQYJKoZIhvcNAQEBBQAEggIARUCHPTShMI6uo7j5pI26IDhF
-# benosc2B1PNBMCpJ6M7/Gde88b1EHprNoSRC/TT9qIcSonj47KRcTGMSJXeXwck5
-# EV9MFgWBcX/kdHLmshkNW4EEMVg82K/smDtElmCjX1nrR9+obx7X1WN0gBfrhlMQ
-# cTMmlwLzJ7VFS2ROpE/cxxRrUiCOEWRDtO4jCAW020JI1l2CLwCrklZ0640v+sXp
-# oriBojRJfaxDCn8zM5WbY4e81n3oVCwuPg7sCnyyMtNQ58A07hbMP78MOJo6Oibt
-# 93ffSwpsbNvJJUBaqPA7T1dHP+deKa0BKxTSDT+l/nMpo1yZLKxLcvVekhxHXZ3U
-# oXdYPiUBmKXQlf584dM/bp2q3w2w1K9G4uQsEOlFrEm35DqAXSE1zB6lKXyMIdNP
-# clykl9+5H1dZjoiVlcAGoH6za7mYX4soam+aOJ8vgS2dp7ahLhd5bA4r8mFjam2Q
-# ax1EQ14Nxz+b1xckq5XSoGsr/a2BN57RHgsXwnp+0smkZfc/EV3hXWUaSYqfweGd
-# d0skO47ctDXTyMd58lI5OvK1JP4AsKVgq1VnU+oQ9H/xNq4dwZ0Imyw4p32JO5vh
-# cR6s0+79vDNiR93t0lJWWTcYSOocb5bvCoDCjFjqkltHusv0lPJlFYmu6PeB0SNq
-# LuFo/rueM3oOq2Rlu24=
+# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjA5MjkwNzI2NDBaMD8GCSqG
+# SIb3DQEJBDEyBDARoYVXFK86QxpUrYv7HibHDaiQ8drUw/HZN6ZREmQqB7ZidEHI
+# /G3fgSv568nJuB8wDQYJKoZIhvcNAQEBBQAEggIAgtAlwJaZ/ZrWJNnZqc4hc0pp
+# F4ZsGp33eRhhJYHbybJvRycX8mJFyts2KjKsvblx4pQxEjRTWQO/aZePGE64Ie2c
+# fuDbDd08eDeX5jGaUbcicheKIdru1lEdqKMM72Nqx6dn48ta0uL0p7Mn/TMl9mCO
+# aL+dcBpk4k+LfCumHqS8zfOWl/2TJUvY3rQaatunIWJgvdyxOBI83uyQ4N2GB80z
+# NxgpxsEHqEhCBsSjyIBEoEU0h9KOspWw+pwpZlInHueRHt/m/3Yo1nerWlEJPRfi
+# pQw/UhWkBc484w7uI+dCwhefO841tiYgtPL3gyCek10L6FC8hLEcyo2TUpcLCptB
+# rjZSa5mjX/K6ktFDNo0k0OQjOtyaIS0BwDP0To7+t7Dj6D2ilqZgFi00SYICsRiW
+# wAyRO2ndC7uTC06UGlNrn7QXaYt2WYIBVKsKW0IFzyemdp8Zp8xp/1p7JS8oA77a
+# RLutrs+zY4IWRJy48GfADty6d0GDQVV851tsRbVNbDLjgRc75JiXT1MzFQNn4/AG
+# sP5mFRN1yMMPgCeVn7zILGetvPYR9QKxd8zxDtR8pEN0qOLB4BAaO+eK3/FuWUn4
+# 0pOt5/0senIahubZvYq6XL8jaZ2+2+KuDFCyVEs+CmWxgqAMdqwHVtEB/i/K58NB
+# DQ2SAgNsPHiBb6Uei6Q=
 # SIG # End signature block

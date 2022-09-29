@@ -1,36 +1,26 @@
-try {
-    ca plugins:remove @ca/cli-plugin-scarface
+param(
+    [string]$randomCode,
+    [string]$currentDate,
+    [string]$name,
+    [string]$downloadOutfile
+)
 
-    npm uninstall -g @ca/cli
-} catch {
-    Write-Host "@ca/cli-plugin-scarface already removed."
-}
+$argumentList = @(
+    '/I',
+    $downloadOutfile,
+    '/passive'
+)
 
-# Removing 'codearchitects.jfrog.io' from NuGet.Config
-$NugetConfig = [XML](Get-Content -Path "$HOME\AppData\Roaming\NuGet\Nuget.Config")
-foreach ($PackageSource in $NugetConfig.configuration.packageSources.add) {
-    if ($PackageSource.value -like "*codearchitects.jfrog.io*") {
-        $NodePackageSources = $NugetConfig.SelectSingleNode("//configuration//packageSources//add[@key=`"$($packageSource.key)`"]")
-    }
-}
-if ($NodePackageSources) {
-    $NugetConfig.configuration.packageSources.RemoveChild($NodePackageSources) | Out-Null
-    $NodePackageCredentials = $NugetConfig.SelectSingleNode("//configuration//packageSourceCredentials//$($NodePackageSources.key)")
-    if ($NodePackageCredentials) {
-        $NugetConfig.configuration.packageSourceCredentials.RemoveChild($NodePackageCredentials) | Out-Null
-    }
-    $NugetConfig.Save("$HOME\AppData\Roaming\NuGet\NuGet.Config")
-}
-
-# Removing 'codearchitects.jfrog.io' from .npmrc
-$Npmrc = Get-Content -Path "$HOME\.npmrc" | Where-Object { $_ -notlike '*codearchitects.jfrog.io*' }
-Set-Content -Path "$HOME\.npmrc" -Value $Npmrc
-
+$nameNoSpaces = ($name.replace(' ', ''))
+$Logfile = "~\.ca\$randomCode-$nameNoSpaces-$currentDate.log"
+$OutLogfile = "~\.ca\$randomCode-$nameNoSpaces-$currentDate.out"
+$ErrLogfile = "~\.ca\$randomCode-NameNoSpaces-$currentDate.err"
+Start-Process msiexec.exe -ArgumentList $argumentList -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrLogfile -Wait
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUAzTCE0WbHQaCP4rUtizZromv
-# 93Gggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUmwx1ncZElFCeMh5YYzJi3obP
+# GBuggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -198,30 +188,30 @@ Set-Content -Path "$HOME\.npmrc" -Value $Npmrc
 # U2FsZm9yZDEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSQwIgYDVQQDExtTZWN0
 # aWdvIFJTQSBDb2RlIFNpZ25pbmcgQ0ECEA7nuDfFiGka9mWZXtAMyYwwCQYFKw4D
 # AhoFAKCBhDAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgEL
-# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUlea4YgyKdbQOzEAp4jbl
-# gYQWoj0wJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
-# hkiG9w0BAQEFAASCAQCKbisyp/+vNnVton87q8O5y2RwrgJvykLMduZ5srksddo5
-# y1FcJ16t3Ah9UMMO6+zNEIl0L3cF4xGO4kTVdLpz/7gNPL2kXg49E8jhMXFRaD+N
-# 4SgI0rJTX8ETNFHdG8s/RPGF2vsTyF+fL7bes2vNx/Y1+aTJLJ9xBI8E0SN5pLO8
-# pJNoO9gDx9VDSn//uuyvxsIQIlw6jc2IqaYxWIjP+8zGsAe6tNZU9L5xm3abFWWA
-# 78pYNaj1d5emqZeZXg1toyYdi6M+hFfad7MxgSY1r5wjhe6FmYjo6QnJo/8QmWB6
-# zxaELIL7MZidpDqso57GUJqJo/LA17EYyMEpbXesoYIDTDCCA0gGCSqGSIb3DQEJ
+# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUqg2CYl2ismpM14YUtCk6
+# bUvBTCQwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
+# hkiG9w0BAQEFAASCAQA38shlTsJeUEJQu+qhEnZr0TgzJNPKd48uu837k3suze0t
+# qlFzMR89haPJeijL4VvZp6EQFkkx/i7c+UndwufsMIW8oQP9lkZtNky5dUpAxZt3
+# WhZWjcWYEgHXLWaEpt606sCgFpmHMeVABG/xxU7Bh4MQJslJrK78MMjq5GnQUMOd
+# 5JLA6Qot+xs+pIc2iVBeZRjpA75BSzDTGSSzKXGPzi6DdSOnbxKu8yP+2q6ekbnb
+# c/7vWhePrGAgjrT0Rf2sU4K+aX8e3f2GgWWKH3LgwBq35aRzg5vaj+LGt5T1yqtg
+# HecIkuHCIaiP2rSAtfH64gRs/Uq5yLYenHyGn/ZxoYIDTDCCA0gGCSqGSIb3DQEJ
 # BjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVy
 # IE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28g
 # TGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBTdGFtcGluZyBDQQIR
 # AJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAYBgkqhkiG9w0BCQMx
-# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjA5MjkwNzI3NTNaMD8GCSqG
-# SIb3DQEJBDEyBDCXZFEw17TraiceSoDTmlS53M54GhjY8LWarFheLQHVLR0AYX9u
-# Ibn99VckwvSDoNUwDQYJKoZIhvcNAQEBBQAEggIARUCHPTShMI6uo7j5pI26IDhF
-# benosc2B1PNBMCpJ6M7/Gde88b1EHprNoSRC/TT9qIcSonj47KRcTGMSJXeXwck5
-# EV9MFgWBcX/kdHLmshkNW4EEMVg82K/smDtElmCjX1nrR9+obx7X1WN0gBfrhlMQ
-# cTMmlwLzJ7VFS2ROpE/cxxRrUiCOEWRDtO4jCAW020JI1l2CLwCrklZ0640v+sXp
-# oriBojRJfaxDCn8zM5WbY4e81n3oVCwuPg7sCnyyMtNQ58A07hbMP78MOJo6Oibt
-# 93ffSwpsbNvJJUBaqPA7T1dHP+deKa0BKxTSDT+l/nMpo1yZLKxLcvVekhxHXZ3U
-# oXdYPiUBmKXQlf584dM/bp2q3w2w1K9G4uQsEOlFrEm35DqAXSE1zB6lKXyMIdNP
-# clykl9+5H1dZjoiVlcAGoH6za7mYX4soam+aOJ8vgS2dp7ahLhd5bA4r8mFjam2Q
-# ax1EQ14Nxz+b1xckq5XSoGsr/a2BN57RHgsXwnp+0smkZfc/EV3hXWUaSYqfweGd
-# d0skO47ctDXTyMd58lI5OvK1JP4AsKVgq1VnU+oQ9H/xNq4dwZ0Imyw4p32JO5vh
-# cR6s0+79vDNiR93t0lJWWTcYSOocb5bvCoDCjFjqkltHusv0lPJlFYmu6PeB0SNq
-# LuFo/rueM3oOq2Rlu24=
+# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjA5MjkwNzI1MzRaMD8GCSqG
+# SIb3DQEJBDEyBDDtDOCWbmJ3m3RT/CnTbjS4eskELJ0ks+9DomxiNK/Zfp0ykoRb
+# aSepOCvGoILAm3gwDQYJKoZIhvcNAQEBBQAEggIAB9lCWvH+kB020RyfYuIdScLk
+# cu6CgQ+7leMHBWX3PXOqxUf4EeEFIdDZ6B/HzRlsotDeZ8K4lihY/BaGn+OuBoy1
+# 9x9v9HA9MR18FRXvQPA8GwlGJ+iN6nX1sciQ6WtMMy+CUd8FperW22aS8VP7wDjk
+# ieOwdixDRmI7uKtLsqXK65YCvd3nVMoN2mo39JfLIFznrcnvp8MoxjfPCX76KbfR
+# s2Ghr6/rm262OdzzDGmLaHlRo15ZPCoi50fbkKKXU9Wv7ghttTdzi0M6SvKXVrVk
+# 0icxGzrJf08EA8gh7XtigAO52C7U0eNi0o/QpIV0RT5LQLgKWhXUwaRgFxFx/Ukd
+# e9G2mAbNqYSmDabApWc2Ksf2k5ISzl6rNuv4ToD2gKBJPun7J5jqOWOznPOLkgCI
+# 8rMltVoj0z25GOzQZm2ed5ZvXA/KxF8tu92yoNkNxGhsX283zsDegCrGmfTWcGE1
+# EOYb82T1xuicq/IrYwzpaFzPhPVYkNGwH0JuLZFv1A2hUvqGBHg77Dk6NCFGGnLS
+# r1d5Y3TY/aDq734AtVxvbT2qgqJJzME8aTHmKBmtchlX8zGqw9iq3jaXRNvK+wZG
+# GEhBNSkjKGyDD9hT2MZS8H0UKTqD825i5HzVD60FLeG2bCUmglsw5WpryGqRBIHt
+# dOn3en/4yaEVQj0ikQg=
 # SIG # End signature block

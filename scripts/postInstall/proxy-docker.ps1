@@ -1,36 +1,40 @@
-try {
-    ca plugins:remove @ca/cli-plugin-scarface
+param(
+    [string]$currentDate
+)
 
-    npm uninstall -g @ca/cli
-} catch {
-    Write-Host "@ca/cli-plugin-scarface already removed."
-}
+$InternetSettings = (Get-ItemProperty -Path "Registry::HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings")
+$ProxyServer = ($InternetSettings.ProxyServer)
+$DockerConfigPath = "~\.docker\config.json"
+if (Test-Path $DockerConfigPath) {
 
-# Removing 'codearchitects.jfrog.io' from NuGet.Config
-$NugetConfig = [XML](Get-Content -Path "$HOME\AppData\Roaming\NuGet\Nuget.Config")
-foreach ($PackageSource in $NugetConfig.configuration.packageSources.add) {
-    if ($PackageSource.value -like "*codearchitects.jfrog.io*") {
-        $NodePackageSources = $NugetConfig.SelectSingleNode("//configuration//packageSources//add[@key=`"$($packageSource.key)`"]")
+    $DockerConfigJson = Get-Content $DockerConfigPath
+
+    if (-not [String]::IsNullOrWhiteSpace($DockerConfigJson)) {
+        $DockerConfigJson | Out-File "$DockerConfigPath.old.$currentDate"
+
     }
-}
-if ($NodePackageSources) {
-    $NugetConfig.configuration.packageSources.RemoveChild($NodePackageSources) | Out-Null
-    $NodePackageCredentials = $NugetConfig.SelectSingleNode("//configuration//packageSourceCredentials//$($NodePackageSources.key)")
-    if ($NodePackageCredentials) {
-        $NugetConfig.configuration.packageSourceCredentials.RemoveChild($NodePackageCredentials) | Out-Null
+    else {
+        New-Item -Path "$DockerConfigPath.old.$currentDate"
     }
-    $NugetConfig.Save("$HOME\AppData\Roaming\NuGet\NuGet.Config")
+    
+    $DockerConfigObj = $DockerConfigJson | ConvertFrom-Json
+    $DockerConfigObj.PSObject.Properties.Remove('proxies')
+    $Proxies = @{
+        'default' = @{
+            'httpProxy'  = $InternetSettings.ProxyServer
+            'httpsProxy' = $InternetSettings.ProxyServer
+        }
+    }
+
+    $DockerConfigObj | Add-Member -NotePropertyName proxies -NotePropertyValue $Proxies -Force
+    Set-Content -Path $DockerConfigPath -Value ($DockerConfigObj | ConvertTo-Json -Depth 5)
+
 }
-
-# Removing 'codearchitects.jfrog.io' from .npmrc
-$Npmrc = Get-Content -Path "$HOME\.npmrc" | Where-Object { $_ -notlike '*codearchitects.jfrog.io*' }
-Set-Content -Path "$HOME\.npmrc" -Value $Npmrc
-
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUAzTCE0WbHQaCP4rUtizZromv
-# 93Gggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUedrbpTu5GLWXQZE6OSvgjPHy
+# PkSggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -198,30 +202,30 @@ Set-Content -Path "$HOME\.npmrc" -Value $Npmrc
 # U2FsZm9yZDEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSQwIgYDVQQDExtTZWN0
 # aWdvIFJTQSBDb2RlIFNpZ25pbmcgQ0ECEA7nuDfFiGka9mWZXtAMyYwwCQYFKw4D
 # AhoFAKCBhDAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgEL
-# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUlea4YgyKdbQOzEAp4jbl
-# gYQWoj0wJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
-# hkiG9w0BAQEFAASCAQCKbisyp/+vNnVton87q8O5y2RwrgJvykLMduZ5srksddo5
-# y1FcJ16t3Ah9UMMO6+zNEIl0L3cF4xGO4kTVdLpz/7gNPL2kXg49E8jhMXFRaD+N
-# 4SgI0rJTX8ETNFHdG8s/RPGF2vsTyF+fL7bes2vNx/Y1+aTJLJ9xBI8E0SN5pLO8
-# pJNoO9gDx9VDSn//uuyvxsIQIlw6jc2IqaYxWIjP+8zGsAe6tNZU9L5xm3abFWWA
-# 78pYNaj1d5emqZeZXg1toyYdi6M+hFfad7MxgSY1r5wjhe6FmYjo6QnJo/8QmWB6
-# zxaELIL7MZidpDqso57GUJqJo/LA17EYyMEpbXesoYIDTDCCA0gGCSqGSIb3DQEJ
+# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU2vjlRb6CG2aOkNsWKtaB
+# 3gmnf5UwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
+# hkiG9w0BAQEFAASCAQB5Mrhs8CMFlKV71vrwqwtB7/VxVc92mZp68D0vfDBvVdc6
+# lqTkqalL+G0FROLL0jTENMHbEMcjRy/7uI8CiJB+YijEVg+GYvqq7Htwj/+DUTny
+# KqpIyv1BreZKmNoaVAZ3LtIupKrfqIYazoqfojVHx27rHyzoXThgm7eCN9uvGBk0
+# 9Ecj4d1kN1wCuXhotlOv77kIAuBwJcgYX9/VsSv3lJxHK1Uie6cSddCKBGCc0ujx
+# T5BFlMZdLobIUf1jMXmeABnuA1klvf3eMx2rRH+jhvMAUrNvAHvzoCZ8pJglEXSf
+# 6znczJ7wrTugfSnhjBqceOa/yunuEkv45Hi2AfIGoYIDTDCCA0gGCSqGSIb3DQEJ
 # BjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVy
 # IE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28g
 # TGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBTdGFtcGluZyBDQQIR
 # AJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAYBgkqhkiG9w0BCQMx
-# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjA5MjkwNzI3NTNaMD8GCSqG
-# SIb3DQEJBDEyBDCXZFEw17TraiceSoDTmlS53M54GhjY8LWarFheLQHVLR0AYX9u
-# Ibn99VckwvSDoNUwDQYJKoZIhvcNAQEBBQAEggIARUCHPTShMI6uo7j5pI26IDhF
-# benosc2B1PNBMCpJ6M7/Gde88b1EHprNoSRC/TT9qIcSonj47KRcTGMSJXeXwck5
-# EV9MFgWBcX/kdHLmshkNW4EEMVg82K/smDtElmCjX1nrR9+obx7X1WN0gBfrhlMQ
-# cTMmlwLzJ7VFS2ROpE/cxxRrUiCOEWRDtO4jCAW020JI1l2CLwCrklZ0640v+sXp
-# oriBojRJfaxDCn8zM5WbY4e81n3oVCwuPg7sCnyyMtNQ58A07hbMP78MOJo6Oibt
-# 93ffSwpsbNvJJUBaqPA7T1dHP+deKa0BKxTSDT+l/nMpo1yZLKxLcvVekhxHXZ3U
-# oXdYPiUBmKXQlf584dM/bp2q3w2w1K9G4uQsEOlFrEm35DqAXSE1zB6lKXyMIdNP
-# clykl9+5H1dZjoiVlcAGoH6za7mYX4soam+aOJ8vgS2dp7ahLhd5bA4r8mFjam2Q
-# ax1EQ14Nxz+b1xckq5XSoGsr/a2BN57RHgsXwnp+0smkZfc/EV3hXWUaSYqfweGd
-# d0skO47ctDXTyMd58lI5OvK1JP4AsKVgq1VnU+oQ9H/xNq4dwZ0Imyw4p32JO5vh
-# cR6s0+79vDNiR93t0lJWWTcYSOocb5bvCoDCjFjqkltHusv0lPJlFYmu6PeB0SNq
-# LuFo/rueM3oOq2Rlu24=
+# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjA5MjkwNzI1NTNaMD8GCSqG
+# SIb3DQEJBDEyBDBNy3f9wOO6ugyDKfWBTPK3DcqPa7+W2Q17LBiFv7y3nG+wUNNn
+# kkIAFyOotyWWqg4wDQYJKoZIhvcNAQEBBQAEggIAdxN7/nuJvOP6zakibQmS821f
+# c8QUxfQ4PNPvOgN4dxGcKNueID9J+nAs0/r7GbCTL+0QXQZyuZ39mmXRZGx0ubJN
+# fukRtxGzk2zXQrHKM9swf0h9N9CaURHFQ+QB58Cz4XEcCNFesovwiqUvQ//i9NPJ
+# 2DPMLHgzeiSWbnN+77LMBjfryvfI4Ns6aZsf+RoOnUA80z1RChZro7WOtkxXeZsB
+# 9S3z8r3pw7czxUC69CXAF0zMbt8lgL3+RA0+aTsvj6D4f9qTAgmaXk/zKbwCrHGD
+# 9kHYjdB/yaDMRSSQ+BclENqoIYhMHwmsAdr0BTxTVkLuKxStmmEvlq2n1O69D/zX
+# 8ly4go5KsXW9HtKLSr0NausVzDvA+vTTsMmjNlP1br+fuZcsQ3jAK7IIdKeb0mvB
+# wwPeupRan3ZS/j9T9FRLiEhrdWK/gytEhMpbVzPVORZ2s5KYxtaKDzPvfgZvQjzJ
+# gOVtUw7YK14d6KVd4c7eGZSruds3pTiJFv0ep/1kgsOmgFE8PcwlJ3j4+U/OOES3
+# ROcPyqru3nLQrSTHBjkkT8UjBXRwrJ0V1wjj1lJl0WqfWpKpdtTrr6jNNXdMd6yf
+# 4OH1hSObG1WeV57DZqUMLB35nCbzIBo7DEv//E7+uIbbCeaQ4RY/u1bNBb+ar86p
+# 6iwaA5Wq/HG61KgKtKI=
 # SIG # End signature block
