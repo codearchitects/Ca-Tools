@@ -11,7 +11,7 @@ $argumentList = @(
     '/passive'
 )
 
-. .\scripts\common.ps1 #richiama la funzione Remove-StartupCmd
+. .\scripts\common.ps1
 Remove-StartupCmd
 
 $nameNoSpaces = ($name.replace(' ', ''))

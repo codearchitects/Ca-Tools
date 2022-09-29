@@ -3,16 +3,11 @@ param(
 )  
 
 try {
-    
     $dotNetVersion = (dotnet --version).split('.')[0]
-    
     if ( $dotNetVersion -eq $maxVersion ) {
-        
         return @($true, 'OK')
-    
     }
-    else {
-        
+    else { 
         return @($true, 'VER')
     }
 }
