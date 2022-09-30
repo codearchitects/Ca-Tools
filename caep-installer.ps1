@@ -337,6 +337,10 @@ function Show-ButtonsPostAction ($RequirementPostAction) {
   }
 }
 
+$currentDate = (Get-Date -Format yyyyMMdd-HHmm).ToString()
+$logFilePath = "~\.ca\$currentDate-caep.log"
+Start-Transcript $logFilePath
+
 # ScriptPath will contain the Script's path, once done that it will take only the path's parent and set the current Location to that path
 $ScriptPath = $MyInvocation.MyCommand.Path
 $ScriptPathParent = Split-Path -Parent $ScriptPath
@@ -348,7 +352,7 @@ foreach ($ps1File in $ps1Files) {
   Unblock-File -Path $ps1File
 }
 
-. .\caep-main.ps1 -ScarVersion $ScarVersion -ScarConfig $ScarConfig
+. .\caep-main.ps1 -ScarVersion $ScarVersion -ScarConfig $ScarConfig -currentDate $currentDate
 
 $NextButton.Add_Click({ Step-NextAction })
 $AcceptButton.Add_Click({ Invoke-AcceptRequirement })
@@ -362,6 +366,8 @@ $YesButton.Add_Click({ OutFileAnswerNestedVirtualization $true })
 $NoButton.Add_Click({ OutFileAnswerNestedVirtualization $false })
 # Shows the GUI
 [void]$InstallForm.ShowDialog()
+
+Stop-Transcript
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

@@ -119,8 +119,8 @@ function Invoke-DownloadInstallRequirementAction {
       Invoke-Expression (New-CommandString $Requirement.DeleteCommand)
       $Description.AppendText("`r`n$DeleteCompleteMessage")
     }
-    Get-Content $OutLogfile, $ErrLogfile | Add-Content $Logfile
-  } else {
+  }
+  else {
     $Description.AppendText("`r`n$AlreadyInstalledMessage")
   }
   Show-Buttons @('$NextButton', '$CancelButton')
@@ -216,8 +216,7 @@ function Invoke-PostInstallAction {
         $Description.AppendText([Environment]::NewLine)
         $ResultCommand = Invoke-Expression (New-CommandString $Requirement.PostInstallCommand)
         if (-not $ResultCommand) {
-          Get-Content $OutLogfile, $ErrLogfile | Add-Content $Logfile
-          $ContentErrLogfile = Get-Content $OutLogfile, $ErrLogfile
+          $ContentErrLogfile = Get-Content $logFilePath
           if ($ContentErrLogfile -like "*Failed Installing Extensions*") {
             $Description.SelectionStart = $Description.TextLength
             $Description.SelectionLength = 0

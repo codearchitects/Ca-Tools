@@ -1,5 +1,4 @@
 param(
-    [string]$randomCode,
     [string]$currentDate,
     [string]$name,
     [string]$downloadOutFile
@@ -12,11 +11,9 @@ $argumentList = @(
 )
 
 $nameNoSpaces = ($name.replace(' ', ''))
-$Logfile = "~\.ca\$randomCode-$nameNoSpaces-$currentDate.log"
-$OutLogfile = "~\.ca\$randomCode-$nameNoSpaces-$currentDate.out"
-$ErrLogfile = "~\.ca\$randomCode-$nameNoSpaces-$currentDate.err"
+$Logfile = "~\.ca\$nameNoSpaces-$currentDate-caep.log"
 
-Start-Process $downloadOutFile -ArgumentList $argumentList -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrLogfile -Wait
+Start-Process $downloadOutFile -ArgumentList $argumentList -Wait
 
 $env:Path = [System.Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path','User')
 code

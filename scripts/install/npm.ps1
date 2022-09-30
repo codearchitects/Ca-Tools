@@ -1,5 +1,4 @@
 param(
-    [string]$randomCode,
     [string]$currentDate,
     [string]$reqMaxVersion,
     [string]$name
@@ -12,10 +11,8 @@ $argumentList = @(
 )
 
 $nameNoSpaces = ($name.replace(' ', ''))
-$Logfile = "~\.ca\$randomCode-nameNoSpaces-$currentDate.log"
-$OutLogfile = "~\.ca\$randomCode-$nameNoSpaces-$currentDate.out"
-$ErrLogfile = "~\.ca\$randomCode-$nameNoSpaces-$currentDate.err"
-Start-Process npm -ArgumentList $argumentList -WindowStyle hidden -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrLogfile -Wait
+$Logfile = "~\.ca\$nameNoSpaces-$currentDate-caep.log"
+Start-Process npm -ArgumentList $argumentList -NoNewWindow -Wait
 
 
 # SIG # Begin signature block

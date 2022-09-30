@@ -1,16 +1,13 @@
 param(
     [string]$name,
-    [string]$randomCode,
     [string]$currentDate
 )
     
 $nameNoSpaces = ($name.replace(' ', ''))
-$Logfile = "~\.ca\$randomCode-$nameNoSpaces-$currentDate.log"
-$OutLogfile = "~\.ca\$randomCode-$nameNoSpaces-$currentDate.out"
-$ErrLogfile = "~\.ca\$randomCode-$nameNoSpaces-$currentDate.err"
+$Logfile = "~\.ca\$nameNoSpaces-$currentDate-caep.log"
 
 try {
-    Start-Process code -ArgumentList "--install-extension $item --force" -WindowStyle hidden -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrLogfile -Wait
+    Start-Process code -ArgumentList "--install-extension $item --force" -NoNewWindow -Wait
 }
 catch {
     return @($false, 'KO')

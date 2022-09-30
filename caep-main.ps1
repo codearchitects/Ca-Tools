@@ -1,6 +1,7 @@
 param(
   [string]$ScarVersion = "",
-  [string]$ScarConfig = ""
+  [string]$ScarConfig = "",
+  [string]$currentDate
 )
 
 function New-RandomCode {
@@ -116,7 +117,7 @@ function Invoke-LoginNpm {
   # Variables Login npm
   $NpmRegistry = "https://devops.codearchitects.com:444/Code%20Architects/_packaging/ca-npm/npm/registry/"
   $NpmScope = "@ca"
-  $NpmLoginResultCheckRequirementLogfile = "$($HOME)\.ca\npm_login_resultCheckRequirement_$($CurrentDate).log"
+  $NpmLoginResultCheckRequirementLogfile = "$($HOME)\.ca\npm_login_resultCheckRequirement_$($currentDate).log"
   # Check if the fields are empty it won't login
   if (($UsernameTextBox.Text -ne "") -and ($TokenTextBox.Text -ne "")) {
     # Correct the Username inserted by the User
@@ -127,7 +128,7 @@ function Invoke-LoginNpm {
     $UsernameSplitS = $UsernameWithoutBS.split("/")
     $UsernameFinal = $UsernameSplitS[$UsernameSplitS.Length - 1]
     # Execute the login
-    Start-Process powershell.exe -ArgumentList "npm-login.ps1 -user $UsernameFinal -token $($TokenTextBox.Text) -registry $NpmRegistry -scope $NpmScope" -WindowStyle hidden -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrLogfile -Wait
+    Start-Process powershell.exe -ArgumentList "npm-login.ps1 -user $UsernameFinal -token $($TokenTextBox.Text) -registry $NpmRegistry -scope $NpmScope" -NoNewWindow -Wait
     Get-Content $ErrLogfile, $OutLogfile | Set-Content $NpmLoginResultCheckRequirementLogfile
     npm config set '@ca:registry' $NpmRegistry
     npm config set '@ca-codegen:registry' $NpmRegistry
@@ -225,7 +226,7 @@ function Invoke-CheckRequirements($Requirements) {
   # List of Requirements that have to be executed, no matter what
   $MustCheckRequirementList = @("Npm Login")
   foreach ($Requirement in $Requirements) {
-    New-Logfiles $Requirement
+    # New-Logfiles $Requirement
     if ($Requirement.CheckRequirement) {
       $ResultCheckRequirement = Invoke-Expression (New-CommandString $Requirement.CheckRequirement)
       if (!(($ResultCheckRequirement[0] -eq $true) -and ($ResultCheckRequirement[1] -eq 'OK'))) {
@@ -269,15 +270,9 @@ function New-Logfiles($Requirement) {
   Create the log files
   
   .DESCRIPTION
-  Creates the files .out, .err and .log for the specific Requirement
+  Creates the file .log for the specific Requirement
   #>
   Invoke-NameLogfile $Requirement
-  if (-not(Test-Path $OutLogfile)) {
-    New-Item -Path $OutLogfile -Force | Out-Null
-  }
-  if (-not(Test-Path $ErrLogfile)) {
-    New-Item -Path $ErrLogfile -Force | Out-Null
-  }
   if (-not(Test-Path $Logfile)) {
     New-Item -Path $Logfile -Force | Out-Null
   }
@@ -291,9 +286,7 @@ function Invoke-NameLogfile($Requirement) {
   Creates the full path of the file for a specific Requirement
   #>
   $NameNoSpaces = $Requirement.Name -replace " ", ""
-  $script:Logfile = "$HOME\.ca\$RandomCode-$NameNoSpaces-$CurrentDate.log"
-  $script:OutLogfile = "$HOME\.ca\$RandomCode-$NameNoSpaces-$CurrentDate.out"
-  $script:ErrLogfile = "$HOME\.ca\$RandomCode-$NameNoSpaces-$CurrentDate.err"
+  $script:Logfile = "$HOME\.ca\$NameNoSpaces-$currentDate-caep.log"
 }
 
 function Update-EnvPath {
@@ -383,8 +376,7 @@ function New-StartupCmd {
 #---------------------------------------------------------[Logic]--------------------------------------------------------
 
 # Variables
-$CurrentDate = (Get-Date -Format yyyyMMdd-hhmm).ToString()
-$InstallRequirementsLogfile = "$($HOME)\.ca\install_requirements_$($CurrentDate).log"
+$InstallRequirementsLogfile = "$($HOME)\.ca\install_requirements_$($currentDate).log"
 $RandomCode = New-RandomCode
 
 $ScriptPath = $MyInvocation.MyCommand.Path
@@ -395,10 +387,10 @@ $ErrLogfile
 
 $IndexRequirement = 0
 $BackofficeProjectPath = "C:\dev\scarface\back-office"
-# Import scripts
-. .\requirement-actions.ps1 -RandomCode $RandomCode -CurrentDate $CurrentDate -ScarVersion $ScarVersion -ScarConfig $ScarConfig
-. .\send-logs.ps1 -ScriptPath $ScriptPath -CurrentDate $CurrentDate
 
+# Import scripts
+. .\requirement-actions.ps1 -RandomCode $RandomCode -CurrentDate $currentDate -ScarVersion $ScarVersion -ScarConfig $ScarConfig
+. .\send-logs.ps1 -ScriptPath $ScriptPath -CurrentDate $currentDate
 
 # Main checks
 $InternetStatus = Get-NetAdapter | Where-Object { ($_.Name -like "*Ethernet*" -or $_.Name -like "*Wi-Fi*") -and ($_.Status -eq "Up") }

@@ -454,7 +454,7 @@
         "ActivityOKCommand": "`$Description.Text = 'I have found an Azure DevOps account, do you want to login with it?'; `$TokenPath = `\"~/.token.json`\"; `$TokenParsed = Get-Content `$TokenPath | ConvertFrom-Json; `$Index = `$TokenParsed.Count - 1; `$UsernameTextBox.Text = `$TokenParsed[`$Index].user; `$TokenTextBox.Text = `$TokenParsed[`$Index].token; Show-LoginNpmScreen",
         "ActivityKOCommand": "`$Description.Text = 'We have not found any Azure DevOps account.`r`nPlease enter the Azure DevOps Username and the Token.`r`nPS: Insert the Username without the COLLABORATION\\.'; Show-LoginNpmScreen",
         "DeclineMessage": "return `\"You have declined to automatically login to npm.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
-        "CheckRequirement": "return ./scripts/requirements/npm-login.ps1 -randomCode `$RandomCode -currentDate `$CurrentDate -name $($Requirement.Name) -pathFile $($Requirement.PathFile) -arguments $($Requirement.ArgumentList)",
+        "CheckRequirement": "return ./scripts/requirements/npm-login.ps1 -logFilePath `$logFilePath -pathFile $($Requirement.PathFile) -arguments $($Requirement.ArgumentList)",
         "PostAction": "Login"
     },
     {
@@ -467,7 +467,7 @@
         "PathFile": "C:\\Program Files\\Ca-Tools\\setup-ca-platform.exe",
         "ArgumentList": "-s",
         "ActivityOKCommand": "",
-        "ActivityKOCommand": "`$Description.Text += '`r`nInstalling the CAEP... (It will take a few minutes)'; `$NameNoSpaces = (`\"$($Requirement.Name)`\".replace(' ', '')); `$Logfile = `\"~\\.ca\\$RandomCode-`$NameNoSpaces-$CurrentDate.log`\"; `$OutLogfile = `\"~\\.ca\\$RandomCode-`$NameNoSpaces-$CurrentDate.out`\"; `$ErrLogfile = `\"~\\.ca\\$RandomCode-`$NameNoSpaces-$CurrentDate.err`\"; npm install -g @ca/cli; ca plugins:install @ca/cli-plugin-scarface",
+        "ActivityKOCommand": "`$Description.Text += '`r`nInstalling the CAEP... (It will take a few minutes)'; `$NameNoSpaces = (`\"$($Requirement.Name)`\".replace(' ', '')); `$Logfile = `\"~\\.ca\\`$NameNoSpaces-$CurrentDate.log`\"; npm install -g @ca/cli; ca plugins:install @ca/cli-plugin-scarface",
         "DeclineMessage": "return `\"You have declined to automatically install CAEP.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
         "CheckRequirement": "return @(`$true, 'KO')",
         "PostAction": ""
@@ -497,7 +497,7 @@
         "PathFile": "~\\AppData\\Roaming\\npm\\ca.cmd",
         "ArgumentList": "scar -c C:\\dev\\scarface\\scarface.config.json",
         "ActivityOKCommand": "",
-        "ActivityKOCommand": "`$Description.Text += '`r`nExecuting the command ca scar...'; `$NameNoSpaces = (`\"$($Requirement.Name)`\".replace(' ', '')); `$Logfile = `\"~\\.ca\\$RandomCode-`$NameNoSpaces-$CurrentDate.log`\"; `$OutLogfile = `\"~\\.ca\\$RandomCode-`$NameNoSpaces-$CurrentDate.out`\"; `$ErrLogfile = `\"~\\.ca\\$RandomCode-`$NameNoSpaces-$CurrentDate.err`\"; Set-Location 'C:\\dev\\scarface'; Start-Process `\"$($Requirement.PathFile)`\" -ArgumentList 'scar:setup' -WindowStyle hidden -RedirectStandardOutput `$OutLogfile -RedirectStandardError `$ErrLogfile -Wait; Start-Process `\"$($Requirement.PathFile)`\" -ArgumentList `\"$($Requirement.ArgumentList)`\" -WindowStyle hidden -RedirectStandardOutput `$OutLogfile -RedirectStandardError `$ErrLogfile -Wait; `$Description.Text += '`r`The command ca scar was executed correctly.`r`nPress the End button to conclude the installation.'",
+        "ActivityKOCommand": "`$Description.Text += '`r`nExecuting the command ca scar...'; `$NameNoSpaces = (`\"$($Requirement.Name)`\".replace(' ', '')); `$Logfile = `\"~\\.ca\\`$NameNoSpaces-$CurrentDate.log`\"; Set-Location 'C:\\dev\\scarface'; Start-Process `\"$($Requirement.PathFile)`\" -ArgumentList 'scar:setup' -NoNewWindow -Wait; Start-Process `\"$($Requirement.PathFile)`\" -ArgumentList `\"$($Requirement.ArgumentList)`\" -NoNewWindow -Wait; `$Description.Text += '`r`The command ca scar was executed correctly.`r`nPress the End button to conclude the installation.'",
         "DeclineMessage": "return `\"You have declined to automatically execute 'ca scar'.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
         "CheckRequirement": "return @(`$true, 'KO')",
         "PostAction": "End"

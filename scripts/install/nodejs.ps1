@@ -1,5 +1,4 @@
 param(
-    [string]$randomCode,
     [string]$currentDate,
     [string]$name,
     [string]$downloadOutfile
@@ -12,10 +11,9 @@ $argumentList = @(
 )
 
 $nameNoSpaces = ($name.replace(' ', ''))
-$Logfile = "~\.ca\$randomCode-$nameNoSpaces-$currentDate.log"
-$OutLogfile = "~\.ca\$randomCode-$nameNoSpaces-$currentDate.out"
-$ErrLogfile = "~\.ca\$randomCode-NameNoSpaces-$currentDate.err"
-Start-Process msiexec.exe -ArgumentList $argumentList -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrLogfile -Wait
+$Logfile = "~\.ca\$nameNoSpaces-$currentDate-caep.log"
+
+Start-Process msiexec.exe -ArgumentList $argumentList -Wait
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

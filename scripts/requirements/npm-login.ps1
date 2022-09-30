@@ -1,25 +1,20 @@
 param(
-    [string]$randomCode,
     [string]$currentDate,
     [string]$name,
     [string]$pathFile,
-    [string]$arguments
+    [string]$arguments,
+    [string]$logFilePath
 )
 
-$npmLoginNoSpace = $name.replace(' ', '')
-$npmLogfile = "~\.ca\$randomCode-$npmLoginNoSpace-$currentDate.log"
-$npmOutLogfile = "~\.ca\$randomCode-$npmLoginNoSpace-$currentDate.out"
-$npmErrLogfile = "~\.ca\$randomCode-$npmLoginNoSpace-$currentDate.err"
+$nmpLoginErrCheck = "~\.ca\$currentDate-npmLogin-caep.log"
+Start-Transcript $nmpLoginErrCheck
 
-Start-Process $pathFile -ArgumentList $arguments -WindowStyle hidden -RedirectStandardOutput $npmOutLogfile -RedirectStandardError $npmErrLogfile -Wait
+Start-Process $pathFile -ArgumentList $arguments -NoNewWindow -Wait
+Start-Process $pathFile -ArgumentList 'npm view @ca-codegen/core' -NoNewWindow -Wait
 
-Get-Content $npmOutLogfile, $npmErrLogfile | Set-Content $npmLogfile
+Stop-Transcript
 
-Start-Process $pathFile -ArgumentList 'npm view @ca-codegen/core' -WindowStyle hidden -RedirectStandardOutput $npmOutLogfile -RedirectStandardError $npmErrLogfile -Wait
-
-Get-Content $npmOutLogfile, $npmErrLogfile | Add-Content $npmLogfile
-
-$npmLoginLogfile = Get-Content $npmLogfile
+$npmLoginLogfile = Get-Content $nmpLoginErrCheck
 $errorsNpm = 0
 
 foreach ($item in $npmLoginLogfile) {
@@ -29,8 +24,8 @@ foreach ($item in $npmLoginLogfile) {
 }
 if ( ($errorsNpm -eq 0) ) {
     return @($true, 'OK')
-
-} else {
+}
+else {
     return @($true, 'KO')
 }
 # SIG # Begin signature block
