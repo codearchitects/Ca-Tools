@@ -339,6 +339,10 @@ function Show-ButtonsPostAction ($RequirementPostAction) {
 
 $currentDate = (Get-Date -Format yyyyMMdd-HHmm).ToString()
 $logFilePath = "~\.ca\$currentDate-caep.log"
+
+$DebugPreference = 'Continue'
+$VerbosePreference = 'Continue'
+$InformationPreference = 'Continue'
 Start-Transcript $logFilePath
 
 # ScriptPath will contain the Script's path, once done that it will take only the path's parent and set the current Location to that path

@@ -1,32 +1,45 @@
 param(
     [string]$currentDate,
     [string]$name,
-    [string]$pathFile,
-    [string]$arguments,
     [string]$logFilePath
 )
+$DebugPreference = 'Continue'
+$VerbosePreference = 'Continue'
+$InformationPreference = 'Continue'
 
 $nmpLoginErrCheck = "~\.ca\$currentDate-npmLogin-caep.log"
 Start-Transcript $nmpLoginErrCheck
+Write-Host "Inizio trascript del file in `$npmLoginErrCheck"
 
-Start-Process $pathFile -ArgumentList $arguments -NoNewWindow -Wait
-Start-Process $pathFile -ArgumentList 'npm view @ca-codegen/core' -NoNewWindow -Wait
+Write-Host "lancio primo comando npm"
+npm view @ca/cli | Out-Default
+Write-Host "lancio secondo comando npm"
+npm view @ca-codegen/core | Out-Default
+Write-Host "fine comandi npm"
 
+Write-Host "Fine Stop Transcript"
 Stop-Transcript
 
 $npmLoginLogfile = Get-Content $nmpLoginErrCheck
+Write-Host $npmLoginLogfile
 $errorsNpm = 0
 
+Write-Host "Inizio Foreach controllo ERR"
 foreach ($item in $npmLoginLogfile) {
     if ( ($item -like '*ERR!*') -or ($item -like '*error*') ) {
         $errorsNpm++
+        Write-Host "Aumento counter di errori npm"
     }
+Write-Host "Fine foreach controllo ERR"
 }
+Write-Host "Inizio if controllo se -eq 0"
 if ( ($errorsNpm -eq 0) ) {
     return @($true, 'OK')
+Write-Host "OK, Non ci sono errori npm"
 }
 else {
     return @($true, 'KO')
+Write-Host "KO, ci sono errori npm"
 }
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

@@ -449,12 +449,12 @@
             "Setup CaTools.msi"
         ],
         "QuestionMessage": "Press 'Accept' to check if there is an account npm.",
-        "PathFile": "powershell.exe",
-        "ArgumentList": "npm view @ca/cli",
-        "ActivityOKCommand": "`$Description.Text = 'I have found an Azure DevOps account, do you want to login with it?'; `$TokenPath = `\"~/.token.json`\"; `$TokenParsed = Get-Content `$TokenPath | ConvertFrom-Json; `$Index = `$TokenParsed.Count - 1; `$UsernameTextBox.Text = `$TokenParsed[`$Index].user; `$TokenTextBox.Text = `$TokenParsed[`$Index].token; Show-LoginNpmScreen",
-        "ActivityKOCommand": "`$Description.Text = 'We have not found any Azure DevOps account.`r`nPlease enter the Azure DevOps Username and the Token.`r`nPS: Insert the Username without the COLLABORATION\\.'; Show-LoginNpmScreen",
+        "PathFile": "",
+        "ArgumentList": "",
+        "ActivityOKCommand": "`$Description.Text = 'I have found an Azure DevOps account, do you want to login with it?'; `$TokenPath = `\"~/.token.json`\"; `$TokenParsed = Get-Content `$TokenPath | ConvertFrom-Json; `$Index = `$TokenParsed.Count - 1; `$UsernameTextBox.Text = `$TokenParsed[`$Index].user; `$TokenTextBox.Text = `$TokenParsed[`$Index].token;Write-Host \"è ok\"; Show-LoginNpmScreen",
+        "ActivityKOCommand": "`$Description.Text = 'We have not found any Azure DevOps account.`r`nPlease enter the Azure DevOps Username and the Token.`r`nPS: Insert the Username without the COLLABORATION\\.';Write-Host \"è ok\" Show-LoginNpmScreen",
         "DeclineMessage": "return `\"You have declined to automatically login to npm.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
-        "CheckRequirement": "return ./scripts/requirements/npm-login.ps1 -logFilePath `$logFilePath -pathFile $($Requirement.PathFile) -arguments $($Requirement.ArgumentList)",
+        "CheckRequirement": "return ./scripts/requirements/npm-login.ps1 -currentDate `$currentDate -logFilePath `$logFilePath -name $($Requirement.Name)",
         "PostAction": "Login"
     },
     {
