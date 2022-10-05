@@ -389,8 +389,8 @@ $IndexRequirement = 0
 $BackofficeProjectPath = "C:\dev\scarface\back-office"
 
 # Import scripts
-. .\requirement-actions.ps1 -RandomCode $RandomCode -CurrentDate $currentDate -ScarVersion $ScarVersion -ScarConfig $ScarConfig
-. .\send-logs.ps1 -ScriptPath $ScriptPath -CurrentDate $currentDate
+. .\requirement-actions.ps1 -RandomCode $RandomCode -currentDate $currentDate -ScarVersion $ScarVersion -ScarConfig $ScarConfig
+. .\send-logs.ps1 -ScriptPath $ScriptPath -currentDate $currentDate
 
 # Main checks
 $InternetStatus = Get-NetAdapter | Where-Object { ($_.Name -like "*Ethernet*" -or $_.Name -like "*Wi-Fi*") -and ($_.Status -eq "Up") }

@@ -1,6 +1,6 @@
 param(
   [string]$RandomCode = "",
-  [string]$CurrentDate = "",
+  [string]$currentDate,
   [string]$ScarVersion = "",
   [string]$ScarConfig = ""
 )
@@ -12,6 +12,23 @@ $ErrLogfile
 # To be used on the New-CommandString it needs to be global, otherwise it'll be only used on the Invoke-PostInstallAction and not in the New-CommandString function.
 $item
 
+function New-CommandString($String) {
+  <#
+  .SYNOPSIS
+  Resolve the Requirement's command, subsituting the variables inside the string with his concrete value
+  .DESCRIPTION
+  Resolves the Requirement's command, subsituting the variables inside the string with his concrete value
+  #>
+  $StringWithValue = $String
+  do {
+    Invoke-Expression("Set-Variable -name StringWithValue -Value `"$StringWithValue`"")
+
+    Write-Host "$StringWithValue"
+
+  } while ($StringWithValue -like '*$(*)*')
+  return $StringWithValue
+}
+
 function Invoke-ActivityAction {
   [CmdletBinding()]
   param (
@@ -19,14 +36,20 @@ function Invoke-ActivityAction {
     $Requirement
   )
 
-  $ResultActivity = Invoke-Expression (New-CommandString $Requirement.CheckRequirement)
+  $cmdToRun = New-CommandString $Requirement.CheckRequirement
+  $ResultActivity = Invoke-Expression ($cmdToRun)
   if ($ResultActivity[0]) {
     switch ($ResultActivity[1]) {
       'OK' {
         Invoke-Expression (New-CommandString $Requirement.ActivityOKCommand)
+        break
       }
       'KO' {
         Invoke-Expression (New-CommandString $Requirement.ActivityKOCommand)
+        break
+      }
+      Default{
+        Write-Host "There's an anomaly in Activity Invocation!"
       }
     }
     Show-Buttons @('$NextButton', '$CancelButton')
@@ -34,7 +57,6 @@ function Invoke-ActivityAction {
     Show-Buttons @('$DoneButton')
   }
 }
-
 function Invoke-ConnectionAction {
   [CmdletBinding()]
   param (
@@ -144,7 +166,8 @@ function Invoke-EnableFeatureAction {
       $Description.AppendText("`r`n$EnablingMessage")
       Invoke-Expression (New-CommandString $Requirement.EnableCommand)
       $Description.AppendText("`r`n$EnableCompleteMessage")
-    } else {
+    }
+    else {
       $Description.AppendText("`r`n$AlreadyEnabledMessage")
     }
   }
@@ -189,7 +212,8 @@ function Invoke-PermissionAction {
       $Description.AppendText([Environment]::NewLine)
     }
     Show-Buttons @('$NextButton', '$CancelButton')
-  } else {
+  }
+  else {
     $MessagePermission = (New-CommandString $Requirement.KoMessage)
     $Description.SelectionStart = $Description.TextLength
     $Description.SelectionLength = 0
@@ -223,13 +247,15 @@ function Invoke-PostInstallAction {
             $Description.SelectionColor = "Red"
             $Description.AppendText("Failed installing extension $item!")
             $Description.AppendText([Environment]::NewLine)
-          } elseif ($ContentErrLogfile -like "*was successfully installed.*") {
+          }
+          elseif ($ContentErrLogfile -like "*was successfully installed.*") {
             $Description.SelectionStart = $Description.TextLength
             $Description.SelectionLength = 0
             $Description.SelectionColor = "Green"
             $Description.AppendText("$item was successfully installed.")
             $Description.AppendText([Environment]::NewLine)
-          } else {
+          }
+          else {
             $Description.SelectionStart = $Description.TextLength
             $Description.SelectionLength = 0
             $Description.SelectionColor = "Green"
@@ -240,7 +266,8 @@ function Invoke-PostInstallAction {
       }
     }
     Show-Buttons @('$NextButton', '$CancelButton')
-  } else {
+  }
+  else {
     if ($Requirement.CheckRequirement) {
       $PostInstallResultCheck = Invoke-Expression (New-CommandString $Requirement.CheckRequirement)
       if ($PostInstallResultCheck[0] -eq $true) {
@@ -267,7 +294,8 @@ function Invoke-PostInstallAction {
           $Description.AppendText([Environment]::NewLine)
         }
         Show-Buttons @('$NextButton', '$CancelButton')
-      } else {
+      }
+      else {
         $Description.SelectionStart = $Description.TextLength
         $Description.SelectionLength = 0
         $Description.SelectionColor = "Red"
@@ -302,23 +330,6 @@ function Invoke-PreInstallAction {
   }
   $Description.AppendText($MessagePreInstall)
   $Description.AppendText([Environment]::NewLine)
-}
-
-function New-CommandString($String) {
-  <#
-  .SYNOPSIS
-  Resolve the Requirement's command, subsituting the variables inside the string with his concrete value
-  .DESCRIPTION
-  Resolves the Requirement's command, subsituting the variables inside the string with his concrete value
-  #>
-  $StringWithValue = $String
-  do {
-    Invoke-Expression("Set-Variable -name StringWithValue -Value `"$StringWithValue`"")
-
-    Write-Host "$StringWithValue"
-
-  } while ($StringWithValue -like '*$(*)*')
-  return $StringWithValue
 }
 
 # SIG # Begin signature block
