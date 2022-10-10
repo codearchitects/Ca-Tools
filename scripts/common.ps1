@@ -21,13 +21,10 @@ function Get-MissingEnvironmentVariablePath {
     [string]$envToCheck
   )
 
-  Write-Host "le env passate sono: $envToCheck"
-
   $notFound = @()
   $envInPath = $env:PATH.ToLower()
-  Write-Host "env:PATH corrisponde a: $env:PATH"
   $envSplitted = ($envToCheck -replace "`"","").ToLower().Split(';')
-
+  
   foreach ($value in $envSplitted) {
     Write-Host "Checking if $value exists in environment variable PATH"
     if( -not $envInPath.Contains($value) ) {

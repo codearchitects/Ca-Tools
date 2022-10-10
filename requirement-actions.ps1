@@ -182,11 +182,13 @@ function Invoke-EnvironmentVariableAction {
     [Parameter(Position = 0, Mandatory = $true)]$Requirement
   )
 
+  $envToCheck = $Requirement.Values -replace "``",""
   $envNotFound = Get-MissingEnvironmentVariablePath -envToCheck $envToCheck
 
   if ( $envNotFound.Count -gt 0) {
     foreach ($value in $envNotFound) {
-      $newEnvPath = [System.Environment]::GetEnvironmentVariable("PATH", "Machine") + ";$value"
+      Write-Host "Add $value in Environment Variable Path"
+      $newEnvPath = [System.Environment]::GetEnvironmentVariable("PATH", "Machine") + "$value;"
       [System.Environment]::SetEnvironmentVariable("PATH", $newEnvPath, "Machine")
     }
   }

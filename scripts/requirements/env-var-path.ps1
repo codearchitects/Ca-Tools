@@ -2,8 +2,6 @@ param(
   $envToCheck
 )
 
-Write-Host "Le env to check sono: $envToCheck"
-
 # Extecute function to get missing environment variable path
 . .\scripts\common.ps1
 $envNotFound = Get-MissingEnvironmentVariablePath -envToCheck $envToCheck
