@@ -1,6 +1,4 @@
 param(
-    [string]$currentDate,
-    [string]$name,
     [string]$downloadOutfile
 )
 
@@ -9,9 +7,6 @@ $argumentList = @(
     $downloadOutfile,
     '/passive'
 )
-
-$nameNoSpaces = ($name.replace(' ', ''))
-$Logfile = "~\.ca\$nameNoSpaces-$currentDate-caep.log"
 
 Start-Process msiexec.exe -ArgumentList $argumentList -Wait
 # SIG # Begin signature block
