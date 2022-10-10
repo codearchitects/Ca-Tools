@@ -1,11 +1,3 @@
-param(
-    [string]$name,
-    [string]$currentDate
-)
-    
-$nameNoSpaces = ($name.replace(' ', ''))
-$Logfile = "~\.ca\$nameNoSpaces-$currentDate-caep.log"
-
 try {
     Start-Process code -ArgumentList "--install-extension $item --force" -NoNewWindow -Wait
 }

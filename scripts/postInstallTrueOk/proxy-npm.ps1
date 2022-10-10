@@ -2,10 +2,10 @@ param(
     [string]$currentDate
 )
 
-$NpmrcFilePath = "~\.npmrc"
+$npmrcFilePath = "~\.npmrc"
 
-if (Test-Path $NpmrcFilePath) {
-    Get-Content $NpmrcFilePath | Out-File "$NpmrcFilePath.old.$currentDate"
+if (Test-Path $npmrcFilePath) {
+    Get-Content $npmrcFilePath | Out-File "$npmrcFilePath.old.$currentDate"
     Start-Process powershell.exe -ArgumentList "npm config delete proxy" -NoNewWindow -Wait
     Start-Process powershell.exe -ArgumentList "npm config delete https-proxy" -NoNewWindow -Wait
     Start-Process powershell.exe -ArgumentList "npm config delete cafile" -NoNewWindow -Wait

@@ -1,6 +1,4 @@
 param(
-    [string]$currentDate,
-    [string]$name,
     [string]$downloadOutFile
 )
 
@@ -14,9 +12,6 @@ $argumentList = @(
     '--passive',
     '--norestart'
 )
-
-$nameNoSpaces = ($name.replace(' ', ''))
-$Logfile = "~\.ca\$nameNoSpaces-$currentDate-caep.log"
 
 Start-Process $downloadOutFile -ArgumentList $argumentList -Wait
 # SIG # Begin signature block

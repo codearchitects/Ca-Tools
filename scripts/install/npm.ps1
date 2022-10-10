@@ -1,7 +1,5 @@
 param(
-    [string]$currentDate,
-    [string]$reqMaxVersion,
-    [string]$name
+    [string]$reqMaxVersion
 )
 
 $argumentList = @(
@@ -10,10 +8,7 @@ $argumentList = @(
     "npm@$reqMaxVersion"
 )
 
-$nameNoSpaces = ($name.replace(' ', ''))
-$Logfile = "~\.ca\$nameNoSpaces-$currentDate-caep.log"
 Start-Process npm -ArgumentList $argumentList -NoNewWindow -Wait
-
 
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

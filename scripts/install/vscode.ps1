@@ -1,6 +1,4 @@
 param(
-    [string]$currentDate,
-    [string]$name,
     [string]$downloadOutFile
 )
 
@@ -9,9 +7,6 @@ $argumentList = @(
     '/NORESTART',
     '/mergetasks=!runcode'
 )
-
-$nameNoSpaces = ($name.replace(' ', ''))
-$Logfile = "~\.ca\$nameNoSpaces-$currentDate-caep.log"
 
 Start-Process $downloadOutFile -ArgumentList $argumentList -Wait
 

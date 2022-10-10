@@ -1,7 +1,5 @@
 param(
-    [string]$currentDate,
-    [string]$downloadOutfile,
-    [string]$name
+    [string]$downloadOutfile
 )
 
 $argumentList = @(
@@ -13,12 +11,7 @@ $argumentList = @(
 . .\scripts\common.ps1
 Remove-StartupCmd
 
-$nameNoSpaces = ($name.replace(' ', ''))
-$Logfile = "~\.ca\$nameNoSpaces-$currentDate-caep.log"
-
 Start-Process msiexec.exe -ArgumentList $argumentList -Wait
-
-
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
