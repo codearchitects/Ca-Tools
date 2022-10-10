@@ -140,7 +140,6 @@ function Invoke-LoginNpm {
     $UsernameFinal = $UsernameSplitS[$UsernameSplitS.Length - 1]
     # Execute the login
     Start-Process powershell.exe -ArgumentList "npm-login.ps1 -user $UsernameFinal -token $($TokenTextBox.Text) -registry $NpmRegistry -scope $NpmScope" -NoNewWindow -Wait
-    Get-Content $ErrLogfile, $OutLogfile | Set-Content $NpmLoginResultCheckRequirementLogfile
     npm config set '@ca:registry' $NpmRegistry
     npm config set '@ca-codegen:registry' $NpmRegistry
     $NpmViewCli = (npm view @ca/cli 2>&1) -join " "
@@ -237,7 +236,6 @@ function Invoke-CheckRequirements($Requirements) {
   # List of Requirements that have to be executed, no matter what
   $MustCheckRequirementList = @("Npm Login")
   foreach ($Requirement in $Requirements) {
-    # New-Logfiles $Requirement
     if ($Requirement.CheckRequirement) {
       $ResultCheckRequirement = Invoke-Expression (New-CommandString $Requirement.CheckRequirement)
       if (!(($ResultCheckRequirement[0] -eq $true) -and ($ResultCheckRequirement[1] -eq 'OK'))) {
@@ -274,21 +272,6 @@ function Invoke-AppendRequirementDescription {
     }
   }
 }
-
-function New-Logfiles($Requirement) {
-  <#
-  .SYNOPSIS
-  Create the log files
-  
-  .DESCRIPTION
-  Creates the file .log for the specific Requirement
-  #>
-  Invoke-NameLogfile $Requirement
-  if (-not(Test-Path $Logfile)) {
-    New-Item -Path $Logfile -Force | Out-Null
-  }
-}
-
 function Invoke-NameLogfile($Requirement) {
   <#
   .SYNOPSIS
@@ -379,10 +362,6 @@ $InstallRequirementsLogfile = "$($HOME)\.ca\install_requirements_$($currentDate)
 $RandomCode = New-RandomCode
 
 $ScriptPath = $MyInvocation.MyCommand.Path
-
-$Logfile
-$OutLogfile
-$ErrLogfile
 
 $IndexRequirement = 0
 $BackofficeProjectPath = "C:\dev\scarface\back-office"

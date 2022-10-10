@@ -7,9 +7,6 @@ param(
 
 . .\scripts\common.ps1
 
-$Logfile
-$OutLogfile
-$ErrLogfile
 # The variable item contains the extension that needs to be installed on VS Code.
 # To be used on the New-CommandString it needs to be global, otherwise it'll be only used on the Invoke-PostInstallAction and not in the New-CommandString function.
 $item
@@ -291,7 +288,6 @@ function Invoke-PostInstallAction {
           $Description.AppendText([Environment]::NewLine)
           
           Invoke-Expression (New-CommandString $Requirement.PostInstallCommand)
-          Get-Content $OutLogfile, $ErrLogfile | Add-Content $Logfile
           $MessagePostInstall = Invoke-Expression (New-CommandString $Requirement.PostInstallCompleteMessage)
 
           $Description.AppendText($MessagePostInstall)
