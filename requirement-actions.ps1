@@ -5,6 +5,8 @@ param(
   [string]$ScarConfig = ""
 )
 
+. .\scripts\common.ps1
+
 $Logfile
 $OutLogfile
 $ErrLogfile
@@ -180,11 +182,12 @@ function Invoke-EnvironmentVariableAction {
     [Parameter(Position = 0, Mandatory = $true)]$Requirement
   )
 
-  foreach ($item in ($Requirement.Values -replace "```"","")) {
-    $EnvVarResult = Invoke-Expression (New-CommandString $Requirement.CheckRequirement)
-    if ($EnvVarResult[1] -eq 'KO') {
-      $Description.AppendText("Setting environment Variable: $item")
-      Invoke-Expression (New-CommandString $Requirement.AddCommand)
+  $envNotFound = Get-MissingEnvironmentVariablePath -envToCheck $envToCheck
+
+  if ( $envNotFound.Count -gt 0) {
+    foreach ($value in $envNotFound) {
+      $newEnvPath = [System.Environment]::GetEnvironmentVariable("PATH", "Machine") + ";$value"
+      [System.Environment]::SetEnvironmentVariable("PATH", $newEnvPath, "Machine")
     }
   }
   Show-Buttons @('$NextButton', '$CancelButton')
