@@ -185,8 +185,10 @@ function Invoke-EnvironmentVariableAction {
   if ( $envNotFound.Count -gt 0) {
     foreach ($value in $envNotFound) {
       Write-Host "Add $value in Environment Variable Path"
-      $newEnvPath = [System.Environment]::GetEnvironmentVariable("PATH", "Machine") + "$value;"
-      [System.Environment]::SetEnvironmentVariable("PATH", $newEnvPath, "Machine")
+      $newEnvPath = [System.Environment]::GetEnvironmentVariable("PATH", "Machine") + ";$value"
+      # Prevent ;; between paths replacing with just one ;
+      $newEnvPathWithReplace = $newEnvPath -replace ";;",";"
+      [System.Environment]::SetEnvironmentVariable("PATH", $newEnvPathWithReplace, "Machine")
     }
   }
   Show-Buttons @('$NextButton', '$CancelButton')
