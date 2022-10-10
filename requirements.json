@@ -158,16 +158,16 @@
         "PostAction": ""
     },
     {
-        "Name": "Environement Variable Path",
-        "Type": "Env Variable",
+        "Name": "Environment Variable Path",
+        "Type": "Env Variable Path",
         "Dependencies": [  ],
-        "QuestionMessage": "Press 'Accept' to add the missing Environement Variable Path.",
+        "QuestionMessage": "Press 'Accept' to add the missing Environment Variable Path.",
         "Variable": "Path",
-        "Values": "`\"C:\\windows\\system32;C:\\windows\\system32\\wbem;C:\\windows;C:\\windows\\system32\\windowspowershell\\v1.0;C:\\Program Files\\Git\\usr\\bin;`\"",
+        "Values": "`\"C:\\windows\\system32;C:\\windows\\system32\\wbem;C:\\windows;C:\\windows\\system32\\windowspowershell\\v1.0;C:\\Program Files\\Git\\usr\\bin`\"",
         "Scope": "Machine",
         "AddCommand": "[System.Environment]::SetEnvironmentVariable(`\"$($Requirement.Variable)`\", `\"$env:Path;`\"+`\"$item`\", `\"$($Requirement.Scope)`\")",
-        "DeclineMessage": "return `\"You have declined to automatically set your Environement Variable Path.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
-        "CheckRequirement": "return ./scripts/requirements/env-var-path.ps1 -reqValues $($Requirement.Values)",
+        "DeclineMessage": "return `\"You have declined to automatically set your Environment Variable Path.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
+        "CheckRequirement": "return ./scripts/requirements/env-var-path.ps1 -envToCheck `\"$($Requirement.Values)`\"",
         "PostAction": ""
     },
     {

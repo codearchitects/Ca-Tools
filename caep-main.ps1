@@ -4,6 +4,17 @@ param(
   [string]$currentDate
 )
 
+function Update-EnvPath {
+  <#
+  .SYNOPSIS
+  Update the Environment Variables
+  .DESCRIPTION
+  Update the Environment Variables without closing PowerShell
+  #>
+  $env:PATH = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+  $Description.AppendText("`r`nEnv var Path reloaded correctly")
+}
+
 function New-RandomCode {
   <#
   .SYNOPSIS
@@ -42,7 +53,7 @@ function Invoke-AcceptRequirement {
     "Feature" {
       Invoke-EnableFeatureAction -Requirement $CurrentRequirement
     }
-    "Env Variable" {
+    "Env Variable Path" {
       Invoke-EnvironmentVariableAction -Requirement $CurrentRequirement
     }
     "PostInstallSoftware" {
@@ -288,18 +299,6 @@ function Invoke-NameLogfile($Requirement) {
   $NameNoSpaces = $Requirement.Name -replace " ", ""
   $script:Logfile = "$HOME\.ca\$NameNoSpaces-$currentDate-caep.log"
 }
-
-function Update-EnvPath {
-  <#
-  .SYNOPSIS
-  Update the Environment Variables
-  .DESCRIPTION
-  Update the Environment Variables without closing PowerShell
-  #>
-  $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-  $Description.AppendText("`r`nEnv var Path reloaded correctly")
-}
-
 function Close-Installer {
   <#
   .SYNOPSIS

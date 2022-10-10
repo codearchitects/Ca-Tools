@@ -1,13 +1,45 @@
 $StartupPath = "~\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\caep-startup.cmd"
 function  Remove-StartupCmd {
-    <#
-    .SYNOPSIS
-    Remove the caep-startup.cmd
-    .DESCRIPTION
-    Removes the caep-startup.cmd once the user finished the installation
-    #>
-    Remove-Item -Path $StartupPath -Force -ErrorAction Ignore
+  <#
+  .SYNOPSIS
+  Remove the caep-startup.cmd
+  .DESCRIPTION
+  Removes the caep-startup.cmd once the user finished the installation
+  #>
+  
+  Remove-Item -Path $StartupPath -Force -ErrorAction Ignore
+}
+
+function Get-MissingEnvironmentVariablePath {
+  <#
+  .SYNOPSIS
+  Get missing Environment Variable
+  .DESCRIPTION
+  Get missing Environment Variable
+  #>
+  param(
+    [string]$envToCheck
+  )
+
+  Write-Host "le env passate sono: $envToCheck"
+
+  $notFound = @()
+  $envInPath = $env:PATH.ToLower()
+  Write-Host "env:PATH corrisponde a: $env:PATH"
+  $envSplitted = ($envToCheck -replace "`"","").ToLower().Split(';')
+
+  foreach ($value in $envSplitted) {
+    Write-Host "Checking if $value exists in environment variable PATH"
+    if( -not $envInPath.Contains($value) ) {
+      $notFound += $value
+    }
   }
+
+  Write-Host "path not found: $notFound"
+
+  return $notFound
+
+}
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

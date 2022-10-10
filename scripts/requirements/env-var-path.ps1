@@ -1,22 +1,22 @@
 param(
-    [string]$reqValues
+  $envToCheck
 )
 
-$envToCheck = ($reqValues -replace "`"" , "").Split(';')
-$notFound = $false
-$envPath = "$env:PATH"
+Write-Host "Le env to check sono: $envToCheck"
 
-foreach ($value in $envToCheck) {
-    if ( (($envPath.ToLower()).Split(';') -notcontains ("$Value").ToLower()) -and (($envPath.ToLower()).Split(';') -notcontains ("$value\").ToLower()) ) {
-        $notFound = $true
-    }
-}
-if ($notFound) {
-    return @($true, 'KO')
+# Extecute function to get missing environment variable path
+. .\scripts\common.ps1
+$envNotFound = Get-MissingEnvironmentVariablePath -envToCheck $envToCheck
+
+Write-Host "not found list: $envNotFound"
+
+if ($envNotFound.Count -gt 0) {
+  return @($true, 'KO')
 }
 else {
-    return @($true, 'OK')
+  return @($true, 'OK')
 }
+
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

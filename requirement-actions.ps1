@@ -177,14 +177,13 @@ function Invoke-EnableFeatureAction {
 function Invoke-EnvironmentVariableAction {
   [CmdletBinding()]
   param (
-    [Parameter(Position = 0, Mandatory = $true)]
-    $Requirement
+    [Parameter(Position = 0, Mandatory = $true)]$Requirement
   )
 
   foreach ($item in ($Requirement.Values -replace "```"","")) {
     $EnvVarResult = Invoke-Expression (New-CommandString $Requirement.CheckRequirement)
     if ($EnvVarResult[1] -eq 'KO') {
-      $Description.AppendText("Setting Environement Variable: $item")
+      $Description.AppendText("Setting environment Variable: $item")
       Invoke-Expression (New-CommandString $Requirement.AddCommand)
     }
   }
