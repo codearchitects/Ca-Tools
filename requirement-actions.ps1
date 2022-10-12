@@ -1,16 +1,32 @@
 param(
   [string]$RandomCode = "",
-  [string]$CurrentDate = "",
+  [string]$currentDate,
   [string]$ScarVersion = "",
   [string]$ScarConfig = ""
 )
 
-$Logfile
-$OutLogfile
-$ErrLogfile
+. .\scripts\common.ps1
+
 # The variable item contains the extension that needs to be installed on VS Code.
 # To be used on the New-CommandString it needs to be global, otherwise it'll be only used on the Invoke-PostInstallAction and not in the New-CommandString function.
 $item
+
+function New-CommandString($String) {
+  <#
+  .SYNOPSIS
+  Resolve the Requirement's command, subsituting the variables inside the string with his concrete value
+  .DESCRIPTION
+  Resolves the Requirement's command, subsituting the variables inside the string with his concrete value
+  #>
+  $StringWithValue = $String
+  do {
+    Invoke-Expression("Set-Variable -name StringWithValue -Value `"$StringWithValue`"")
+
+    Write-Host "$StringWithValue"
+
+  } while ($StringWithValue -like '*$(*)*')
+  return $StringWithValue
+}
 
 function Invoke-ActivityAction {
   [CmdletBinding()]
@@ -19,14 +35,20 @@ function Invoke-ActivityAction {
     $Requirement
   )
 
-  $ResultActivity = Invoke-Expression (New-CommandString $Requirement.CheckRequirement)
+  $cmdToRun = New-CommandString $Requirement.CheckRequirement
+  $ResultActivity = Invoke-Expression ($cmdToRun)
   if ($ResultActivity[0]) {
     switch ($ResultActivity[1]) {
       'OK' {
         Invoke-Expression (New-CommandString $Requirement.ActivityOKCommand)
+        break
       }
       'KO' {
         Invoke-Expression (New-CommandString $Requirement.ActivityKOCommand)
+        break
+      }
+      Default{
+        Write-Host "There's an anomaly in Activity Invocation!"
       }
     }
     Show-Buttons @('$NextButton', '$CancelButton')
@@ -34,7 +56,6 @@ function Invoke-ActivityAction {
     Show-Buttons @('$DoneButton')
   }
 }
-
 function Invoke-ConnectionAction {
   [CmdletBinding()]
   param (
@@ -119,8 +140,8 @@ function Invoke-DownloadInstallRequirementAction {
       Invoke-Expression (New-CommandString $Requirement.DeleteCommand)
       $Description.AppendText("`r`n$DeleteCompleteMessage")
     }
-    Get-Content $OutLogfile, $ErrLogfile | Add-Content $Logfile
-  } else {
+  }
+  else {
     $Description.AppendText("`r`n$AlreadyInstalledMessage")
   }
   Show-Buttons @('$NextButton', '$CancelButton')
@@ -144,7 +165,8 @@ function Invoke-EnableFeatureAction {
       $Description.AppendText("`r`n$EnablingMessage")
       Invoke-Expression (New-CommandString $Requirement.EnableCommand)
       $Description.AppendText("`r`n$EnableCompleteMessage")
-    } else {
+    }
+    else {
       $Description.AppendText("`r`n$AlreadyEnabledMessage")
     }
   }
@@ -154,15 +176,19 @@ function Invoke-EnableFeatureAction {
 function Invoke-EnvironmentVariableAction {
   [CmdletBinding()]
   param (
-    [Parameter(Position = 0, Mandatory = $true)]
-    $Requirement
+    [Parameter(Position = 0, Mandatory = $true)]$Requirement
   )
 
-  foreach ($item in ($Requirement.Values -replace "```"","")) {
-    $EnvVarResult = Invoke-Expression (New-CommandString $Requirement.CheckRequirement)
-    if ($EnvVarResult[1] -eq 'KO') {
-      $Description.AppendText("Setting Environement Variable: $item")
-      Invoke-Expression (New-CommandString $Requirement.AddCommand)
+  $envToCheck = $Requirement.Values -replace "``",""
+  $envNotFound = Get-MissingEnvironmentVariablePath -envToCheck $envToCheck
+
+  if ( $envNotFound.Count -gt 0) {
+    foreach ($value in $envNotFound) {
+      Write-Host "Add $value in Environment Variable Path"
+      $newEnvPath = [System.Environment]::GetEnvironmentVariable("PATH", "Machine") + ";$value"
+      # Prevent ;; between paths replacing with just one ;
+      $newEnvPathWithReplace = $newEnvPath -replace ";;",";"
+      [System.Environment]::SetEnvironmentVariable("PATH", $newEnvPathWithReplace, "Machine")
     }
   }
   Show-Buttons @('$NextButton', '$CancelButton')
@@ -189,7 +215,8 @@ function Invoke-PermissionAction {
       $Description.AppendText([Environment]::NewLine)
     }
     Show-Buttons @('$NextButton', '$CancelButton')
-  } else {
+  }
+  else {
     $MessagePermission = (New-CommandString $Requirement.KoMessage)
     $Description.SelectionStart = $Description.TextLength
     $Description.SelectionLength = 0
@@ -216,21 +243,22 @@ function Invoke-PostInstallAction {
         $Description.AppendText([Environment]::NewLine)
         $ResultCommand = Invoke-Expression (New-CommandString $Requirement.PostInstallCommand)
         if (-not $ResultCommand) {
-          Get-Content $OutLogfile, $ErrLogfile | Add-Content $Logfile
-          $ContentErrLogfile = Get-Content $OutLogfile, $ErrLogfile
+          $ContentErrLogfile = Get-Content $logFilePath
           if ($ContentErrLogfile -like "*Failed Installing Extensions*") {
             $Description.SelectionStart = $Description.TextLength
             $Description.SelectionLength = 0
             $Description.SelectionColor = "Red"
             $Description.AppendText("Failed installing extension $item!")
             $Description.AppendText([Environment]::NewLine)
-          } elseif ($ContentErrLogfile -like "*was successfully installed.*") {
+          }
+          elseif ($ContentErrLogfile -like "*was successfully installed.*") {
             $Description.SelectionStart = $Description.TextLength
             $Description.SelectionLength = 0
             $Description.SelectionColor = "Green"
             $Description.AppendText("$item was successfully installed.")
             $Description.AppendText([Environment]::NewLine)
-          } else {
+          }
+          else {
             $Description.SelectionStart = $Description.TextLength
             $Description.SelectionLength = 0
             $Description.SelectionColor = "Green"
@@ -241,7 +269,8 @@ function Invoke-PostInstallAction {
       }
     }
     Show-Buttons @('$NextButton', '$CancelButton')
-  } else {
+  }
+  else {
     if ($Requirement.CheckRequirement) {
       $PostInstallResultCheck = Invoke-Expression (New-CommandString $Requirement.CheckRequirement)
       if ($PostInstallResultCheck[0] -eq $true) {
@@ -261,14 +290,14 @@ function Invoke-PostInstallAction {
           $Description.AppendText([Environment]::NewLine)
           
           Invoke-Expression (New-CommandString $Requirement.PostInstallCommand)
-          Get-Content $OutLogfile, $ErrLogfile | Add-Content $Logfile
           $MessagePostInstall = Invoke-Expression (New-CommandString $Requirement.PostInstallCompleteMessage)
 
           $Description.AppendText($MessagePostInstall)
           $Description.AppendText([Environment]::NewLine)
         }
         Show-Buttons @('$NextButton', '$CancelButton')
-      } else {
+      }
+      else {
         $Description.SelectionStart = $Description.TextLength
         $Description.SelectionLength = 0
         $Description.SelectionColor = "Red"
@@ -305,28 +334,11 @@ function Invoke-PreInstallAction {
   $Description.AppendText([Environment]::NewLine)
 }
 
-function New-CommandString($String) {
-  <#
-  .SYNOPSIS
-  Resolve the Requirement's command, subsituting the variables inside the string with his concrete value
-  .DESCRIPTION
-  Resolves the Requirement's command, subsituting the variables inside the string with his concrete value
-  #>
-  $StringWithValue = $String
-  do {
-    Invoke-Expression("Set-Variable -name StringWithValue -Value `"$StringWithValue`"")
-
-    # TODO LOGGING TASK Write-Host "$StringWithValue"
-
-  } while ($StringWithValue -like '*$(*)*')
-  return $StringWithValue
-}
-
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU6bdVUPtsf9PlUhlkPBF+zf8u
-# SX6ggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU/kAqW47RUlzZ2qO+kFzIubV1
+# azCggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -494,30 +506,30 @@ function New-CommandString($String) {
 # U2FsZm9yZDEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSQwIgYDVQQDExtTZWN0
 # aWdvIFJTQSBDb2RlIFNpZ25pbmcgQ0ECEA7nuDfFiGka9mWZXtAMyYwwCQYFKw4D
 # AhoFAKCBhDAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgEL
-# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUEmqqKxKJzbiFSknbK2xl
-# vN8mHTkwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
-# hkiG9w0BAQEFAASCAQBQ/E1ce3Hvj+l4B/z/iPAHPlEa0xVx5YQGEzBi3TOc3OAU
-# qKxdtl0FVFKMIad0mtONLBOALAR3zJZQbYuxpxtkq9hrYPSihonnL5MMpHPdKxBQ
-# bQWJ1RcKSl+8+7YJ8hQ8iR32tL8ZrYTOjSuWC5Mb9Fipf4DSKn7FDbvWb5EB5RVw
-# 3vBqGke0t0o4rYPxhokCd+UKKpDNF3AeQhLcLbX3qvh1z2f2s5RqU1vkdENkpGxx
-# CHyOTkOBagw+AE8oJ/0Sk9bjC8dCE7ViKmgQme/qKTZdsr0mPJj5PqEXQ4EeW9R0
-# L+d0tiBi5WVk5WdbJUTCQsCakQ8wNajFbefpvN3EoYIDTDCCA0gGCSqGSIb3DQEJ
+# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUi2NORcss8a2UjDz1Pc92
+# cszNezgwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
+# hkiG9w0BAQEFAASCAQBsimHfU2Zs+oFQYFjUucgtQ2r5ctfzRbmMApWoD6xp4moV
+# XE+aEnoj1Rjplq05fyKkSBnhAdKt1XCiOLj2qsyi1ViuA4qZ7jbBNFLydmiewOm8
+# ZcFb4/NHnSrg7Vm3hEeDTt9i0JkcOFZw7dGCbKetnWwmr7Rai1jpO3QXjZ6PhDRK
+# zx/nN68a1yhWPN3xC4Vxa+suc0oupk0TUlQBw2OUmmnN8mo5yl9XUgAPdDkdhs60
+# pQjLimGCZpHpkYvAPruaywXgFJZxogLkIZ7gxcsZLoFXIHCKN1lGZgeTgv2fyLLE
+# HKOVFZw+dOeH+jfvdETIGnQkYaVsQW56RHPEJjDHoYIDTDCCA0gGCSqGSIb3DQEJ
 # BjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVy
 # IE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28g
 # TGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBTdGFtcGluZyBDQQIR
 # AJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAYBgkqhkiG9w0BCQMx
-# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjA5MjkwNzI3NTVaMD8GCSqG
-# SIb3DQEJBDEyBDA7sserOwwKa2QCt0lRc5H4dLCrYGAJ92Ybf5gsWLUdNrmu71Sh
-# z268cq9WhRUoV0swDQYJKoZIhvcNAQEBBQAEggIAQzMTljmsTSNWR3QClhi8Vrjp
-# 3tTEK4VpH0t2l6xbn7C5Y15dfjqELSvmrJbhNARG9HiO0crw808WmL6S7FIR9RAj
-# NiGjP0O0aKrdQJOOPslAHqnqLNOU2pLTC82OiCXQesLWkLtzdZ6qhr71dxS9Ntz0
-# Sd+mRBOqBibKgRR4ZbZMGGhzXCXKjmMa5OYfa5AbacO7bptOJ+hzczHXsXknYIgO
-# 2tQ5MvBgpzCB5z0MGpaMczpRAZ6FPyLAHggVgnaXsaLIvOyJXhmdah6/TcxLvWzH
-# OCn8RlIdkFWtW7bOTsY4pSVgm2gQ+Sx/YYzuw2iuDLk45oLhkHBabHc9tPDVeaZe
-# gnUAIFlSt4Ab34I4Fu83nc1zvH90cmnxeJGbwI031SFmCdaD6dj2AicxIcJqzk83
-# S+zcTTSdUQPLZ2YA0XYVmOheqysIgUXLCCQijRBZZmBBsuaRm09tgcuDZStMAN3G
-# jEw9s2EUPyOedP2bVxRi/RiQFlMEnHhKhHlNmv87fPLKX0g5ANkL5FMII0cfVVIS
-# 9O5XvtCiNlly8VPmqdnYKSpfCngeOETMdcJ7vCmNdR5ZEOZTYkKfL0FovpgBy8uC
-# fHFpYe7mKrPIlRbf4WFy8p2jx9rbirwqzksIETH23lhmgMgI2fIg+ue+z8/bJwhQ
-# BvYo0myTVBMDMNLnyu0=
+# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjEwMTIwOTU1NTZaMD8GCSqG
+# SIb3DQEJBDEyBDANbnWJ6coYfTffPW2XAHKf4xHXTgbzPNYzObLesrft/U6+Uvda
+# UBLFPgNluCe0tqkwDQYJKoZIhvcNAQEBBQAEggIAI3w5xXL/MWKjvuAHMWoIj1rp
+# J8P2LsL16LhUMMJzpuBp79P94HzUuIbwtmzYXn/Fk1ILWaQwiODozj7PRPQR3cGE
+# ze2atBTe0MU4d2c6oSHMQvWuqFojCky2f3/2fR8REW7UCVeA5HFn8m65PppUQo7A
+# EXqcasBCJ9seJUy19gK8cRL+9Ea6pSnmSMicWpa2BnDmKQs4TJPKiELRvmFwexJn
+# qbg1/Tz/0uNaS6D0J6mYqI/FBqzcY0tfdJwjRKncV2RZX/GtY+/qk/6qlJDwfwpT
+# mp1VCYPuZsJRPW61vYaG5YnqpggsVYcnwrPg39cuT3t7GMXkhozbp1eliWTGRyh3
+# st9AovSuPpTCWgwdy3am08//YTLuR8Ul/Ayjt8hDNepwCNBX7x9Wz72gR9hDURPC
+# 0As2qUIDU7ladFhSYQV9PuoN4mo2PI8+kNaVkxTuJvtLPfnL6VdNaBJRNiQLZPIU
+# 3iT9F7q3DXtvpmoyxXfh9/iM+vTgtn+E0+P6ChN1CQX2hc4AQkdc714XYSVUu1eK
+# 1IYTgQrxgeMzDDCG5FU7hMQfv68zGuIajgS9nPNpQsv4wXf2JMoYlkDZl4BC063M
+# y6lSXtijC67dKTKOaaKXFGK41Wrdup2kyqN89q6GhgY5hYb0hOr+EjcGzJhPZFXq
+# Vg1+wVihpTWWYd4P5i4=
 # SIG # End signature block

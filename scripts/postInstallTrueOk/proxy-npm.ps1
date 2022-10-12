@@ -2,19 +2,19 @@ param(
     [string]$currentDate
 )
 
-$NpmrcFilePath = "~\.npmrc"
+$npmrcFilePath = "~\.npmrc"
 
-if (Test-Path $NpmrcFilePath) {
-    Get-Content $NpmrcFilePath | Out-File "$NpmrcFilePath.old.$currentDate"
-    Start-Process powershell.exe -ArgumentList "npm config delete proxy" -WindowStyle hidden -Wait
-    Start-Process powershell.exe -ArgumentList "npm config delete https-proxy" -WindowStyle hidden -Wait
-    Start-Process powershell.exe -ArgumentList "npm config delete cafile" -WindowStyle hidden -Wait
+if (Test-Path $npmrcFilePath) {
+    Get-Content $npmrcFilePath | Out-File "$npmrcFilePath.old.$currentDate"
+    Start-Process powershell.exe -ArgumentList "npm config delete proxy" -NoNewWindow -Wait
+    Start-Process powershell.exe -ArgumentList "npm config delete https-proxy" -NoNewWindow -Wait
+    Start-Process powershell.exe -ArgumentList "npm config delete cafile" -NoNewWindow -Wait
 }
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUstYSnQBpM82PyfplCybL41sw
-# Uxuggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUQdpEOXnLo5rrnRbs80CQM5Ki
+# 8Zeggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -182,30 +182,30 @@ if (Test-Path $NpmrcFilePath) {
 # U2FsZm9yZDEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSQwIgYDVQQDExtTZWN0
 # aWdvIFJTQSBDb2RlIFNpZ25pbmcgQ0ECEA7nuDfFiGka9mWZXtAMyYwwCQYFKw4D
 # AhoFAKCBhDAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgEL
-# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUCzG7bsFU0JILHy298sVV
-# u7WUDC0wJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
-# hkiG9w0BAQEFAASCAQASyXe6AcbZJdHsfBSGFsWlbW5By27Cb4tcbvMUTt8KPOcH
-# 9FBkTvy/pSydNGjny8szeHnfhEGXcbjq2Y6qTWCK2Gf8DV2aTpL9up6qx0sTbarQ
-# /2qPFoeiolD14Dyy8A1TU+XN6QBrZGqaHkICagGEz/pSvZZwxxWjmLeMjkj3BsrI
-# DKDiGe1Moa3bV7QL1vtkiPYFyerJWhXaCB9K/MnyS6tlv5FRcgnK0uScTAwrUMg7
-# Lw7MFQXAPonmpYOn9rr48BkdKtih4fN9pdkmjAxY7AglKPi2J0Sc5o8Dftqw1B5h
-# p3turvEEoUaEoXlvz25JpS+gDKQ9UC7Ba9iKY3o/oYIDTDCCA0gGCSqGSIb3DQEJ
+# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU3MOXtn0vgKM3W/l9kUn5
+# LSI7qokwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
+# hkiG9w0BAQEFAASCAQBjsPhKBri7kT+1gTsa9VkFo7Xh8sMtIrzXJKr+iKS/yToq
+# Q7zovy5RHWBeqkM0HpInBRDDi5qXIuPDexE3XFJouUAJDLWWqoDnmgcdG7gG5LJD
+# Y68sjZFvdVNDbaT79vUnp7y/sVyZs7NNdFsE7sVc4w0QJmw1mzjN8tZoQSxgKt+I
+# Tu++g8y60ph7CMSC5aTRAvHq9Q+wLcfFw3H0O45TQrR6XAL5u/rYPQenzJcNskiz
+# iFScXgsNjj0sp9ODtFM7K66MYaGdPdlUXEc8nGHXU5f3z6JewdlUZkfdUjE1jUYR
+# ymP5cWphnfCsMfK1GhAzOUKg5LeG8aFsr0XOsvFIoYIDTDCCA0gGCSqGSIb3DQEJ
 # BjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVy
 # IE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28g
 # TGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBTdGFtcGluZyBDQQIR
 # AJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAYBgkqhkiG9w0BCQMx
-# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjA5MjkwNzI2MTFaMD8GCSqG
-# SIb3DQEJBDEyBDBjUgmVeUV7YGWQP8gkcnsmRmR4yfY/Amf7f7zk95EV++xXdLfo
-# vEg8eZZoa5u1R9swDQYJKoZIhvcNAQEBBQAEggIAERILK6XnNW24f52FrwZ9GUQJ
-# ecLym62w7O4ZuOL5fEESr2QeYmgGMHiDNdV3RkYkiNZHZE8CtB1aBjvwMAt4tKP8
-# 01lSsTWxOyMHBmKMxaear1Kn6lPp8Kh9y/AscdKLEJ8NDUkfDwDQ3YtT8wCAdsJt
-# OFQkBkzJyT9LKmH1MRpcwvvcMOiy+Xc5iJ3Rua4k8lHpw7adBoK+aELxQIDzpXdz
-# jBj3mTMEVjbxeBrqAu0Kab6BUkVfKIIYmt14l2+2O+r74m1S48iyuDagZ8JYYGRQ
-# OOgVWH4qETGWSFRxdlPm2D9WJYpJLSSom6luMmSboqNwc5o9J83J5F9a4+b94E82
-# yyjEduXJyOyO1GVWr4PPiRPFQAocz83sjNS5n8XsBc2rIHbnvmtTvKoODufb9Nyh
-# wbH3uCjVyoPkOzgypgDJRpUbq5iD4x6W7IJXtL9nCqVw2HGs1Kn7kR+2UCX1ygat
-# AxlnQDEYcOcY1LO8n+N08tHddXgtUImXbv1PUuR3rQCbVdiMSc0+znD72plfOfan
-# 8qQI3ltOLwzuemi9gwgFJpw1MBQISdeskQ/UHCpF6Qr8fE5iXDZu/5liVlpUDlXM
-# O8hlEoAiUZp0duAn7egnfwt3LHoq8ZW40KjaIcCt6ukv3y+mS6w6qgOirkWnDfMf
-# rfO0UGVp92mfl7t855g=
+# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjEwMTIwOTU0MTFaMD8GCSqG
+# SIb3DQEJBDEyBDC7eLKtmoe0fh7LfYj1CzHAGupCF1v//+Au/iKV7exQ7bpJuuSS
+# TKDmAh7XghlxhiswDQYJKoZIhvcNAQEBBQAEggIAh4FrPW9lsM40Wxhaj5IKgy1l
+# OsDUHhmTJAUUrY8ssUFIomGMTcWCemjqLfqq1xAXoSMPSo/X/qLl7iNo1j0rZu22
+# QO/+U8w+fg4zxbixTUnCwW5bqRiwJWWSKLbSfQgVctDdKSObY6BSbYh+WpLoQwN/
+# +/qH+cZ8IKyMO1k9vZ//G0LWt/tWYx5cTGrz/pOPX6YPvVyda+WGBGwpsqvDc7CX
+# K9UaU3y/JjDkHQoQepWoqc2B7QvcAOKW1bQtSSyosRDvkZ6fO00SJtJ7QkvFJNxU
+# DNK/PZY8tofGHnp/kN3fo3mCkNa53OgHgnNNwMJMZnjnNivxPLW+W2r/LhXGFPZk
+# wD0QKqCsKDvNU8U09lfaTExIB+siOSwQxQEiicT67/jAtOCZcIIXzPIBA0eiux/A
+# otOQi8RABCJmwa/e6vl/I3WEZzDZrICdiPiPoe4umKC0rTy1qhdthwrzznOCacww
+# u4eZ7Zv76NDgRx+K0hku8dIRpctos3BQbRoE5fghQe8XcCgYSXV2aZGN6oh3jDKL
+# 4R+xsGaYh9g5ahp+FWK2EMjXbdeR9XqJoJeg8pKtYGSbB7ZzT62WPllHfF4QaqN/
+# DQOijJBnHzm5C0dBxd392hGprCp0/GQtpS9iNUwiM1VVo2EghoMiQbK2LWZESsAy
+# K/syXDJ0gc0J8OpdGYc=
 # SIG # End signature block

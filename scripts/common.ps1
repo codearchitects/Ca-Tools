@@ -1,18 +1,49 @@
 $StartupPath = "~\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\caep-startup.cmd"
+$env:NG_CLI_ANALYTICS = "ci"
+
 function  Remove-StartupCmd {
-    <#
-    .SYNOPSIS
-    Remove the caep-startup.cmd
-    .DESCRIPTION
-    Removes the caep-startup.cmd once the user finished the installation
-    #>
-    Remove-Item -Path $StartupPath -Force -ErrorAction Ignore
+  <#
+  .SYNOPSIS
+  Remove the caep-startup.cmd
+  .DESCRIPTION
+  Removes the caep-startup.cmd once the user finished the installation
+  #>
+  
+  Remove-Item -Path $StartupPath -Force -ErrorAction Ignore
+}
+
+function Get-MissingEnvironmentVariablePath {
+  <#
+  .SYNOPSIS
+  Get missing Environment Variable
+  .DESCRIPTION
+  Get missing Environment Variable
+  #>
+  param(
+    [string]$envToCheck
+  )
+
+  $notFound = @()
+  $envInPath = $env:PATH.ToLower()
+  $envSplitted = ($envToCheck -replace "`"","").ToLower().Split(';')
+  
+  foreach ($value in $envSplitted) {
+    Write-Host "Checking if $value exists in environment variable PATH"
+    if( -not $envInPath.Contains($value) ) {
+      $notFound += $value
+    }
   }
+
+  Write-Host "path not found: $notFound"
+
+  return $notFound
+
+}
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUnfZkOIDQaykyBItXoVkGeL7h
-# wveggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUct4x/+vKamH6kyUNrZt5JhQa
+# lVeggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -180,30 +211,30 @@ function  Remove-StartupCmd {
 # U2FsZm9yZDEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSQwIgYDVQQDExtTZWN0
 # aWdvIFJTQSBDb2RlIFNpZ25pbmcgQ0ECEA7nuDfFiGka9mWZXtAMyYwwCQYFKw4D
 # AhoFAKCBhDAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgEL
-# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUTlL4z7xHpPbnUK8kApPc
-# +lkcnogwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
-# hkiG9w0BAQEFAASCAQAdIupcj/VqP4oIFT8qSHkRN82HkOJx/nqJBiUrE/jDl+C8
-# uyzZ9jqiUpnHvaLCwBl5lrp4GQevNr7+Cj1Z91jep1c9cLGlSfWaSnYh1fwjh5pa
-# NRScM8Qnp6tSYRBxM8CChVp0OSmEnN0WpIfAuiHi0RbHMQiHzt3cBi6tR+wErMqd
-# vhtDHtz4xNLSE2IRp2g632nEgcZMl3se7smi2ajyD58G6+54tDlb1tKUgkRTXB1z
-# nMWLD/XlsX+1MrxAOAHN1MS0Ko8bSHmsCWhFYDhevNz+CzIoC2oOe3bdhUcOzOW4
-# pS5zmImSvld5TBKtPiejXjEXKsKQkZxCXq4PlEJPoYIDTDCCA0gGCSqGSIb3DQEJ
+# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU6u2fSpgwsoQIlV0wh+vO
+# 4thxTlcwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
+# hkiG9w0BAQEFAASCAQCcteUf9H/4YAG2kTns0y06s1pc6oDM2aFtDKlpK5qMkTZV
+# Ze7WeID1GaicsgWy8cMij0Je/M32UkThoXDVhurpMe5CXFKwCufjB4GQmCzMtuc2
+# hQJsgYmUEJ/ILpNYMYaO61qsc7/YRlkoRQwEj1U1T2qPgZpMLlzi5Hx9zXxo/B8n
+# mHFCmxV4PTxqIfB92gHptuOxW5pTSMxx5s1+J7Dh2yASFr12QD164cyLayfyYg0Y
+# uXU7XL7U41kdpUlrQDA8kqny470DCXH473MY0WTD/JVyNg/oKbS1f4JKqsLfeTuT
+# eDZDYP2H+xRNbT1MtX6Cr2FH628ooNFXe0N4v7IuoYIDTDCCA0gGCSqGSIb3DQEJ
 # BjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVy
 # IE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28g
 # TGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBTdGFtcGluZyBDQQIR
 # AJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAYBgkqhkiG9w0BCQMx
-# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjA5MjkwNzI3MzRaMD8GCSqG
-# SIb3DQEJBDEyBDA6fUdTrIEBvb50p/qYcoREnNY1nw/zCeXScaGn6tOb3IJ8Eeux
-# bVtpX/d75zJTez4wDQYJKoZIhvcNAQEBBQAEggIAh7dJDwpLfmzT6t53lUcvvJEY
-# FjVWajuZNUeoOCTxjSoIot6XPuze4KfcxLpyr9fQL36ObqfZ8oZagEd74Eud/21M
-# gzRc8zH8ngpCDN29yaVYpqFaiKLPMh8jjJoCxvp5oHhVDoU4HJ6uGqLtiQLloKkO
-# qddSoglgMLSMBDiSYWqPedoacQYY39ho6Er+Ow1t2ocHBeulXW43roDTM+dAMVSq
-# ePYvh7N9xl22vQxKuH774ECU59sc0PBFJSdwy8Z1JbVB5inlxgreQcVcB7BLnVHv
-# +GdH0WVCnQ4PXW+wizS6gE3ZJ0CCHn2Oj6GAL/R1kG0/mnjYHx4DSYaOqmYQI5C1
-# S6bjOXYO2TP/YhOlWFFRdd7FxtiJ3u9C07B8cNgrQsuLuIRgVmcNpU64gtbWSOml
-# fqG/FQDLdhOnGuGMIcqEA6jL/CdZVIYvBVWEXr6QEscS6Rk7mvlc2Dx/illfuHm6
-# BAILbBhmxqrXIU3Rf8dGT5DC2yq6/gKE0PHw7V0AcC/ucj1cr21uO5HYo/SKSoSO
-# fbQS8RLSW++mXuOfefxnSUSIBWum07ehNMG8+Oz0dj04d63019oGgUsQMOH7AyYp
-# d43s+koKQGzT4bY+qAo2+1Kvlx6Pj0gmEGojWukKGpiHtdmTuNhyvjkx50Wb0R42
-# bJVqvyxQKw9X3yEMk4A=
+# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjEwMTIwOTU1MzZaMD8GCSqG
+# SIb3DQEJBDEyBDAGc4n9Ik/yD+FYAm6vqySQoVcH/r1jIZImVoskYxL6gitCSqby
+# tgH37TrLgE30pSowDQYJKoZIhvcNAQEBBQAEggIAO3q3kCsvkcTPs+5GgEy7UOmm
+# +aeRgval3jkHLK+ttPgkKjtjnLJaxvEaqrTvDnbnhMPL9dbD6Q9leXrNSIPdrLiI
+# IImYWFG+Ghp4kOMj3Me9LsaSxBZ1Jpt0buBUW4zpVFB29r8TT641YuDFhubjLpXt
+# wyWQXAqeKiQh0juUkaVeZ0Y/pwYkXQZ5ugIQMa3MGke2McGIxS1kgLVzirHzN1Xz
+# 48K5uULl8ArWrNWAv10tbno7OjcuhkIAtnXjxeqOcTLwaPhmopkhR/+5ylNLAAOw
+# VWN6HQj4usrxnlol/Pgf20jmL3wFWP+JvYxM8Y0W7jTMZXWkm+SyvukmQxTc145p
+# HaHFd9O5WEM6hdbdiBy3tXXYLnOLUqAA6tCpMW3sfqp+hyw3O9HfXASsuz8I5fAM
+# nV6QLUsWUO/pQerTZ3IoLTTcfQEx6OdvfaKhps5uzVd+/umM/2eHRPoAy5Q5TuOD
+# Rimpn2YNUtqGY4UbKWY8BxaJ/+vhWsDB8SUOeQr6kcakpQ7vTnPR0odzIjJgJPnE
+# EMpLPdB+zzaO1FwYgyRpGiD3QwYd/QrEvnSC7JJi40gASEhBmTCI1if0N0ZfatB8
+# jlwjTTVqvujfLU8Va5OjclqOsnd7piaEe3TxHotIHLTwoAyYHy7MGx6dgGOTshnG
+# II3qmJQLMY7KHdDy/M0=
 # SIG # End signature block

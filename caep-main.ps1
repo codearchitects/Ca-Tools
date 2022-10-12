@@ -1,7 +1,19 @@
 param(
   [string]$ScarVersion = "",
-  [string]$ScarConfig = ""
+  [string]$ScarConfig = "",
+  [string]$currentDate
 )
+
+function Update-EnvPath {
+  <#
+  .SYNOPSIS
+  Update the Environment Variables
+  .DESCRIPTION
+  Update the Environment Variables without closing PowerShell
+  #>
+  $env:PATH = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+  $Description.AppendText("`r`nEnv var Path reloaded correctly")
+}
 
 function New-RandomCode {
   <#
@@ -41,7 +53,7 @@ function Invoke-AcceptRequirement {
     "Feature" {
       Invoke-EnableFeatureAction -Requirement $CurrentRequirement
     }
-    "Env Variable" {
+    "Env Variable Path" {
       Invoke-EnvironmentVariableAction -Requirement $CurrentRequirement
     }
     "PostInstallSoftware" {
@@ -116,8 +128,8 @@ function Invoke-LoginNpm {
   # Variables Login npm
   $NpmRegistry = "https://devops.codearchitects.com:444/Code%20Architects/_packaging/ca-npm/npm/registry/"
   $NpmScope = "@ca"
-  $NpmLoginResultCheckRequirementLogfile = "$($HOME)\.ca\npm_login_resultCheckRequirement_$($CurrentDate).log"
   # Check if the fields are empty it won't login
+  $NpmLoginResultCheckRequirementLogfile = "~\.ca\$currentDate-npmLogin-caep.log"
   if (($UsernameTextBox.Text -ne "") -and ($TokenTextBox.Text -ne "")) {
     # Correct the Username inserted by the User
     $UsernameSplitEmail = ($UsernameTextBox.Text).split("@")
@@ -127,8 +139,7 @@ function Invoke-LoginNpm {
     $UsernameSplitS = $UsernameWithoutBS.split("/")
     $UsernameFinal = $UsernameSplitS[$UsernameSplitS.Length - 1]
     # Execute the login
-    Start-Process powershell.exe -ArgumentList "npm-login.ps1 -user $UsernameFinal -token $($TokenTextBox.Text) -registry $NpmRegistry -scope $NpmScope" -WindowStyle hidden -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrLogfile -Wait
-    Get-Content $ErrLogfile, $OutLogfile | Set-Content $NpmLoginResultCheckRequirementLogfile
+    Start-Process powershell.exe -ArgumentList "npm-login.ps1 -user $UsernameFinal -token $($TokenTextBox.Text) -registry $NpmRegistry -scope $NpmScope" -NoNewWindow -Wait
     npm config set '@ca:registry' $NpmRegistry
     npm config set '@ca-codegen:registry' $NpmRegistry
     $NpmViewCli = (npm view @ca/cli 2>&1) -join " "
@@ -225,7 +236,6 @@ function Invoke-CheckRequirements($Requirements) {
   # List of Requirements that have to be executed, no matter what
   $MustCheckRequirementList = @("Npm Login")
   foreach ($Requirement in $Requirements) {
-    New-Logfiles $Requirement
     if ($Requirement.CheckRequirement) {
       $ResultCheckRequirement = Invoke-Expression (New-CommandString $Requirement.CheckRequirement)
       if (!(($ResultCheckRequirement[0] -eq $true) -and ($ResultCheckRequirement[1] -eq 'OK'))) {
@@ -262,27 +272,6 @@ function Invoke-AppendRequirementDescription {
     }
   }
 }
-
-function New-Logfiles($Requirement) {
-  <#
-  .SYNOPSIS
-  Create the log files
-  
-  .DESCRIPTION
-  Creates the files .out, .err and .log for the specific Requirement
-  #>
-  Invoke-NameLogfile $Requirement
-  if (-not(Test-Path $OutLogfile)) {
-    New-Item -Path $OutLogfile -Force | Out-Null
-  }
-  if (-not(Test-Path $ErrLogfile)) {
-    New-Item -Path $ErrLogfile -Force | Out-Null
-  }
-  if (-not(Test-Path $Logfile)) {
-    New-Item -Path $Logfile -Force | Out-Null
-  }
-}
-
 function Invoke-NameLogfile($Requirement) {
   <#
   .SYNOPSIS
@@ -291,22 +280,8 @@ function Invoke-NameLogfile($Requirement) {
   Creates the full path of the file for a specific Requirement
   #>
   $NameNoSpaces = $Requirement.Name -replace " ", ""
-  $script:Logfile = "$HOME\.ca\$RandomCode-$NameNoSpaces-$CurrentDate.log"
-  $script:OutLogfile = "$HOME\.ca\$RandomCode-$NameNoSpaces-$CurrentDate.out"
-  $script:ErrLogfile = "$HOME\.ca\$RandomCode-$NameNoSpaces-$CurrentDate.err"
+  $script:Logfile = "$HOME\.ca\$NameNoSpaces-$currentDate-caep.log"
 }
-
-function Update-EnvPath {
-  <#
-  .SYNOPSIS
-  Update the Environment Variables
-  .DESCRIPTION
-  Update the Environment Variables without closing PowerShell
-  #>
-  $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-  $Description.AppendText("`r`nEnv var Path reloaded correctly")
-}
-
 function Close-Installer {
   <#
   .SYNOPSIS
@@ -383,22 +358,17 @@ function New-StartupCmd {
 #---------------------------------------------------------[Logic]--------------------------------------------------------
 
 # Variables
-$CurrentDate = (Get-Date -Format yyyyMMdd-hhmm).ToString()
-$InstallRequirementsLogfile = "$($HOME)\.ca\install_requirements_$($CurrentDate).log"
+$InstallRequirementsLogfile = "$($HOME)\.ca\install_requirements_$($currentDate).log"
 $RandomCode = New-RandomCode
 
 $ScriptPath = $MyInvocation.MyCommand.Path
 
-$Logfile
-$OutLogfile
-$ErrLogfile
-
 $IndexRequirement = 0
 $BackofficeProjectPath = "C:\dev\scarface\back-office"
-# Import scripts
-. .\requirement-actions.ps1 -RandomCode $RandomCode -CurrentDate $CurrentDate -ScarVersion $ScarVersion -ScarConfig $ScarConfig
-. .\send-logs.ps1 -ScriptPath $ScriptPath -CurrentDate $CurrentDate
 
+# Import scripts
+. .\requirement-actions.ps1 -RandomCode $RandomCode -currentDate $currentDate -ScarVersion $ScarVersion -ScarConfig $ScarConfig
+. .\send-logs.ps1 -ScriptPath $ScriptPath -currentDate $currentDate
 
 # Main checks
 $InternetStatus = Get-NetAdapter | Where-Object { ($_.Name -like "*Ethernet*" -or $_.Name -like "*Wi-Fi*") -and ($_.Status -eq "Up") }
@@ -436,8 +406,8 @@ if (-not $AdminStatus) {
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUi+E6EoPnAvO8oO6DHYpm4EjS
-# KUeggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU28fOIFK1sQfarsxHgVxgyG6L
+# jtKggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -605,30 +575,30 @@ if (-not $AdminStatus) {
 # U2FsZm9yZDEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSQwIgYDVQQDExtTZWN0
 # aWdvIFJTQSBDb2RlIFNpZ25pbmcgQ0ECEA7nuDfFiGka9mWZXtAMyYwwCQYFKw4D
 # AhoFAKCBhDAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgEL
-# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUoCd2YUrtWlTfNu+ISvTY
-# RT4MPSgwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
-# hkiG9w0BAQEFAASCAQBHSza+SaGyLzeAVaaqjKL8n2VN48m+1nNTz8CwBRpy1LWF
-# r/G2qqzSzddOQtDYR5Auxzg4My1gQtd6INsmQxFJY9UorYyz3W7OAsQKAV/HQW2I
-# aJSVs4duWkntKxJnLTutIPUQEJcr1h20P4croGvjZxtkDAOdzbhqi9ZtCXM/7Q73
-# +ZNUoVmkhNCrzQDJ2mgM80btF5YpFoxsLnEh0+x1GYM3NEbVPC8nIM1Kgu2nIUfi
-# kshxGDuPDk23/TcUWZJz3HUjRHh2s8qbL1Tbvb6d1fnwKf6eYDt4FZ8K5lf3tGoI
-# bNTCVndcgJYfr3SxZIF8MDt8k1aVivfyTK86dvUpoYIDTDCCA0gGCSqGSIb3DQEJ
+# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU+b3BFzbGVTO9HSMmBDkA
+# 7pBfxBIwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
+# hkiG9w0BAQEFAASCAQAwNXxSWOJ9mnr40+nBBVjjOfTBcG9JnSQ61vLkrLKK1MGL
+# Dq1ZV0r/0WIm3z7eVcLzn74xjUjdcxtrhA72CeyCBUKH5XSRQ6Atfa8ffkejlKAC
+# hda9WFwvjfAsgJA3JwVmKdGoLQAivO7kwc+ZCBbZh5uBkFbWBTCZUCZmK2IW/PIZ
+# ooTJawQIqXOPNjukWR95KDr4aYj0aToSkoGax8N30bCC3V9mAejYfOELtS47MN8O
+# qjCHFyJIDyVbyu7V/rnxXRUfhSr8w8OZMJh9zIhro7OV/vwUH+P7Jikb5j82neNk
+# OnQwSJU9SuNpinz6KZvpFAE51VMgNBeAngqsw8XmoYIDTDCCA0gGCSqGSIb3DQEJ
 # BjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVy
 # IE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28g
 # TGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBTdGFtcGluZyBDQQIR
 # AJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAYBgkqhkiG9w0BCQMx
-# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjA5MjkwNzI3NTBaMD8GCSqG
-# SIb3DQEJBDEyBDCkjVCfVx4fRzWzzOZPzOWo2Y6KCPhx4y5VUKarUF3CFP3PCEw6
-# j5/gbRLV7ZShqlAwDQYJKoZIhvcNAQEBBQAEggIAGaBx/mL+tjSzBQVel7a5InA4
-# HLR87Dm9b+0G5vKfYlAEmia/VBpP4BUFdfnYNlo0TbnGBfOCD/RSm7kzPTUg8/6o
-# D0Z3SjMg/ABU4HV3W/+xVYQRU6jfyngpNusM7GPjB5C6M80AlKI4ufAOe1xGpWyF
-# u0FFtSCtn8HLdHRyRQJeuawE0tv1KzCBUJPVtd7nQyRIwGPNR9Kjt+eRG6nAw44h
-# R5124GNwyTE5RsrRDYIvQAqj+9MbeLqRDnDPYkBhjUfzJr+6IveiKMkLxVWzeo3e
-# /slqFaSJH0vVLWIU3UjYLWNFywVBaVtf2cQ4oRqYSazOBiCP4x994WD4AE4N7RxI
-# BfzkdUEe1uZgNMFXl5o4vkeZzugDdMSgj4fHWspmzu+ublTo2GezImDCvxM7IvzJ
-# TW1EtOnaLdAe9OazAuvERdVMP6hDvaeICXNYndd01jbslfBfQ7igrdfWPoHzXSVV
-# TxcoU7bA9yACuTOS2TbnoV7gikCfp8SgVxEDW1IOOlM2vwFFUWN7nTinv4ooMGKa
-# za5ZKQ4S54ux1Dd007WcR7iP9DEUIgwHQ2ygdcpE6aJeRZ5/ucUYWTqUHdoOQvxg
-# vJcTSaFjhuw1a4vHdixmo3wSZlPvPnG4tNjvwwb91Eh6CtU0fA2PdBq8xutKfvJv
-# 7KfcKaxfHfPtUajqzfI=
+# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjEwMTIwOTU1NTFaMD8GCSqG
+# SIb3DQEJBDEyBDD8QBGxjGq/eh5P4r1YF86z0ejYMZ9m2nZHWZ5m7NOzUz/w4cA2
+# SLUJVGyNo8rZLIUwDQYJKoZIhvcNAQEBBQAEggIAShAW8Kf0t0yQ4u9TAybumrqa
+# ujLGAINKJAwSNlzmODW9ogl6UPp10g4drmKt4JmzyGNULGPNXZjCH0/ZbGWhT1nd
+# oMPXCvGuNtN8dIw1khFlJG7qpLYp3f+SfpmEX6lWTMZUKVnkYfbKbraQM+y8AexD
+# yc6xkc/tpNYx1Aiu/Zoi37/7DM8g0UGvIpPsVXK3yZ5spqdWSKACTie3C9MuGQaW
+# IjtnlaR6f/SYxciL+jW4PMzG4H14rKhPX2jQSnQjLVtPyijZxM96YYu+qiRh9dxa
+# vgPwWGCvF28geBQIU/bDLbm6huwbeByexqj+r8XMkmWKwznRsCOXJzH0/+fjnV5u
+# iCV2HGr0mJbmRGv4n0KD2rGJMd71dktdnVXdjOJqrsCOe8q9yIh5+920OZ8Nn3Ps
+# XeCT4UtgkRv2Y31zgq9hq8/rjPfe8uxtzS4XzOnWf/AI5pxd8g+rTDsOc7RyrTLv
+# Ifqoc7Kyfak8+9cW+INqVaAJhs6APf50FPnVQCyQznXf+HMhpbKEmFnx2BNsW2X4
+# CsQML5BTD4JgrSF2j1usSXL3rsrM05F0n/NrL4aQHSBt2zfCz+9TEBKHC+G5NPFl
+# HvKYn5L7dnp9cK3DUDwEdPMnuAZYjY0dLc2Myi5Cip1jOBHWWVBjMJr19JyP6yjW
+# sp/ntJITbIGOUgutyc8=
 # SIG # End signature block

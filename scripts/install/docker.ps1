@@ -1,7 +1,4 @@
 param(
-    [string]$randomCode,
-    [string]$currentDate,
-    [string]$name,
     [string]$downloadOutfile
 )
 
@@ -10,16 +7,12 @@ $argumentList = @(
     '--quiet'
 )
 
-$nameNoSpaces = ($name.replace(' ', ''))
-$Logfile = "~\.ca\$randomCode-$nameNoSpaces-$currentDate.log"
-$OutLogfile = "~\.ca\$randomCode-$nameNoSpaces-$currentDate.out"
-$ErrLogfile = "~\.ca\$randomCode-$nameNoSpaces-$currentDate.err"
-Start-Process $downloadOutFile -ArgumentList $argumentList -RedirectStandardOutput $OutLogfile -RedirectStandardError $ErrLogfile -Wait
+Start-Process $downloadOutFile -ArgumentList $argumentList -Wait
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUYZn+1+9YnXGAAfiz3jvwJ2RC
-# Ca+ggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUuYGYBzubVbUxTVzxFISHI2by
+# r6uggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -187,30 +180,30 @@ Start-Process $downloadOutFile -ArgumentList $argumentList -RedirectStandardOutp
 # U2FsZm9yZDEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSQwIgYDVQQDExtTZWN0
 # aWdvIFJTQSBDb2RlIFNpZ25pbmcgQ0ECEA7nuDfFiGka9mWZXtAMyYwwCQYFKw4D
 # AhoFAKCBhDAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgEL
-# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUXXg5QN3BKYQtqAGwtXuw
-# N3BBo/kwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
-# hkiG9w0BAQEFAASCAQBBIWoW2BvrF2nhhFuxbkHRSYfvxNuAthkzqPBO/Lkrd3WR
-# ia667u0HYswRuwS+oLl/8CnJ2FL5dU3ujgkjiXLsk1Mp838seA/5uIadeK6fYtKX
-# +X69yHNoXbhtqO4dInmFw8Vq7kdVtCAn+OKH1uWPw5k7TQEXN26MwYcbPhnYAAWO
-# bC9Cc74YHAQd0GtkoBcRHL0MFXW9LSv7JnxxP+RM4L3cyD31woArYyQr1hTcXOeq
-# oZ0iL520tk7HFmjnXASG5dKUz1Rqwdgtan8XTj7544EdSOqrEBOzH75dedskWyRY
-# +8pmoItsAh5aImmrR7uCOB7MgiVrjZHj3/aualaKoYIDTDCCA0gGCSqGSIb3DQEJ
+# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUgJg4BBn2nboptSMrcd28
+# /fvUuyEwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
+# hkiG9w0BAQEFAASCAQCUccuh8FxBRxplXTDrQ2dEZD2k7sZ4B/O3VhhAlV4A64tB
+# 6vocqtw89e4BA96Vs/J49i+JZbxhUTeMzihifmjpEr2ka6oGmn5hjCBWqJugNBqH
+# EBeThd/h1rZhTAGP68V7/fgZ1YqapS77spoXNnqCJFiXgxQNXR1qDTXBS7HSTP7U
+# 6TZPZBlVoUepvfLtPcYWdIdgc8QwX3bWbo665UIOBDwr2Lg0+HLwWna7fovmIbI7
+# 4frWTwuGkPVMA+C7pxXFuGjC3w69493B+hEbMwI2ryAGa44QwIsobUeF7K4nibPq
+# Qt8S/gIantflXKqdqdVl/QJhBbbvsDjjMnAyEsidoYIDTDCCA0gGCSqGSIb3DQEJ
 # BjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVy
 # IE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28g
 # TGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBTdGFtcGluZyBDQQIR
 # AJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAYBgkqhkiG9w0BCQMx
-# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjA5MjkwNzI1MjVaMD8GCSqG
-# SIb3DQEJBDEyBDDpEcK3229BjWy4ERja6o9eQP275sazow26xImow3vLthW85hs8
-# wGmkQM3u+3iq3EMwDQYJKoZIhvcNAQEBBQAEggIAT83EK5Q1B7/p40FZQkuiIlNO
-# JcgPb/l7BYvB1W3wVJptSdkZ3izDoqiiwkxTVjYrAE3scbeW3+bgPzyVVEwtP/w1
-# iPyDfUUZCF/wJhqVOdmLsccEG1yGjYnDdVz4x/2j9rnTiuOGGk76W512XMJfguN9
-# R+vGMLy0jNozDNHiyt9PyP0qNpwHdbOftVBR1hDrCHIEj7NKoh4AhnimOkjssjkm
-# ppBSOZa2YeCLYd66zQU3yckjsyqU2UQSZc2uCcfhkt9HjDaEH5kPlQsZkDOGJhBX
-# M+MbuhZafm9AcpB7JTOWk3rVzA0aWeschloUPVYNdH3v4oCMLpgSnlCEXsHgTu9e
-# 8vbAJP+L6Y+FyoT2YLc8dVRWqhSKO+7qjdzznN15hEfpUz1BsQP8pFZOKn/4gjSZ
-# RE8Wlemupp6DAfh4ttApfhqZwWpefIRD9+d+M4b8ifvnjXTdU8WHRszbR/4UnlNp
-# FAH1PDtux4tY8BVbyR2QN3Eg6jUfE8g4kJq9fG58yV0WgOs0ovfhiOzxRHC/k1a1
-# 1Du8JnAZOyJ3pWZ8poMTd9aj241ln1fXevGCYulce+ArTAAUDDYKEgqDC+9Rp10T
-# skzOcEImf7hbEqqGD9HnIsn5Ag4ZFE+a9kzfXW8kmn9FsuGebXvEWh+olUipqukj
-# mQzowRNzh3s0GapWmds=
+# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjEwMTIwOTUzMjhaMD8GCSqG
+# SIb3DQEJBDEyBDATaP3Xuc8R41PFPn2psPMMjhwvOSXic6ZUHGcbItz16axKoZQi
+# HG7FERCar2Zpsj0wDQYJKoZIhvcNAQEBBQAEggIAiZatXahCjvYN2UZPUtjvURTd
+# aFTcb8jiYke+fVxDYPudTspWMt1wafR+cwlG7HRsCdJLCc/evAhTTSb2pKv61gwA
+# jSauN30kZmouarBwwIvmQ6BcPiNvDKqJhZx1Cs9IN3HRr0TPij2tvPdB/Qc/0zq4
+# 01NYGZbsky4I/xQmItv5XkfNeCH5bC4MP8WwCCbIWoIViRYNynvvxNvZYQjrGnXN
+# 8DVk+hh7EE++fmFYl6H1I80scdyTYeMYGfmEzDJHv59v0mMa9WwgApnS6aM6H2Om
+# iqntqgm65U3PmAIQQZPvvpd7upzCnje/cj2Ri1+tI56yDRP5a1Vh6JgtH1kkf9dX
+# A+eZSukW/nRs9FJ7HswX2aXcIUy3APzMMOEj8ILVwwkZOKFLQKsrvlEtJ/9QPN3k
+# JM8/EIpcKvw9WVeEgMBUgPiiXsLzvGn6TIRHjp6Is9tz6bhgr+lEH/Ko3VyFgVrx
+# Tt48lYZ6t6WxS3tA2L5ZnJpSjEwEMq9ECGjC6/tQV4jbl4Jp3c3GWESFEHTSmR+E
+# HZU8LAqxT2C593Yb2TyfQbWePzL53sYW+p23uJKI07ucIe1TF9O7Su4WasYmAp7A
+# FyP6UgOyd9+MkZSRnGaMCPViAyr5ZDhURXMwm+QU2PuL0yWI73c7dkTbLU6wAJiz
+# vTu/tfVFBbS06uWDCq8=
 # SIG # End signature block
