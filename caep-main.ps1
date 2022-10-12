@@ -128,8 +128,8 @@ function Invoke-LoginNpm {
   # Variables Login npm
   $NpmRegistry = "https://devops.codearchitects.com:444/Code%20Architects/_packaging/ca-npm/npm/registry/"
   $NpmScope = "@ca"
-  $NpmLoginResultCheckRequirementLogfile = "$($HOME)\.ca\npm_login_resultCheckRequirement_$($currentDate).log"
   # Check if the fields are empty it won't login
+  $NpmLoginResultCheckRequirementLogfile = "~\.ca\$currentDate-npmLogin-caep.log"
   if (($UsernameTextBox.Text -ne "") -and ($TokenTextBox.Text -ne "")) {
     # Correct the Username inserted by the User
     $UsernameSplitEmail = ($UsernameTextBox.Text).split("@")
