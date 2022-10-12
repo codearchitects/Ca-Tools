@@ -15,6 +15,9 @@ function Send-InstallationLogs {
   $TokenList = Get-Content $TokenPath | ConvertFrom-Json
   $UserLogin = ""
 
+  # Transcript started in caep-installer.ps1
+  Stop-Transcript
+
   if ($ScriptPath -eq "" -or $CurrentDate -eq "") {
     $CurrentDate = (Get-Date -Format yyyyMMdd-hhmm).ToString()
     $CurrentDirectory = Get-Location

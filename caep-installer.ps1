@@ -371,6 +371,7 @@ $NoButton.Add_Click({ OutFileAnswerNestedVirtualization $false })
 # Shows the GUI
 [void]$InstallForm.ShowDialog()
 
+$ErrorActionPreference = "SilentlyContinue"
 Stop-Transcript
 
 # SIG # Begin signature block

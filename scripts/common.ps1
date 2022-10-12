@@ -1,4 +1,6 @@
 $StartupPath = "~\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\caep-startup.cmd"
+$env:NG_CLI_ANALYTICS = "ci"
+
 function  Remove-StartupCmd {
   <#
   .SYNOPSIS

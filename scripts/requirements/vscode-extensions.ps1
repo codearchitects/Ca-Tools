@@ -1,15 +1,15 @@
 param(
-    $attributes #$($Requirement.Attributes)
+    $attributes
 )   
 
-$NotInstalled = $false
+$notInstalled = $false
 
 try {
     $InstalledVSCodeExtensions = (code --list-extensions)
 
     foreach ( $Extension in "$attributes".Split(' ') ) {
         if ( ($InstalledVSCodeExtensions -like ("*$Extension*").ToLower()).Count -eq 0 ) {
-            $NotInstalled = $true
+            $notInstalled = $true
         }
     }
 }
@@ -17,7 +17,7 @@ catch {
     return @($true, 'KO')
 }
 
-if ($NotInstalled) {
+if ($notInstalled) {
     return @($true, 'KO')
 }
 else {

@@ -11,11 +11,8 @@ if (Test-Path $npmLoginErrCheck) {
     $npmLoginErrCheck = "~\.ca\$currentDate-npmLogin-activity-caep.log"
 }
 
-# Out-Host required to avoid printing "Transcript started" string in return value"
-Start-Transcript $npmLoginErrCheck | Out-Host
-npm view @ca/cli | Out-Default
-npm view @ca-codegen/core | Out-Default
-Stop-Transcript | Out-Host
+npm view @ca/cli --loglevel info > $npmLoginErrCheck 2>&1
+npm view @ca-codegen/core --loglevel info >> $npmLoginErrCheck 2>&1
 
 $npmLoginLogfile = Get-Content $npmLoginErrCheck
 $result = @($true, 'OK')
