@@ -1,13 +1,32 @@
 param(
-    [string]$downloadOutfile
+    [string]$reqName, # $($Requirement.Name)
+    [string]$reqPathFile, # $($Requirement.PathFile)
+    [string]$reqArgList # $($Requirement.ArgumentList)
 )
 
-Remove-Item ($downloadOutfile.replace('"',''))
+$killCheck = {
+    while( !(Get-Process -name Code) ) {
+        Write-Host "vsCode not found. Tentativo di chiusura"
+        Start-Sleep -Seconds 30
+    }
+    Stop-Process -name Code -Force
+}
+
+Start-Job $killCheck
+
+$Description.Text += 'Executing the command ca scar...'
+
+Set-Location 'C:\dev\scarface'
+$env:NG_CLI_ANALYTICS="ci"
+
+Start-Process "$reqPathFile" -ArgumentList 'scar:setup' -NoNewWindow -Wait
+Start-Process "$reqPathFile" -ArgumentList "$reqArgList" -NoNewWindow -Wait
+$Description.Text += 'The command ca scar was executed correctly.`r`nPress the End button to conclude the installation.'
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUPPVAWNihzcwkEOV4j0KhhWn+
-# Szqggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUhmjKlyoU3LlFP8kiDmdbIeuq
+# J7Cggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -175,30 +194,30 @@ Remove-Item ($downloadOutfile.replace('"',''))
 # U2FsZm9yZDEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSQwIgYDVQQDExtTZWN0
 # aWdvIFJTQSBDb2RlIFNpZ25pbmcgQ0ECEA7nuDfFiGka9mWZXtAMyYwwCQYFKw4D
 # AhoFAKCBhDAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgEL
-# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU9Mc4ghs7D1qhH5Ln6SXh
-# cAm3YNowJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
-# hkiG9w0BAQEFAASCAQA4R3CyFWU8r6YNqsfi3U2r6Hx7RiZQviIpT7cJPNqz4+rs
-# YaLrkBADsGDG6cKnw8t6yML+9zAWBmZva+1HUFwk1nj7I9brQOCuha7Yai+Rroa+
-# HO2vfdHimAUIJ81PdH/uJ2HxQywU82IlolvW/KGzep70yMqqscunmvH1jsbt/n+0
-# +mcDbUAJgzwOgZmNUK0dqAGQgkXXwU9DXuIj+iy6oLo/HyfX/y3n9eknJ/HSnMGK
-# hOBm/9C/88GY1iMmTJmAmxF50ZjA3HJP2SDswVkrPC+gHEGIhSfbblo/TgjymIRb
-# TXdB7quf/f9rFzl1yxNTdJt19SzmuBMUrzqzjMlYoYIDTDCCA0gGCSqGSIb3DQEJ
+# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUGRyZsMjBPF8akFROlakW
+# bl2/Gx0wJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
+# hkiG9w0BAQEFAASCAQBifqpLDa7c01C5V8GEhJ4IDgh1klOlpxhJugaQqlcMKZq4
+# ATsQMXJ8gHfhDwR21mAWi93BbMFa6fkGVZ4xJ6QcTMjh8eN2bhIvwTGSs/h7uFEV
+# MedVAf9lxZPY0W9XwMHOTfk3jl7CcPzhiw7bNijyMpAs4WNAaecPb5s/bMQdHrkp
+# qk3QQx4ebVJml0Zkgkxl6Lzq2Ky/B36GEnJZfJwGy5MFJ35w2b3TThOXSmfmkipx
+# sl1sAUGcD4xVpoaq4KSQgjuT7+zaDRAFoGYHotTTssMc6GTlutgfYcOxwcnwCT7Z
+# jqPTeIh78sssFAVFFOS0sxjHblNrkxWfqRK5a5qFoYIDTDCCA0gGCSqGSIb3DQEJ
 # BjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVy
 # IE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28g
 # TGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBTdGFtcGluZyBDQQIR
 # AJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAYBgkqhkiG9w0BCQMx
-# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMTcxMzU3NDBaMD8GCSqG
-# SIb3DQEJBDEyBDC989qdr05vfO9VkNSvvBDBDXENmppMAnGFbMFDVsA2Gr51FXTj
-# rDvEx7RYUsI+t1MwDQYJKoZIhvcNAQEBBQAEggIAfCFrJKyi6EbwwBpqlcpiVs8J
-# T5ey0rS7eRoEbVOXKygbZDOCCFIaypF6sIPvWDaQnOzs240VkNIOVUwAtH0GPxiY
-# ZkSjFKKevnmPJTKXb8rsfnKvepA4YFg2DOnEiNg2+r6VHR4Cc6gKymFengY0zYtH
-# WicLkz0Sm/cNRKL23YRwepZMH7GgXPasa+qka7rperIXtaBgc1CvxHVG7XHyqvFf
-# 3yjFlQWuShtGlLmv+7bgZPjFRIPocomj1mFCRKWLDZE2X4b6439KbUhub/BZU4yT
-# 60DDYciLwqH6G5HTPqG6m1HXSnC3hXE7soY99lDEdv5NhysIbk/cYk8i9nJvUye+
-# K6eP3q+yWK7cGxrjEwOcAYQ14astt77p9AfD99BaDsxfZRDZcYv9zx/9A/dt/jrg
-# p/47NvgQEKdPjqphP043+c0s85HDehndUzkmVC2g0K+kNRP+gliZ5ViPsqzIO78P
-# 3Y2gnd/f3vfAGdUyn+LF3wNaqL9TukhEHzzulV3V9b6SXj5h+gmHIqC0e1TyHCvG
-# 7nxfghvGVTdmoVixFb+ZXXJMWsjxWtE5UXqjijt8CHyU8hjViGaPio2g1KmJprhJ
-# /EzQmu7/u8KmMVGZL4DAHqTgxLgHx8YNnX4sEkcq2MUaVz8YhfMyPsupF7jmNSq3
-# epn3byi2SeqeAHMRCio=
+# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMTcxMzU1MjFaMD8GCSqG
+# SIb3DQEJBDEyBDDT2qaMyp3ZVEzokIOOurgEXfK5emwRFc3io5jRXvZNXh1+HpYv
+# vpjojy8s3wFHbQUwDQYJKoZIhvcNAQEBBQAEggIAEIt5Oaxi4MqaDxfwEDCQaSba
+# +GxFFFFRIFXOqoMh/hbq9OibJ5/jFw3Rwq4GHwyl6zdyrGbPD7AV0aOjriJZbZsm
+# zhwVeQm7n382gWqwgYyrq//svFA96yhfqdXwT4iz3JKjoKgpmleMPMv2lGQnt9BS
+# zFHgXTMcffRIU9qLX/tp8HOIdT/ewtm1+YJQJJThu5XYuJdImClHu65C9V+dI40V
+# oxBHbWPUXZtFjCh3cuLy3mvPl+2xRJ3A9de8mDYMB5MqpYXQiou/zC9rKD6tfyWH
+# g+VZv0ZFR/STeSZrcFpESkp34pXSSeKa1IKPqhixD5LEavV+Gn64n24WhDCbsUzg
+# ZF6tuyetnuGryXjbRWWnVzK+nIkLtdR6EKbnoTno+roTW1ESScuWyG/Spwts4ZLB
+# aOuYN2LQXKPDB+vkpK1ZKFKbami+tS6XAO9TSueeLtAep2qcWsrc24i6csoX4B42
+# xnmCxIQbig5Ook8PgAj8YSaB1dquigSbSuO/Oik9HihsDXZYpuVDCI9CLUUqg5JF
+# W/Gmc0jZYYQ6CfRI+G3ET5NQocuoXWCR0L/uiDGqwnMgJZTmCKWO5NiXks7UvMoZ
+# bAS0mckfYhUgSO6R24JE3JQ/ZIUfUNEDunjDRw/zYUmnh/pSkMr4NB27hBl34fzq
+# Xhhc56piO5zVQqcDLz8=
 # SIG # End signature block
