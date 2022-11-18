@@ -1,31 +1,32 @@
-param(
-    [string]$scarConfig,
-    [string]$maxVersion,
-    [string]$minVersion
-)
-
-if (!$scarConfig.Contains('terranova')) {
-    try {
-        $dockerVersion = (docker --version).replace(',', '').replace('Docker version', '').replace('build', '').Trim().Split(' ')[0]
-        if ( ($dockerVersion -ge $minVersion) -and ($dockerVersion -le $maxVersion) ) {
-            return @($true, 'OK')
-        }
-        else {
-            return @($true, 'VER')
-        }
-    }
-    catch {
-        return @($true, 'KO')
-    }
+Write-Host 'Searching for npm-login.ps1...'
+$caPath = "C:\Program Files\Ca-Tools\npm-login.ps1"
+if ( !(Get-Content -Path $caPath) ) {
+	Write-Host "npm-login.ps1 not found!"
+    return @($true, 'KO')
 }
-else {
+
+Write-Host 'Searching for @ca npm packages...'
+$npmList = npm list -g --depth=0
+if ( ($npmList -like '*@ca/cli*') -and ($npmList -like '*@ca/generator-scarface*') ) {
+ Write-Host '@ca/cli and @ca/generator-scarface are installed npm packages.'
+} else {
+	Write-Host 'npm packages @ca/cli and @ca/generator-scarface not found!'
+    return @($true, 'KO')
+}
+
+Write-Host 'Searching for ca plugins...'
+$npmPlugin = ca plugins
+if ( $npmPlugin -like '*@ca/cli-plugin-scarface*' ) {
+	Write-Host 'ca plugins: @ca/cli-plugin-scarface found!'
     return @($true, 'OK')
 }
+
+return @($true, 'KO')
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUepUtWyYkRr54jLz2zs/Xmj8A
-# zGKggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUbDPFnyh7P87b9KmSgVx7jYES
+# Mh2ggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -193,30 +194,30 @@ else {
 # U2FsZm9yZDEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSQwIgYDVQQDExtTZWN0
 # aWdvIFJTQSBDb2RlIFNpZ25pbmcgQ0ECEA7nuDfFiGka9mWZXtAMyYwwCQYFKw4D
 # AhoFAKCBhDAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgEL
-# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUrN1GJMNli1nwfouzt/N+
-# 4DO+uSgwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
-# hkiG9w0BAQEFAASCAQA5RfGD+YM1KWrBktWNuiZuMLirJZjtTVB0UrHNd/mEThlX
-# tMVaNB1zMsDhXPNzN+WGgHoitPHEhABJDJYjOKyS7pk3qsoBCNvq+di/yzc0SzKH
-# 0u/j0w9dy5j3QENqj2GztI1jgaPmU14tD//18++bTzS1vzk1TIkZcpkkR2wl3TYp
-# RHq9iaim5DD2svW3Y6IUibpG9SmE6Br35ouAQNd7+vci2vEsCPBSX5nexo3FNyFY
-# 39G+L3c0wA3aD+2FaXOcgSLj5a90nl14Ywu5A0TXCxmc7vHxd8wf5v8aIX9KjBzJ
-# xH466BeZ0LMQFzeQkFuKTeehQQDlhtNELMlGhbUdoYIDTDCCA0gGCSqGSIb3DQEJ
+# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUZcJzosKTpdIyIKdUal/F
+# 0lxiWO4wJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
+# hkiG9w0BAQEFAASCAQCAnL1yx7JpnxJGH9Y4BUxndRQGIhaePqiWzhIizJTkG6E2
+# CIkt/3mW515c9s+nMprJQkyP/4si/Kfi7XaE7yCFjOUGmi2NNFDrSNJ1jlZ9zt6z
+# jX+nY3KPjXlUs6xjoj36j+nGmBjjs+KCmIyMubb6OJUEh0C5VW86iLLdDB5Suah3
+# jBIpjFhHByYdiFMqzLJyQNX5XN31chNKh3eL3pmsrVzlEaYHPJXx/Gjfef9Dft2m
+# nrEoln4fNOaRJx0CI2H5Zrn7MG8T1qqWb9K3OojFNQRrVNFfncZmOOF/ZXpp7kao
+# PUV+NOeW2czcayIpHAUqqadn4/L63ZkcxjmbgietoYIDTDCCA0gGCSqGSIb3DQEJ
 # BjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVy
 # IE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28g
 # TGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBTdGFtcGluZyBDQQIR
 # AJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAYBgkqhkiG9w0BCQMx
-# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMTgxMTU2MjBaMD8GCSqG
-# SIb3DQEJBDEyBDDNXaeXytZ7aOgIKuantQy1c1VJfXjP1i8yHtlQzCGoDrdODSbK
-# 8d+Liu+jUOFvdSowDQYJKoZIhvcNAQEBBQAEggIAVG5ZPN1uSBAeNxaO8BCcVazY
-# f261sQQTNuyp1nBjkrhI2r3BKREnfYVA+G6NApBRNbFdNJkQTONKSqvlL4n93SOG
-# ZL2gWSabmCv1wD0qxDyX04e1DZeSuk3lJTY1eEYzP23PUT/wGh4zgimw5qiZ4OgA
-# d0NVhvuprlD2oaDD8nRCypvQJK+7g07zMUmpDsO7GcD2U4Rxf7i4KNeFEF4MWnPm
-# hGYY51y5XMA8KLKUWg5UV9Gu/I6oPqNaCrNlkkcO1QfKjA69GE8IXQY0Lq7byCgA
-# UGASi08MiAZLz/Q7inFS9R7G9UJULZ8I/rzYHlzae+8jvZovRQMdupXnom4/As5K
-# 5TqapQwtjSht3o3eE7EUrCVWU5ZOV5b5jP/AupHafMvPJQHCRsO/vP7J/mNg04Sl
-# X9MyaS3b5CUyrKVF1fbFgPbVJgwNSG4W491M/yOP0n1r2a4ExEocOd3Uht7Rxmmw
-# BHBvMTdYOLgvY4hQgjkop/87PX9Y3adt/HYGCLhS1EMiT5HO9GOtWIQmOy0VPHbI
-# b7lz5NabTEjZ3DLtcLOrbqjHUW0ZJ+v4af+1hc9JtZxolWSZsFQxsx6z8BpnLtQR
-# 9ofrhfj62yTxnYqD2hfBi6k085/JLppxwAdKLU7erQ6M2XWnalUlRb4O+CWJllTW
-# zkkvBJJz4XWOHueD7KU=
+# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMTgxMTU2MzBaMD8GCSqG
+# SIb3DQEJBDEyBDA23JmDGJwGNofigcdC+Isq7ADOQlWZvTHoej3Sxmq9XHryRs13
+# K3o2z21g6K5XCYcwDQYJKoZIhvcNAQEBBQAEggIAIvrAN7VYRJwJVZ/SMRb3UiEo
+# ch71515uejs1WxImwhrQZr/JHEWqyh0baOK5vx+77vrtHngtrfKcMXBZ50DCuCQz
+# ps+XZNxnvn+ueqshBfocIBgOPqAsX4tb5pP9J/JkF8nl77lNm4Ewqy00j5vdGSs1
+# ZA5TysE8yPEzY9PIMWyIORca1xT0X0FoqlGmlU0MTQc9k8QLhLMSLQxfNnbqVfCY
+# uwGeRFQ3qrSkSuSAbyaRSTyElrz82NFwYrE0HwPdNZJZ4U+mrIYDdEOBJqZm5+0W
+# D9mbwk1E8xMmA+thQu0x/ruM/U7cfIjoOxmgVqGHV17Ocn02gyRTjUW10DfBGrrh
+# v2SNh+E3IbAVnskIBuK1lrbRZFOsQxOfIfMcK6HEZmnK3l1l3shpD4nYsV6/+Ps5
+# lNRPFMYsdAmR83tg/TIc1R95mT0/iKrxwVW5qVcA8RqhZziwk4QjggnNnZtFVsX5
+# jK4Y3PSX/MiIUwTHK44TVuSDHJiS+rrqsENeeTHN9iTQVP7huIc2eOxpyBNGUOlp
+# YOVF/wfnjT/j5GeQP6sxeTMwDnLgfw4A8nWBQoxzhAeZ73Fd/UpsNkFW8hH2HpYQ
+# 0MhIG/Jbkj65ftm/KNDYTyDibHSr1nzBHiDEGEtVk1f1LyhxWPiTpU9dYjzIdgwb
+# 58vPXU53+1uAMdQRzLI=
 # SIG # End signature block

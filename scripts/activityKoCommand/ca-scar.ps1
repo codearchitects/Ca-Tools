@@ -1,12 +1,12 @@
 param(
-    [string]$reqName, # $($Requirement.Name)
-    [string]$reqPathFile, # $($Requirement.PathFile)
-    [string]$reqArgList # $($Requirement.ArgumentList)
+    [string]$reqName,
+    [string]$reqPathFile,
+    [string]$reqArgList
 )
 
 $killCheck = {
     while( !(Get-Process -name Code) ) {
-        Write-Host "vsCode not found. Tentativo di chiusura"
+        Write-Host "vsCode not found. Trying to kill it..."
         Start-Sleep -Seconds 30
     }
     Stop-Process -name Code -Force
@@ -25,8 +25,8 @@ $Description.Text += 'The command ca scar was executed correctly.`r`nPress the E
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUhmjKlyoU3LlFP8kiDmdbIeuq
-# J7Cggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUp4uBrfZL72xLjy103DLv7hZA
+# cdSggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -194,30 +194,30 @@ $Description.Text += 'The command ca scar was executed correctly.`r`nPress the E
 # U2FsZm9yZDEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSQwIgYDVQQDExtTZWN0
 # aWdvIFJTQSBDb2RlIFNpZ25pbmcgQ0ECEA7nuDfFiGka9mWZXtAMyYwwCQYFKw4D
 # AhoFAKCBhDAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgEL
-# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUGRyZsMjBPF8akFROlakW
-# bl2/Gx0wJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
-# hkiG9w0BAQEFAASCAQBifqpLDa7c01C5V8GEhJ4IDgh1klOlpxhJugaQqlcMKZq4
-# ATsQMXJ8gHfhDwR21mAWi93BbMFa6fkGVZ4xJ6QcTMjh8eN2bhIvwTGSs/h7uFEV
-# MedVAf9lxZPY0W9XwMHOTfk3jl7CcPzhiw7bNijyMpAs4WNAaecPb5s/bMQdHrkp
-# qk3QQx4ebVJml0Zkgkxl6Lzq2Ky/B36GEnJZfJwGy5MFJ35w2b3TThOXSmfmkipx
-# sl1sAUGcD4xVpoaq4KSQgjuT7+zaDRAFoGYHotTTssMc6GTlutgfYcOxwcnwCT7Z
-# jqPTeIh78sssFAVFFOS0sxjHblNrkxWfqRK5a5qFoYIDTDCCA0gGCSqGSIb3DQEJ
+# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUET7FdMcNjLzGr6LiwNtX
+# s2PLD5YwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
+# hkiG9w0BAQEFAASCAQBaNLvZsjuWMEh/ZwIsZqxhqyb/Qjo/5L9l1CQB1eG0+m9d
+# bv1VENrlMazQB1rtqAaX5Ws7LSNA+pk5U2cSf27h4IEMjmYSyt54MqA3RoPx/JYD
+# WRDHBKuOQxWdng0JgTzHHIgv3wBW8mb8oY5Jf2mdYVKR5ViwjRw+JqTi5S7vH+u2
+# fcA1EAXrssKbjDhXYfMhtAKr3h2tnLQr8720luy2M22FayKuUOSopQVqEXMtHRJQ
+# vxZW6nFrizTD4VVjN5zrKZgr5ZsAAGRhcSCYQr558/1Yp8DVJu3WyunLyZ/RqNcQ
+# UMm67aGhOrrYK7OScgKrfX95x231Uz5GR2znZNrqoYIDTDCCA0gGCSqGSIb3DQEJ
 # BjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVy
 # IE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28g
 # TGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBTdGFtcGluZyBDQQIR
 # AJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAYBgkqhkiG9w0BCQMx
-# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMTcxMzU1MjFaMD8GCSqG
-# SIb3DQEJBDEyBDDT2qaMyp3ZVEzokIOOurgEXfK5emwRFc3io5jRXvZNXh1+HpYv
-# vpjojy8s3wFHbQUwDQYJKoZIhvcNAQEBBQAEggIAEIt5Oaxi4MqaDxfwEDCQaSba
-# +GxFFFFRIFXOqoMh/hbq9OibJ5/jFw3Rwq4GHwyl6zdyrGbPD7AV0aOjriJZbZsm
-# zhwVeQm7n382gWqwgYyrq//svFA96yhfqdXwT4iz3JKjoKgpmleMPMv2lGQnt9BS
-# zFHgXTMcffRIU9qLX/tp8HOIdT/ewtm1+YJQJJThu5XYuJdImClHu65C9V+dI40V
-# oxBHbWPUXZtFjCh3cuLy3mvPl+2xRJ3A9de8mDYMB5MqpYXQiou/zC9rKD6tfyWH
-# g+VZv0ZFR/STeSZrcFpESkp34pXSSeKa1IKPqhixD5LEavV+Gn64n24WhDCbsUzg
-# ZF6tuyetnuGryXjbRWWnVzK+nIkLtdR6EKbnoTno+roTW1ESScuWyG/Spwts4ZLB
-# aOuYN2LQXKPDB+vkpK1ZKFKbami+tS6XAO9TSueeLtAep2qcWsrc24i6csoX4B42
-# xnmCxIQbig5Ook8PgAj8YSaB1dquigSbSuO/Oik9HihsDXZYpuVDCI9CLUUqg5JF
-# W/Gmc0jZYYQ6CfRI+G3ET5NQocuoXWCR0L/uiDGqwnMgJZTmCKWO5NiXks7UvMoZ
-# bAS0mckfYhUgSO6R24JE3JQ/ZIUfUNEDunjDRw/zYUmnh/pSkMr4NB27hBl34fzq
-# Xhhc56piO5zVQqcDLz8=
+# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMTgxMTU1MjBaMD8GCSqG
+# SIb3DQEJBDEyBDAmIeXoQGDTLYY5p+0UVFikZmRMd2cJh1kh8ig6Z16ihmkUN8vw
+# W+TSh+hAHT6pyhEwDQYJKoZIhvcNAQEBBQAEggIAAFBI4jzLmYpBB2E8wfaA0j2L
+# 6THd8ZYXzVoBhFI8KAZRXimC6laXIpLT9aj3ph+nHZ8pr8eg9d4h2VauOEEIgilu
+# NH2mLF2AP6FVeXXlwhMO9RnQ5dpabZc+lZhOZqgFCO3ac1TcyxFMvWO0X58+zXDk
+# DbogIUnM6fKFMy0GcNJD+L2J/ZOFvC/2HzWSjnZ+e7Q9kOpMRvkSuGv2BlBYvgjp
+# QLru2y59NNH+XBqYQJtqHAZoy4eXn1zHkB+43CSNOv2u+anUCnwr8tZ29FLcb8Dm
+# T7KlnW5I9gE11O43EjeyruutMdnVmUzT/UAU5G+N3AlmmoSfsx1Gvb0Xjxgtgy7k
+# qJFIHiZHoARqn4smTndlMaA/wnrhKhUdadhl3HF/PQyUYyHSJmnhTNg6hF56L9dV
+# lkFwyTXzbz/AYlAq1Fy/sZ+tUz741xJMmw6naKUVK9k8c63Dm8sRLECpqgNvP3Y4
+# QsYn/l29ecBimHAH7KICU7oLV7Lw3pYRi1ZHtENLGfrgmOaBscZ7//lHZ61SWBlZ
+# WReLUqN7pQQQ/XyLSnXZQNNpHeuvREften3DdUWdOC0Lujl6T4sGE+zrMJQbocSC
+# OzFpqjbc0Ac2JBsV+FdnlaIbiqVuWNNmVEbxWtAeIBO7DFBCrx/klebXj3Z5gpYJ
+# MmuT+rT9g7xBp924jz8=
 # SIG # End signature block

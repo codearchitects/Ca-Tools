@@ -467,9 +467,9 @@
         "PathFile": "C:\\Program Files\\Ca-Tools\\setup-ca-platform.exe",
         "ArgumentList": "-s",
         "ActivityOKCommand": "",
-        "ActivityKOCommand": "`$Description.Text += '`r`nInstalling the CAEP... (It will take a few minutes)'; `$NameNoSpaces = (`\"$($Requirement.Name)`\".replace(' ', '')); `$Logfile = `\"~\\.ca\\`$NameNoSpaces-$CurrentDate.log`\"; npm install -g @ca/cli; ca plugins:install @ca/cli-plugin-scarface",
+        "ActivityKOCommand": "./scripts/activityKoCommand/install-CAEP.ps1",
         "DeclineMessage": "return `\"You have declined to automatically install CAEP.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
-        "CheckRequirement": "return @(`$true, 'KO')",
+        "CheckRequirement": "return ./scripts/requirements/install-CAEP.ps1",
         "PostAction": ""
     },
     {
