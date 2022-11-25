@@ -129,7 +129,6 @@ function Invoke-LoginNpm {
   $NpmRegistry = "https://devops.codearchitects.com:444/Code%20Architects/_packaging/ca-npm/npm/registry/"
   $NpmScope = "@ca"
   # Check if the fields are empty it won't login
-  $NpmLoginResultCheckRequirementLogfile = "~\.ca\$currentDate-npmLogin-caep.log"
   if (($UsernameTextBox.Text -ne "") -and ($TokenTextBox.Text -ne "")) {
     # Correct the Username inserted by the User
     $UsernameSplitEmail = ($UsernameTextBox.Text).split("@")
@@ -147,8 +146,7 @@ function Invoke-LoginNpm {
     # Double check if the credentials inserted are correct or not, if they are then go to the next step of the installation, otherwise ask for the correct credentials.
     if (!$DoubleCheck) {
       Hide-LoginNpmScreen
-      $NpmLoginMessage = Get-Content $NpmLoginResultCheckRequirementLogfile
-      $Description.Lines = $NpmLoginMessage
+      $Description.Lines = $NpmViewCli
       Remove-WrongToken($TokenTextBox.Text)
       Show-Buttons @('$NextButton', '$CancelButton')
     } else {
@@ -234,11 +232,11 @@ function Invoke-CheckRequirements($Requirements) {
   #>
   $ResultCheckRequirementList = @()
   # List of Requirements that have to be executed, no matter what
-  $MustCheckRequirementList = @("Npm Login")
+  $MustCheckRequirementList = @("Execute ca scar")
   foreach ($Requirement in $Requirements) {
     if ($Requirement.CheckRequirement) {
       $ResultCheckRequirement = Invoke-Expression (New-CommandString $Requirement.CheckRequirement)
-      if (!(($ResultCheckRequirement[0] -eq $true) -and ($ResultCheckRequirement[1] -eq 'OK'))) {
+      if ( (!(($ResultCheckRequirement[0] -eq $true) -and ($ResultCheckRequirement[1] -eq 'OK'))) -or ( $MustCheckRequirementList -contains $Requirement.Name ) ) {
         $ResultCheckRequirementList += $Requirement
       }
     }

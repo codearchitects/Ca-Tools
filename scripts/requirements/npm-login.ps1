@@ -2,26 +2,23 @@ param(
     [string]$currentDate
 )
 
-$DebugPreference = 'Continue'
-$VerbosePreference = 'Continue'
-$InformationPreference = 'Continue'
+$capturedPath = "~\.ca\$currentDate-npmErrCheck.txt"
+Write-Host "Generate npm log for npm view commands in $capturedPath ..."
+npm view @ca/cli  2>&1 > $capturedPath
+npm view @ca-codegen/core 2>&1 >> $capturedPath
 
-$npmLoginErrCheck = "~\.ca\$currentDate-npmLogin-caep.log"
-if (Test-Path $npmLoginErrCheck) {
-    $npmLoginErrCheck = "~\.ca\$currentDate-npmLogin-activity-caep.log"
-}
-
-npm view @ca/cli --loglevel info > $npmLoginErrCheck 2>&1
-npm view @ca-codegen/core --loglevel info >> $npmLoginErrCheck 2>&1
-
-$npmLoginLogfile = Get-Content $npmLoginErrCheck
+$npmErrCheck = Get-Content $capturedPath
+   
 $result = @($true, 'OK')
-foreach ($item in $npmLoginLogfile) {
+Write-Host "$capturedPath content: "
+Write-Host $npmErrCheck.ToString()
+foreach ($item in $npmErrCheck) {
     if ( ($item -like '*ERR!*') -or ($item -like '*error*') ) {
         $result = @($true, 'KO')
         break
     }
 }
+
 return $result
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

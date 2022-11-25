@@ -448,11 +448,11 @@
         "Dependencies": [
             "Setup CaTools.msi"
         ],
-        "QuestionMessage": "Press 'Accept' to check if there is an account npm.",
+        "QuestionMessage": "Press 'Accept' to check if there is an npm account.",
         "PathFile": "",
         "ArgumentList": "",
-        "ActivityOKCommand": "`$Description.Text = 'I have found an Azure DevOps account, do you want to login with it?'; `$TokenPath = `\"~/.token.json`\"; `$TokenParsed = Get-Content `$TokenPath | ConvertFrom-Json; `$Index = `$TokenParsed.Count - 1; `$UsernameTextBox.Text = `$TokenParsed[`$Index].user; `$TokenTextBox.Text = `$TokenParsed[`$Index].token; Show-LoginNpmScreen",
-        "ActivityKOCommand": "`$Description.Text = 'We have not found any Azure DevOps account.`r`nPlease enter the Azure DevOps Username and the Token.`r`nPS: Insert the Username without the COLLABORATION\\.'; Show-LoginNpmScreen",
+        "ActivityOKCommand": "./scripts/activityOkCommand/npm-login.ps1",
+        "ActivityKOCommand": "./scripts/activityKoCommand/npm-login.ps1",
         "DeclineMessage": "return `\"You have declined to automatically login to npm.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
         "CheckRequirement": "return ./scripts/requirements/npm-login.ps1 -currentDate `$currentDate",
         "PostAction": "Login"
@@ -473,25 +473,10 @@
         "PostAction": ""
     },
     {
-        "Name": "Generate Scarface Config",
-        "Type": "Activity",
-        "Dependencies": [
-            "Install CAEP"
-        ],
-        "QuestionMessage": "Press 'Accept' to download the scarface.config.json.",
-        "PathFile": "C:\\dev\\scarface\\scarface.config.json",
-        "ArgumentList": "",
-        "ActivityOKCommand": "",
-        "ActivityKOCommand": "New-Item -Path $($Requirement.PathFile) -Force; `$ScarConfigObj = (Invoke-WebRequest -Uri `$ScarConfig -UseBasicParsing).Content | ConvertFrom-Json; `$MaxDate = 0; `$TokenPath = `\"~/.token.json`\"; `$TokenList = Get-Content `$TokenPath | ConvertFrom-Json; foreach(`$t in `$TokenList) { `$CurrentDate = `$t.date.Replace(`\"-`\", `\"`\"); if (`$MaxDate -lt `$CurrentDate) { `$MaxDate = `$CurrentDate; `$TokenObj = `$t } }; `$ScarConfigObj.token = `$TokenObj.token; `$ScarConfigObj.user = `$TokenObj.user; if (`$ScarVersion -ne '') { `$ScarConfigObj.version = `$ScarVersion }; `$ScarConfigObj | ConvertTo-Json | Set-Content -Path $($Requirement.PathFile); `$Description.Text += '`r`nDownloading the file scarface.config.json...`r`nDownload complete.'",
-        "DeclineMessage": "return `\"You have declined to automatically Generate scarface.config.json.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
-        "CheckRequirement":  "return @(`$true, 'KO')",
-        "PostAction": ""
-    },
-    {
         "Name": "Execute ca scar",
         "Type": "Activity",
         "Dependencies": [
-            "Generate Scarface Config"
+            "Install CAEP"
         ],
         "QuestionMessage": "Press 'Accept' to run the command 'ca scar'",
         "PathFile": "~\\AppData\\Roaming\\npm\\ca.cmd",
@@ -499,7 +484,7 @@
         "ActivityOKCommand": "",
         "ActivityKOCommand": "./scripts/activityKoCommand/ca-scar.ps1 -reqName $($Requirement.Name) -reqPathFile $($Requirement.PathFile) -reqArgList $($Requirement.ArgumentList)",
         "DeclineMessage": "return `\"You have declined to automatically execute 'ca scar'.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
-        "CheckRequirement": "return @(`$true, 'KO')",
+        "CheckRequirement": "return ./scripts/requirements/ca-scar.ps1",
         "PostAction": "End"
     }
 ]

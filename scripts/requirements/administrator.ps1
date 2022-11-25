@@ -2,13 +2,15 @@ param(
     [string]$isAdmin
 )
 
-$isAdmin = $null -ne (whoami /groups /fo csv | ConvertFrom-Csv | Where-Object { $_.SID -eq "S-1-5-32-544" })
+$getAdminList = Get-LocalGroupMember -Group Administrators
+$whoAmI = whoami
 
-if ($isAdmin -eq $true) {
+if ( $getAdminList.Name -like "*$iAm*") {
+    Write-Host "$whoAmI local account is admin!"
     return @($true, 'OK')
-}
-else {
-    return @($true, 'KO')
+} else {
+   Write-Host "$iAm local account is NOT admin!"
+   return @($true, 'KO')
 }
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
