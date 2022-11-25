@@ -129,7 +129,6 @@ function Invoke-LoginNpm {
   $NpmRegistry = "https://devops.codearchitects.com:444/Code%20Architects/_packaging/ca-npm/npm/registry/"
   $NpmScope = "@ca"
   # Check if the fields are empty it won't login
-  $NpmLoginResultCheckRequirementLogfile = "~\.ca\$currentDate-npmLogin-caep.log"
   if (($UsernameTextBox.Text -ne "") -and ($TokenTextBox.Text -ne "")) {
     # Correct the Username inserted by the User
     $UsernameSplitEmail = ($UsernameTextBox.Text).split("@")
@@ -147,8 +146,7 @@ function Invoke-LoginNpm {
     # Double check if the credentials inserted are correct or not, if they are then go to the next step of the installation, otherwise ask for the correct credentials.
     if (!$DoubleCheck) {
       Hide-LoginNpmScreen
-      $NpmLoginMessage = Get-Content $NpmLoginResultCheckRequirementLogfile
-      $Description.Lines = $NpmLoginMessage
+      $Description.Lines = $NpmViewCli
       Remove-WrongToken($TokenTextBox.Text)
       Show-Buttons @('$NextButton', '$CancelButton')
     } else {
@@ -234,11 +232,11 @@ function Invoke-CheckRequirements($Requirements) {
   #>
   $ResultCheckRequirementList = @()
   # List of Requirements that have to be executed, no matter what
-  $MustCheckRequirementList = @("Npm Login")
+  $MustCheckRequirementList = @("Execute ca scar")
   foreach ($Requirement in $Requirements) {
     if ($Requirement.CheckRequirement) {
       $ResultCheckRequirement = Invoke-Expression (New-CommandString $Requirement.CheckRequirement)
-      if (!(($ResultCheckRequirement[0] -eq $true) -and ($ResultCheckRequirement[1] -eq 'OK'))) {
+      if ( (!(($ResultCheckRequirement[0] -eq $true) -and ($ResultCheckRequirement[1] -eq 'OK'))) -or ( $MustCheckRequirementList -contains $Requirement.Name ) ) {
         $ResultCheckRequirementList += $Requirement
       }
     }
@@ -406,8 +404,8 @@ if (-not $AdminStatus) {
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU28fOIFK1sQfarsxHgVxgyG6L
-# jtKggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU9Z4N3GCwSLv57AeZ5BcShlDl
+# hbSggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -575,30 +573,30 @@ if (-not $AdminStatus) {
 # U2FsZm9yZDEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSQwIgYDVQQDExtTZWN0
 # aWdvIFJTQSBDb2RlIFNpZ25pbmcgQ0ECEA7nuDfFiGka9mWZXtAMyYwwCQYFKw4D
 # AhoFAKCBhDAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgEL
-# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU+b3BFzbGVTO9HSMmBDkA
-# 7pBfxBIwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
-# hkiG9w0BAQEFAASCAQAwNXxSWOJ9mnr40+nBBVjjOfTBcG9JnSQ61vLkrLKK1MGL
-# Dq1ZV0r/0WIm3z7eVcLzn74xjUjdcxtrhA72CeyCBUKH5XSRQ6Atfa8ffkejlKAC
-# hda9WFwvjfAsgJA3JwVmKdGoLQAivO7kwc+ZCBbZh5uBkFbWBTCZUCZmK2IW/PIZ
-# ooTJawQIqXOPNjukWR95KDr4aYj0aToSkoGax8N30bCC3V9mAejYfOELtS47MN8O
-# qjCHFyJIDyVbyu7V/rnxXRUfhSr8w8OZMJh9zIhro7OV/vwUH+P7Jikb5j82neNk
-# OnQwSJU9SuNpinz6KZvpFAE51VMgNBeAngqsw8XmoYIDTDCCA0gGCSqGSIb3DQEJ
+# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUlkZuTjubIStJbm4jmcbN
+# PzVGmIcwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
+# hkiG9w0BAQEFAASCAQCo7Qo8ykPgmQMLNxF1Uz/FqmCs+U2kYW4Nkt3W8e9NUBqg
+# ZAjqiv/lSNogiExB+wqDVO6Us59PZrRGGhjGjX8smx+8lUXhk3Ium7uvFVqESGrO
+# HJ4RX7kxxVyA8z6Z4HYNtN3O78X4e2ccCzchd1LgOmxoHe3KOAowkJ+Mcr0mTTsc
+# C7VgrZbU3j56MWNdOKelK0LYLoHm4WiQ5KKXX3+6wkmCxCxrwBDY5KAAzrt/v3kn
+# FRdjJZpcc4eIuLPJ8KPW0cHSeXaD5V0ssXaSnyG6GzpeH2mVsIJKT8Z/gS2qUkQY
+# Zjbjf4i/P9x8pRHzhIKo/PujGFI3eCmKOdxa9dkQoYIDTDCCA0gGCSqGSIb3DQEJ
 # BjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVy
 # IE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28g
 # TGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBTdGFtcGluZyBDQQIR
 # AJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAYBgkqhkiG9w0BCQMx
-# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMTgxMTU3NDhaMD8GCSqG
-# SIb3DQEJBDEyBDD8QBGxjGq/eh5P4r1YF86z0ejYMZ9m2nZHWZ5m7NOzUz/w4cA2
-# SLUJVGyNo8rZLIUwDQYJKoZIhvcNAQEBBQAEggIAHyMqMIWvUrItlGhhxqcfhEgU
-# BGZCA6Es/p1f/aewA0orTgSrCK2pI084nXz4RI+mqCxkp8fK+s6ucDxv0fP4N/mF
-# qzsIkjcE8s9wOQ+NB6HOEh8OZQn3qtAFDIyLeoM+XixG6AN1Dh0wrjZrnWse+4SW
-# SCigeQrqVGWne3mrF4PrzPJVEN4LFN25JM7MQz/jC/u2J/y/c1OqsnvgCGSw8s2v
-# BumwEIiZkJU0mrxuyk6iTEVU89i3HQP/bFQpJDuRZm/0fvlMnCzqSS5sNWSXo6mm
-# jiXSL34lIk3qWVHBQy818Bzwr3KDcUYMSZnCrEzrbr2WY75r27Ifw83yYRHDWr3A
-# LkEEklR8F+//UlppYSJVCNhiuMKU429CJSMUtdDsE+Ujdgu2vVVUmOkkijtscfCv
-# uI38sLIbDytnDdBsoA1YlXB7C1EjGxI/5YGiYpAw6WqvHpioMWUj37WlQO70LXET
-# HcUtXBivN7/E5e6JkjbuLRA8QOKCYTXTgXpg1a3Rg/aSaOZU5mYC5TLqRs3zRwDL
-# vEjm46jv4nmFmbLXYmC8FLMBo/twbRnu9y0GQtPDtgpMO/xDFCcXDAvUnz/NvSi9
-# VCnKLKECtLN3FaHdDYuVeGoxvLKpXR3O7YXsHHsohE2GN5qic9ZgFDlXEUW5AUYm
-# GIAzACjIxL8Po9jF8Yc=
+# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMjUxNDQ2MTJaMD8GCSqG
+# SIb3DQEJBDEyBDAz3hzTBPzeZyeZM8SL04DacPwpFO69044uUH7owyxOvr/hyJKX
+# AYlW174fkUqwfU4wDQYJKoZIhvcNAQEBBQAEggIATRtvcxWOdv3hnfegdATVA85j
+# mpgDOP5m2+E1ecCMfmLVx9krgxdVlhIu5lx9YnhV462FZZPZ4BKNk4qmMG62R7zz
+# 0sJQXNWxqZmqsun6ZIPU2EdNaecSChX8Z0PK6komKMUBdN4KgzYUf+xs+VxfOqhT
+# 6A48aMIrkcNkXkcVRljaX2xYVwe1arBxR07aZ5JQ7+D4uUgASNr7mk9yJD3S5y0M
+# ph9sik46dQHU+uWj9Bl04FY3m+7Zg5w10DTwGBSsJ5s/6ADXo38PavOCoOuxUguD
+# AtTnNIZjSPvyq6lWWbDn6jw21sc6i7sWCicWpTYcLNIJ887B+mSwKkh1KQx40kJF
+# uVWZ4OuWhQArQFbLrVSz9oqPGDsd1B24iSVh+RSc46aiW3ihrHwbYzDPAWzpASF/
+# w/rqUiRA+h/rWJBAV5eMYJ2hryhgqIO6U/CD8waaJO6bbjy53hz1s0c3AI49uvZT
+# 8zREQM2L7mmnaDkD2ZIFENo+KPczmcNlPrhd3IPlq1EuSv4e9dbokCuLZcWwAXCN
+# +UChsyWjqKtTYc2pyYudswZkBXwt3Ltzo+WLnXanGQz3HXF8Hd1vyEvlCM6h2qex
+# H3lG0tITmw6G19NX83h7oYTywz4b/o0GFrYYlv/8p/ieKl1PM/w3uPsO1D8GQOPe
+# SAHVQYcJr/vlnZJ/B7o=
 # SIG # End signature block

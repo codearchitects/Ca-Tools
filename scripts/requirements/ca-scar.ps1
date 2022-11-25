@@ -1,19 +1,38 @@
-try {
-    $npmRegistryAvailable = (Invoke-WebRequest -Uri https://registry.npmjs.org -UseBasicParsing -DisableKeepAlive).StatusCode
-    if ($npmRegistryAvailable -eq 200) {
-        return @($true, 'OK')
+
+$backOfficeClientPath = "C:\dev\scarface\back-office\client"
+$backOfficeDistPath = Join-Path $backOfficeClientPath "dist"
+$backOfficeNodeModulesPath = Join-Path $backOfficeClientPath "node_modules"
+$backOfficeBundlePath = Join-Path $backOfficeDistPath "back-office"
+
+Write-Host 'Checking if back-office sample project is generated...'
+
+if (Test-Path $backOfficeNodeModulesPath) {
+    if ( !( (Get-ChildItem $backOfficeNodeModulesPath -Recurse -Filter *.js).Count ) ) {
+        Write-Host "node modules in $backOfficeNodeModulesPath not found!"
+        return @($true, 'KO')
     }
     else {
-        return @($false, 'KO')
+        Write-Host "*js files in $backOfficeBundlePath found!"
+        return @($true, 'OK')
     }
-}
-catch { return @($false, 'KO')
+
+    if ( !( Test-Path -Path $backOfficeBundlePath*.js ) ) {
+        Write-Host "*js files in $backOfficeBundlePath not found!"
+        return @($true, 'KO')
+    }
+    else {
+        Write-Host "*js files in $backOfficeBundlePath found!"
+        return @($true, 'OK')
+    }
+} else {
+    Write-Host 'node_modules not found!'
+    return @($true, 'KO')
 }
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUr98IzQ4V+ksISMWZjlnctVKS
-# gEWggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUZuvJIXeKBTZ0E1tX5UN+09CU
+# NUyggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -181,30 +200,30 @@ catch { return @($false, 'KO')
 # U2FsZm9yZDEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSQwIgYDVQQDExtTZWN0
 # aWdvIFJTQSBDb2RlIFNpZ25pbmcgQ0ECEA7nuDfFiGka9mWZXtAMyYwwCQYFKw4D
 # AhoFAKCBhDAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgEL
-# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUy1Ruu/Y+OP+g2gcl6+9V
-# iE5An98wJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
-# hkiG9w0BAQEFAASCAQBByLsOTYLFXD9Bq4lDGRf6jee0nT5sAd6w8ge4lwEVNfEL
-# 4xmVfBzMh6Txaot8oMzMEXS/8UwQsP9iTXR+InLefE6gpVC8x4v46TDsvixljTMq
-# IdSt8Cp7SBBoz6KVshH+PLajUx0w3/TCqjBkVKN2VkGR6MlYAnhfQs+ur4Pm4tPS
-# iuFEu1GM3BvyaBZsCIkIIX1i1W94gn6euAgFWb/jY0qJm1DVtauk6INDt/iPIOxT
-# c7Fr3SCQDEfTIxHobOnUau9+4Jb4FaLiEb0066i3tdaj74KDzsXpIBM1F2VIBGxk
-# OupSjkT55J5VLyw6m0uiGkalVit4oyGe4gOsd3NooYIDTDCCA0gGCSqGSIb3DQEJ
+# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQURqrX9cPPMM3FlMuY7RgG
+# Ohi7lq0wJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
+# hkiG9w0BAQEFAASCAQBi4agAWAmE70A1Xlp57Yk+IMBs8qDLi/NCS/inrb6stifz
+# hj9Qukysf3l2UwJuSJneAS/VYHwWW7G/gh9ufCQ2mGoiKGNmUVkCj8rIIZyblrRg
+# TgpUzUqtq1y7JC/jXu8vpEFqFCqU+ao3ECrX2viw9n6NUf0HJuiTw5A8jPrQQzRc
+# pmf+d868O/rFhQ0VJplCnCWpv1tyzsrvl0XQXQrYTcuLfqEwGeFmM0C0VhugwGQ7
+# icC1jufgeL7anOPmlO1H5vKfdXj7cGGJ1GxAEF4V9Ey1X4njTEe4tUzjT/1jqarw
+# PGbxf2trsyZvTuO6BRRSegTtjMt0JQQJskfiiwzLoYIDTDCCA0gGCSqGSIb3DQEJ
 # BjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVy
 # IE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28g
 # TGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBTdGFtcGluZyBDQQIR
 # AJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAYBgkqhkiG9w0BCQMx
-# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMjUxNDQ1MDZaMD8GCSqG
-# SIb3DQEJBDEyBDCtRnHnTJzFdWcownNN1viTm4jAfZqusyb+1rpc9hI4CGArGeC1
-# SfLxHoUcFuj6TvAwDQYJKoZIhvcNAQEBBQAEggIAZ/Umfx9BeOX7g4tZfJjR0Cj2
-# ztgxe3fyfqc3xpqFdPPXIiuziXYy49kA/Zle18v5zECxjqX0Ut6OQfKTywBybHJ5
-# 7lJhHf0bIKf5RqlgRwCerSMSuDIR04l57IFmWEILn6UDCDNK7m++hDUuobkEkR1n
-# qvb/BS9gJ2C4qL7QUlpwMvCctie7nWKnwK6PYA7/EeAELMtplXF0Hy+MajJk1fL2
-# Tck3tcw9Hsnl2x/sFCjNc/FSBXmBya4SNXRpjcJVr8Egw8obTXBj3C9BbC86tTL7
-# RySkmn9kNfECAdI6DwfYcQkIl3KCm8IADj5b4lW7iJwgfA2ZUbBBqS4A/JUMY3TW
-# ETuMdXcN+uiBSFEQAiBoQRZ0zZEKlmux2XncsTohwy0XtQ9xTu8Z7Yjp8glfe3Kk
-# IP/+6PA7aiZgmqMc5EKA6UQXj/+112+2FSHMGCIi3/shEpnK1fczlgYqx/9vmfFa
-# ANtdfvEZGukVfieYVv3y8a9XCvHXw9u1T7GKf/7K9Ve1oiNQRLshrd0aImjEanEs
-# qXhZaLCcTYt29Q+VLSsJr8/+phN7qnbqnBk7G/aAOPm1I1s6ABq5CVFSGipXvDwt
-# MK7D8gAo1TBczgbdiSxmlqExHuEnOLPgVYWEl9v22iVCatYUv14MylLM5k1eJs61
-# 8UWa3E7D/E4TbczyMSM=
+# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMjUxNDQ0MzZaMD8GCSqG
+# SIb3DQEJBDEyBDB9xMjSqxe0ho4dHzvL0Ga9TEJqY0/+2hAfSFkG2K12naUmqxdv
+# gXBcMXKbIKjHtc4wDQYJKoZIhvcNAQEBBQAEggIAJwiIKmeqR6VbWKHwu+NvJMft
+# m/qc+m9gyGAgq+s7RXWkFj8zZ+MBuPSFPq79M6fr50YLd2fA7sN/podPBdwNEKSF
+# 1weDui4fG2Hm5dIsKqRpTsQFWPL2QPHUVQHzzeO+yER4cn4MqUwb7iPzlX4ELfEV
+# JM8YLNTtrCdO6fhAeeKYdOhdFXRfRULkp391Vbg3q2PtQgpQcQfw57nJ92YGc/QO
+# hnBwGxiLqjIqBPuHpYuestgxPPZgtyvycAvInUNSt16eFRSeRaoJlVlVd6CYsWRV
+# 4rOeJPLUnRnNptrRxF9htGn42O9xmN1Z9eaocElS5TFhImLhihdwvWe4FEsqw0w/
+# hOlrqTTRkvO0nF8FEv8LZBQyWdnEgnixC717XNt1NVwTbeGsr12GxDKgdFNj1i4t
+# 3/zBY1KeebGdFyutr5n8qgKzXRNc6tRdYiqVfewwER10xx729hBah1VXxVQ8BR/m
+# Id/MZBOe667yw7EMIzXAhc1ncQNaqIFLs9topwto6E8PlLguJgUJ9RimDsD7C8a/
+# pWgNzH8ydBFrRLcDbUToGJF48qe+0l0PHQpb9pzrSo+PSqQc9TUAlmIL+avP8leT
+# A6Dis5ZM0hev3wUj8hY8hSnQ8gIz0Of8htsv9fUto8s2Q3qbImSrWqkE8oKYK6tz
+# f2MrXGSZbEi3SrYzKqw=
 # SIG # End signature block
