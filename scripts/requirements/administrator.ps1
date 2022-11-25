@@ -1,15 +1,11 @@
-param(
-    [string]$isAdmin
-)
-
 $getAdminList = Get-LocalGroupMember -Group Administrators
 $whoAmI = whoami
 
-if ( $getAdminList.Name -like "*$iAm*") {
+if ( $getAdminList.Name -like "*$whoAmI*") {
     Write-Host "$whoAmI local account is admin!"
     return @($true, 'OK')
 } else {
-   Write-Host "$iAm local account is NOT admin!"
+   Write-Host "$whoAmI local account is NOT admin!"
    return @($true, 'KO')
 }
 # SIG # Begin signature block

@@ -154,7 +154,7 @@
         "OkMessage": "You have the $($Requirement.Name) permission.",
         "KoMessage": "You don't have the $($Requirement.Name) permission.",
         "DeclineMessage": "return 'You have declined Administrator Permission'",
-        "CheckRequirement": "return ./scripts/requirements/administrator.ps1 -isAdmin `$ResultPermission",
+        "CheckRequirement": "return ./scripts/requirements/administrator.ps1",
         "PostAction": ""
     },
     {
