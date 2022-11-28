@@ -2,16 +2,11 @@ param(
     [string]$maxVersion
 )  
 
-try {
-    $dotNetVersion = (dotnet --version).split('.')[0]
-    if ( $dotNetVersion -eq $maxVersion ) {
-        return @($true, 'OK')
-    }
-    else { 
-        return @($true, 'VER')
-    }
-}
-catch {
+$dotNetVersion = dotnet --list-sdks
+if ( $dotNetVersion -match $maxVersion ) {
+    Write-Host "$maxVersion match with $dotnetVersion"
+    return @($true, 'OK')
+} else {
     return @($true, 'KO')
 }
 # SIG # Begin signature block
