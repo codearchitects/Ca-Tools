@@ -245,7 +245,7 @@
         "ExtraMessage": "",
         "DownloadCommand": "./scripts/download-binary.ps1 -link $($Requirement.DownloadLink) -outPath $($Requirement.DownloadOutfile)",
         "ArgumentList": "",
-        "InstallCommand": "./scripts/install/nodejs.ps1 -downloadOutFile $($Requirement.DownloadOutfile)",
+        "InstallCommand": "./scripts/install/nodejs.ps1 -downloadOutFile $($Requirement.DownloadOutfile) -addNodeBuildTools `$addNodeBuildTools",
         "DeleteCommand": "./scripts/remove-binary.ps1 -downloadOutFile $($Requirement.DownloadOutfile)",
         "DeclineMessage": "return `\"You have declined to automatically download and install Node.js.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
         "CheckRequirement": "return ./scripts/requirements/nodejs.ps1 -majorVersion $($Requirement.MajorVersion) ",
