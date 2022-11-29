@@ -10,7 +10,7 @@ $argumentList = @(
     $downloadOutfile
 )
 
-if ( !( $addNodeBuildTools) ) {
+if ( -not $addNodeBuildTools) {
     $argumentList += '/passive'
 } else {
     Write-Host "Starting manual Node install..."
