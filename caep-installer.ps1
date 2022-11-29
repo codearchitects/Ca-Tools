@@ -1,6 +1,7 @@
 param(
 [string]$ScarVersion = "",
-[string]$ScarConfig = "https://castorybookbloblwebsite.blob.core.windows.net/scar-configs/scarface.config.json"
+[string]$ScarConfig = "https://castorybookbloblwebsite.blob.core.windows.net/scar-configs/scarface.config.json",
+[Switch]$addNodeBuildTools
 )
 
 #---------------------------------------------------------[Initialisations]--------------------------------------------------------
@@ -351,7 +352,7 @@ foreach ($ps1File in $ps1Files) {
   Unblock-File -Path $ps1File
 }
 
-. .\caep-main.ps1 -ScarVersion $ScarVersion -ScarConfig $ScarConfig -currentDate $currentDate
+. .\caep-main.ps1 -ScarVersion $ScarVersion -ScarConfig $ScarConfig -currentDate $currentDate -addNodeBuildTools $addNodeBuildTools
 
 $NextButton.Add_Click({ Step-NextAction })
 $AcceptButton.Add_Click({ Invoke-AcceptRequirement })

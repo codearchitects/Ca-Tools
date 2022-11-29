@@ -1,14 +1,22 @@
 param(
-    [string]$downloadOutfile
+    [string]$downloadOutfile,
+    [bool]$addNodeBuildTools
 )
+
+Write-Host $addNodeBuildTools
 
 $argumentList = @(
     '/I',
-    $downloadOutfile,
-    '/passive'
+    $downloadOutfile
 )
 
+if ( !( $addNodeBuildTools) ) {
+    $argumentList += '/passive'
+} else {
+    Write-Host "Starting manual Node install..."
+}
 Start-Process msiexec.exe -ArgumentList $argumentList -Wait
+
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

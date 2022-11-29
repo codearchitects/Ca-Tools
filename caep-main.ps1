@@ -1,7 +1,8 @@
 param(
   [string]$ScarVersion = "",
   [string]$ScarConfig = "",
-  [string]$currentDate
+  [string]$currentDate,
+  [bool]$addNodeBuildTools
 )
 
 function Update-EnvPath {
