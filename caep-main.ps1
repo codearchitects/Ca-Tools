@@ -354,6 +354,13 @@ function New-StartupCmd {
 
 . .\scripts\common.ps1
 
+# Create scar folder beforehand with download directory
+$downloadExeFolder = "C:\dev\scarface\download\"
+if ( !( Test-Path -Path $downloadExeFolder ) ) {
+  Write-Host "$downloadExeFolder not found. Creating it..."
+  New-Item -Path $downloadExeFolder -ItemType Directory
+}
+
 #---------------------------------------------------------[Logic]--------------------------------------------------------
 
 # Variables
