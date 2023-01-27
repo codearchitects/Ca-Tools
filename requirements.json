@@ -480,7 +480,7 @@
         ],
         "QuestionMessage": "Press 'Accept' to run the command 'ca scar'",
         "PathFile": "~\\AppData\\Roaming\\npm\\ca.cmd",
-        "ArgumentList": "scar -c C:\\dev\\scarface\\scarface.config.json`\"",
+        "ArgumentList": "scar -c C:\\dev\\scarface\\scarface.config.json",
         "ActivityOKCommand": "",
         "ActivityKOCommand": "./scripts/activityKoCommand/ca-scar.ps1 -reqName $($Requirement.Name) -reqPathFile $($Requirement.PathFile) -reqArgList $($Requirement.ArgumentList)",
         "DeclineMessage": "return `\"You have declined to automatically execute 'ca scar'.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
