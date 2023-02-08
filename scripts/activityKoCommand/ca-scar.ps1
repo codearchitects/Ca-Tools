@@ -22,7 +22,7 @@ if ($ScarVersion -ne '') {
 }
 $ScarConfigObj | ConvertTo-Json | Set-Content -Path $scarConfigPath
 $Description.Text += "Downloading the file scarface.config.json..."
-$Description.Text += "Download complete."
+$Description.Text += "`nDownload complete."
 
 # Execute ca scar
 $killCheck = {
@@ -34,7 +34,7 @@ $killCheck = {
 
 Start-Job $killCheck -Name "killVScode"
 
-$Description.Text += "Executing the command ca scar..."
+$Description.Text += "`nExecuting the command ca scar..."
 
 Set-Location 'C:\dev\scarface'
 $env:NG_CLI_ANALYTICS = "ci"
@@ -42,12 +42,12 @@ $env:NG_CLI_ANALYTICS = "ci"
 Write-Host "Executing ca scar:setup..."
 Start-Process "$reqPathFile" -ArgumentList 'scar:setup' -NoNewWindow -Wait
 Start-Process "$reqPathFile" -ArgumentList "$reqArgList" -NoNewWindow -Wait
-$Description.Text += "The command ca scar was executed correctly.`r`nPress the End button to conclude the installation."
+$Description.Text += "`nThe command ca scar was executed correctly.`r`nPress the End button to conclude the installation."
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUjRLnxAmkoFCjtNHooRNPIGVg
-# HHKggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUS2U/LoXYililmB8Xfw/VZi8/
+# 4J+ggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -215,30 +215,30 @@ $Description.Text += "The command ca scar was executed correctly.`r`nPress the E
 # U2FsZm9yZDEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSQwIgYDVQQDExtTZWN0
 # aWdvIFJTQSBDb2RlIFNpZ25pbmcgQ0ECEA7nuDfFiGka9mWZXtAMyYwwCQYFKw4D
 # AhoFAKCBhDAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgEL
-# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU+IjhFzsr1UDZ7BI1GWlo
-# WHmlzBwwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
-# hkiG9w0BAQEFAASCAQCODnwQoK7bwGwXTSq0wiqJa0AZLSMz0OdTT9CusmC3v7uk
-# ziuFbLcP8KOumQUHZBiZ2vjKiBon9emU8sontM/IaUP4EUYgyM+LbFEu3Eg+BzqS
-# 7JuKeGHS0ar8/y0FtuJHfPvpyomuGpMzk7yccLz55CZfGCG8f9g7u3R2N2av0HDl
-# 1AY8NSEFdlruslz/47qFP0Gbq+lBy+KqhwMFPWP3ReeIVBH1jZ4INsnmFt2UOQm0
-# QE8mgZIBrWi1i08AVp73SaTxm/22+NDU9Ga5GekWBSNl92QfbZIWCQwrbvz93nKC
-# jVrX/3kGrCP2zyOIxN0eE0U6onazZhEksN43yU+qoYIDTDCCA0gGCSqGSIb3DQEJ
+# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU4Clhp8RyJzpAcxe2ZvBt
+# TRdlhWwwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
+# hkiG9w0BAQEFAASCAQAPWt0CcQTEjJ8jHpw0mPUH6oHqiYOfNBzZH7AqDYI64Zls
+# /z3M83YBQcBIkZUvmmr65ECFExik8FkAjHsNctyWtYxqkIXIhnPsZhCmxqGwzf+Z
+# 1J1CA8GVfAY6NQrnIHk0c/D1MqBvbYetUtdhD4sneLb/tbB+nszba5ZnHh8KQfpS
+# ahwg/RgR7r/RA+RKURRhg1+uM5XoMqaKMEZbkYbUGNskOy39eskxNM/DJ/qGwgd0
+# iWAtnC8SejpWgWzdyO2YkcxiHjw5llCwTlPKhnRFJVx2dfPwl7k8+3uecThuIC4Q
+# ZjjSATVhaEMn6QxkCQQfT1WKfXBMOj9cqInEC8W0oYIDTDCCA0gGCSqGSIb3DQEJ
 # BjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVy
 # IE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28g
 # TGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBTdGFtcGluZyBDQQIR
 # AJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAYBgkqhkiG9w0BCQMx
-# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMzAyMDgxNjA5NDlaMD8GCSqG
-# SIb3DQEJBDEyBDCKMz3ur8SG7eU4ksA5Vo5En3FE6f8mT2pBVC1mA7WpREasLGuK
-# /hl36+igLZRhOQQwDQYJKoZIhvcNAQEBBQAEggIAP6R+Mzt8V0Jpe6peNYDBl8JQ
-# EHiq2+PijxynNJYuiSyyetYhOHhO2avzotfy6JAp2flDM5op8fLdCbBzKERkxu9p
-# KUs4yo4fYgRiWhAe/jTvQe6GZmD9kFSHDpJhYyPBZEGfLt3QWnJ6mP3vGmgbnyvX
-# SXcyPnoKJNgiGDCu/aEcRhOMcBxHMHl25++Vg+0aotPQ6mdPvQwYkP3APgaBceKW
-# pODc1N+gjaJ5kCDyMiJXiCJLq0LtLTzIAJwxlk9CPTApE8+KC2OXnGOV9kVlgDjc
-# 710PSJG6+YTsUvA3OZ3Nf2da+qB/zC7XWeIT36N0Rz1LzIkLrUKS4//N1QdJW/Tp
-# hKFlYVVqgZyhLfJzFT+d8cz+f6U/9Sa7AT9q8/++lsNeDRju1Pp9LVoxF+7b+euS
-# wUBaETq23w6xGyiwIwym9QxiEb2FoAk9TG3VTei2+ls3Ta2/R02qdr+eR37Gs6Gg
-# ZixidLcqpf2XzedKj0nIoIgcBv6enIMzqnvICzRCTKJ/E73KHTVrtD4q1KkgidhY
-# 9T2lD9j5s2ty2jms+6cDRSCIA7RrXWUdsnTs+H1pnUGo8UeqKhP9r2lkR5qQ4Wyd
-# ujxaVb/7OsyZ6BYJX48sW5c+Rr7pnOXJJ9/WCX2/WaJMa++lnsBfs/eokoooPoRI
-# fKAaVcr/9l6dRPtmmV0=
+# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMzAyMDgxNjQzMzBaMD8GCSqG
+# SIb3DQEJBDEyBDDKPYLL69O3VXeWO0SOoeEbe6+w4eMWXPIPAiS1ikkAIOdcF5F+
+# hQA0a3nODsMedIcwDQYJKoZIhvcNAQEBBQAEggIALEllwDQU9Ros2Wy9c6fgGM/Z
+# c9CssKGDZSNigt/VWt1VJ9+I6HTESoV8ps+V/puIHevzPmCWP7ndN74zKQLhy+eJ
+# O6oheEOTbfoijfFyxJpmAT6HeOLaZFCc7gtwNIUuW8e+FkkPb/aVPhyBytEKUSKC
+# irCaly5udhs6QbEfjfRz0eLZR+eczabPHmWFm8aTGDa6zIpPucXd7/gADsW0yxkc
+# Qb73IFFzXNcQdSU3JTUzsk8UibvyUBJbRaXKQVAOysyo4EB0F0/UHLO15m9HH8X1
+# szVMdL1ldCkE1uxZzugweNOwU1tbfTHD1c4sNw6vsc7FN0Z87U/FgdPMPCZmsnFF
+# GsjVdDLzHE430sATSTsoEQH9SNIuIn8xzSdpi8zIhxPc5d9PILHSbyU6jKhE5Thu
+# tbO/haqBY4TR4K9szH5xoGf8VLLN4Dw7cuaVrPcnVBLTYsOmC54yAl5OBdKk5u4f
+# 0vYcQTt5g222BeOcpJJUMwddyBZL3wrdrY13iAjhkgTjseCU224xmDMzlxOUaC/H
+# tyvkIqZ4dakiLvgylm4WQxcP9suqAV9s+DpV9IqUnHF/YteJUTQOq3e3mVrEjcvj
+# l6aJ1AEAfcoe+uQurz0J9/eij7q4pP6Hy/iA8GQHtRiyfwnub93/8x0T7obXV5Au
+# QleqAtYx2bhe03GHABI=
 # SIG # End signature block
