@@ -12,7 +12,7 @@ function Update-EnvPath {
   .DESCRIPTION
   Update the Environment Variables without closing PowerShell
   #>
-  $env:PATH = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+  $env:PATH = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
   $Description.AppendText("`r`nEnv var Path reloaded correctly")
 }
 
@@ -24,7 +24,7 @@ function New-RandomCode {
   .DESCRIPTION
   Generates a random code for the installation every time the script is executed
   #>
-  return -join (((48..57)+(65..90)+(97..122)) * 80 | Get-Random -Count 32 | ForEach-Object{ [char]$_ })
+  return -join (((48..57) + (65..90) + (97..122)) * 80 | Get-Random -Count 32 | ForEach-Object { [char]$_ })
 }
 
 function Invoke-AcceptRequirement {
@@ -39,7 +39,8 @@ function Invoke-AcceptRequirement {
   # Save a message that will take track of the Requirements accepted by the user
   if ($CurrentRequirement.MaxVersion) {
     $Message = "ACCEPTED, Name = $($CurrentRequirement.Name), Version = $($CurrentRequirement.MaxVersion)`r`n$('-'*70)"
-  } else {
+  }
+  else {
     $Message = "ACCEPTED, Name = $($CurrentRequirement.Name)`r`n$('-'*70)"
   }
   Add-Content -Path $InstallRequirementsLogfile -Value $Message -Force
@@ -111,7 +112,8 @@ function Invoke-DeclineRequirement {
   # Save a message that will take track of the Requirements declined by the user
   if ($Requirement.MaxVersion) {
     $Message = "DECLINED, Name = $($Requirement.Name), Version = $($Requirement.MaxVersion)`r`n$('-'*70)"
-  } else {
+  }
+  else {
     $Message = "DECLINED, Name = $($Requirement.Name)`r`n$('-'*70)"
   }
   Add-Content -Path $InstallRequirementsLogfile -Value $Message -Force
@@ -150,10 +152,12 @@ function Invoke-LoginNpm {
       $Description.Lines = $NpmViewCli
       Remove-WrongToken($TokenTextBox.Text)
       Show-Buttons @('$NextButton', '$CancelButton')
-    } else {
+    }
+    else {
       Show-NpmLoginError("Npm Login Error!`r`nThe Token or the Username are wrong. Check again your Username and Token.`r`nPS: Be sure that the token is setted as 'All Accessible Organization'.")
     }
-  } else {
+  }
+  else {
     Show-NpmLoginError("Username and Token can't be NULL! Please enter the Username and Password.")
   }
 }
@@ -255,14 +259,15 @@ function Invoke-AppendRequirementDescription {
   $Description.AppendText("Requirement $(' ' * 16)| Status |`r`n$('-' * 37)|`r`n")
   foreach ($Item in $RequirementsList) {
     $NumberSpaces = 26 - ($Item.Name | Measure-Object -Character).Characters
-    $DescriptionMessage ="$($Item.Name) $(' ' * $NumberSpaces) |"
+    $DescriptionMessage = "$($Item.Name) $(' ' * $NumberSpaces) |"
     if ($RequirementsNotMetList.Contains($Item)) {
       $Description.SelectionStart = $Description.TextLength
       $Description.SelectionLength = 0
       $Description.SelectionColor = "Red"
       $Description.AppendText("$DescriptionMessage   KO   |")
       $Description.AppendText([Environment]::NewLine)
-    } else {
+    }
+    else {
       $Description.SelectionStart = $Description.TextLength
       $Description.SelectionLength = 0
       $Description.SelectionColor = "Green"
@@ -341,7 +346,8 @@ function New-StartupCmd {
   }
   if ($ScriptArgs -ne "") {
     $ScriptCaepContent = $CaepInstallerPath + $ScriptArgs
-  } else {
+  }
+  else {
     $ScriptCaepContent = $CaepInstallerPath
   }
 
@@ -350,6 +356,94 @@ function New-StartupCmd {
     New-Item -Path $StartupPath | Out-Null
     Add-Content -Path $StartupPath -Value "$ScriptCmdContent"
   }
+}
+
+function ConvertPSObjectToHashtable { 
+  param (
+    [Parameter(ValueFromPipeline)]
+    $InputObject
+  )
+
+  process {
+    if ($null -eq $InputObject) { return $null }
+
+    if ($InputObject -is [System.Collections.IEnumerable] -and $InputObject -isnot [string]) {
+      $collection = @(
+        foreach ($object in $InputObject) { ConvertPSObjectToHashtable $object }
+      )
+
+      Write-Output -NoEnumerate $collection
+    }
+    elseif ($InputObject -is [psobject]) {
+      $hash = @{}
+
+      foreach ($property in $InputObject.PSObject.Properties) {
+        $hash[$property.Name] = ConvertPSObjectToHashtable $property.Value
+      }
+
+      $hash
+    }
+    else {
+      $InputObject
+    }
+  }
+}
+
+
+function Download-ScarConfigJson {
+  <#
+  .SYNOPSIS
+  Download scarface.config.json
+  .DESCRIPTION
+  Download scarface.config.json
+  #>
+
+  $scarConfigPath = "C:\dev\scarface\scarface.config.json"
+  if ( Test-Path $scarConfigPath) {
+    Remove-Item -Path $scarConfigPath -Force
+  }
+  New-Item -Path $scarConfigPath -Force | Out-Null
+
+  Write-Host "downloading $ScarConfig"
+  $ScarConfigObj = (Invoke-WebRequest -Uri $ScarConfig -UseBasicParsing).Content | ConvertFrom-Json
+
+  if ($ScarConfigObj.overrideRequirement) {
+    Write-Host "downloading " + $ScarConfigObj.overrideRequirement
+    $retval = (Invoke-WebRequest -Uri $ScarConfigObj.overrideRequirement -UseBasicParsing).Content | ConvertFrom-Json
+    return $retval
+  }
+  return $false
+}
+
+function Override-Requirement($Requirements) {
+  <#
+  .SYNOPSIS
+  Override custom json to Requirements
+  .DESCRIPTION
+  Override custom json to Requirements
+  #>
+
+  $overrideJson = Download-ScarConfigJson
+  if (!($overrideJson)) {
+    Write-Host "No override found"
+    return $Requirements
+  }
+  
+  foreach ($Requirement in $Requirements) {
+    foreach ($overrideRequirement in $overrideJson) {
+      if ($Requirement.Name -eq $overrideRequirement.Name) {
+        $hashtableReq = ConvertPSObjectToHashtable $overrideRequirement
+        foreach ($element in $hashtableReq.GetEnumerator()) {
+          if ($element.Key -in $Requirement.PSobject.Properties.Name) {
+            $Requirement.($element.Key) = $element.Value
+          }
+        }
+        break
+      }
+    }
+  }
+  
+  return $Requirements
 }
 
 . .\scripts\common.ps1
@@ -384,10 +478,12 @@ $AdminStatus = ([Security.Principal.WindowsPrincipal][Security.Principal.Windows
 if (-not $AdminStatus) {
   $Description.AppendText("PLEASE OPEN POWERSHELL AS ADMINISTRATOR!!!")
   Show-Buttons @('$DoneButton')
-} elseif (-not $InternetStatus) {
+}
+elseif (-not $InternetStatus) {
   $Description.AppendText("PLEASE CONNECT TO INTERNET!!!")
   Show-Buttons @('$DoneButton')
-} else {
+}
+else {
   # Resolve the Requirement's dependencies
   $RequirementsJsonPath = ".\requirements.json"
 
@@ -397,7 +493,9 @@ if (-not $AdminStatus) {
     $RequirementsList[$i].Dependencies = (Resolve-Dependencies $RequirementsList[$i].Dependencies) | Select-Object -Unique
   }
 
-  $RequirementsList = @($RequirementsList | Sort-Object -Property {$_.Dependencies.Count})
+  $RequirementsList = @($RequirementsList | Sort-Object -Property { $_.Dependencies.Count })
+
+  $RequirementsList = Override-Requirement -Requirements $RequirementsList
 
   $RequirementsNotMetList = Invoke-CheckRequirements $RequirementsList
 

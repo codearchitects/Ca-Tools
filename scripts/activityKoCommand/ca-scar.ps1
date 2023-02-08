@@ -4,13 +4,7 @@ param(
     [string]$reqArgList
 )
 
-# Download scarface.config.js
-$scarConfigPath = "C:\dev\scarface\scarface.config.json"
-if ( Test-Path $scarConfigPath) {
-    Remove-Item -Path $scarConfigPath -Force
-}
-New-Item -Path $scarConfigPath -Force
-$ScarConfigObj = (Invoke-WebRequest -Uri $ScarConfig -UseBasicParsing).Content | ConvertFrom-Json
+$ScarConfigObj = Get-Content -Path $scarConfigPath | ConvertFrom-Json
 $MaxDate = 0
 $TokenPath = "~/.token.json"
 $TokenList = Get-Content $TokenPath | ConvertFrom-Json
