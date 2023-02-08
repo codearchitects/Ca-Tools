@@ -12,7 +12,7 @@ function Update-EnvPath {
   .DESCRIPTION
   Update the Environment Variables without closing PowerShell
   #>
-  $env:PATH = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+  $env:PATH = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
   $Description.AppendText("`r`nEnv var Path reloaded correctly")
 }
 
@@ -24,7 +24,7 @@ function New-RandomCode {
   .DESCRIPTION
   Generates a random code for the installation every time the script is executed
   #>
-  return -join (((48..57)+(65..90)+(97..122)) * 80 | Get-Random -Count 32 | ForEach-Object{ [char]$_ })
+  return -join (((48..57) + (65..90) + (97..122)) * 80 | Get-Random -Count 32 | ForEach-Object { [char]$_ })
 }
 
 function Invoke-AcceptRequirement {
@@ -39,7 +39,8 @@ function Invoke-AcceptRequirement {
   # Save a message that will take track of the Requirements accepted by the user
   if ($CurrentRequirement.MaxVersion) {
     $Message = "ACCEPTED, Name = $($CurrentRequirement.Name), Version = $($CurrentRequirement.MaxVersion)`r`n$('-'*70)"
-  } else {
+  }
+  else {
     $Message = "ACCEPTED, Name = $($CurrentRequirement.Name)`r`n$('-'*70)"
   }
   Add-Content -Path $InstallRequirementsLogfile -Value $Message -Force
@@ -111,7 +112,8 @@ function Invoke-DeclineRequirement {
   # Save a message that will take track of the Requirements declined by the user
   if ($Requirement.MaxVersion) {
     $Message = "DECLINED, Name = $($Requirement.Name), Version = $($Requirement.MaxVersion)`r`n$('-'*70)"
-  } else {
+  }
+  else {
     $Message = "DECLINED, Name = $($Requirement.Name)`r`n$('-'*70)"
   }
   Add-Content -Path $InstallRequirementsLogfile -Value $Message -Force
@@ -150,10 +152,12 @@ function Invoke-LoginNpm {
       $Description.Lines = $NpmViewCli
       Remove-WrongToken($TokenTextBox.Text)
       Show-Buttons @('$NextButton', '$CancelButton')
-    } else {
+    }
+    else {
       Show-NpmLoginError("Npm Login Error!`r`nThe Token or the Username are wrong. Check again your Username and Token.`r`nPS: Be sure that the token is setted as 'All Accessible Organization'.")
     }
-  } else {
+  }
+  else {
     Show-NpmLoginError("Username and Token can't be NULL! Please enter the Username and Password.")
   }
 }
@@ -255,14 +259,15 @@ function Invoke-AppendRequirementDescription {
   $Description.AppendText("Requirement $(' ' * 16)| Status |`r`n$('-' * 37)|`r`n")
   foreach ($Item in $RequirementsList) {
     $NumberSpaces = 26 - ($Item.Name | Measure-Object -Character).Characters
-    $DescriptionMessage ="$($Item.Name) $(' ' * $NumberSpaces) |"
+    $DescriptionMessage = "$($Item.Name) $(' ' * $NumberSpaces) |"
     if ($RequirementsNotMetList.Contains($Item)) {
       $Description.SelectionStart = $Description.TextLength
       $Description.SelectionLength = 0
       $Description.SelectionColor = "Red"
       $Description.AppendText("$DescriptionMessage   KO   |")
       $Description.AppendText([Environment]::NewLine)
-    } else {
+    }
+    else {
       $Description.SelectionStart = $Description.TextLength
       $Description.SelectionLength = 0
       $Description.SelectionColor = "Green"
@@ -341,7 +346,8 @@ function New-StartupCmd {
   }
   if ($ScriptArgs -ne "") {
     $ScriptCaepContent = $CaepInstallerPath + $ScriptArgs
-  } else {
+  }
+  else {
     $ScriptCaepContent = $CaepInstallerPath
   }
 
@@ -350,6 +356,94 @@ function New-StartupCmd {
     New-Item -Path $StartupPath | Out-Null
     Add-Content -Path $StartupPath -Value "$ScriptCmdContent"
   }
+}
+
+function ConvertPSObjectToHashtable { 
+  param (
+    [Parameter(ValueFromPipeline)]
+    $InputObject
+  )
+
+  process {
+    if ($null -eq $InputObject) { return $null }
+
+    if ($InputObject -is [System.Collections.IEnumerable] -and $InputObject -isnot [string]) {
+      $collection = @(
+        foreach ($object in $InputObject) { ConvertPSObjectToHashtable $object }
+      )
+
+      Write-Output -NoEnumerate $collection
+    }
+    elseif ($InputObject -is [psobject]) {
+      $hash = @{}
+
+      foreach ($property in $InputObject.PSObject.Properties) {
+        $hash[$property.Name] = ConvertPSObjectToHashtable $property.Value
+      }
+
+      $hash
+    }
+    else {
+      $InputObject
+    }
+  }
+}
+
+
+function Download-ScarConfigJson {
+  <#
+  .SYNOPSIS
+  Download scarface.config.json
+  .DESCRIPTION
+  Download scarface.config.json
+  #>
+
+  $scarConfigPath = "C:\dev\scarface\scarface.config.json"
+  if ( Test-Path $scarConfigPath) {
+    Remove-Item -Path $scarConfigPath -Force
+  }
+  New-Item -Path $scarConfigPath -Force | Out-Null
+
+  Write-Host "downloading $ScarConfig"
+  $ScarConfigObj = (Invoke-WebRequest -Uri $ScarConfig -UseBasicParsing).Content | ConvertFrom-Json
+
+  if ($ScarConfigObj.overrideRequirement) {
+    Write-Host "downloading " + $ScarConfigObj.overrideRequirement
+    $retval = (Invoke-WebRequest -Uri $ScarConfigObj.overrideRequirement -UseBasicParsing).Content | ConvertFrom-Json
+    return $retval
+  }
+  return $false
+}
+
+function Override-Requirement($Requirements) {
+  <#
+  .SYNOPSIS
+  Override custom json to Requirements
+  .DESCRIPTION
+  Override custom json to Requirements
+  #>
+
+  $overrideJson = Download-ScarConfigJson
+  if (!($overrideJson)) {
+    Write-Host "No override found"
+    return $Requirements
+  }
+  
+  foreach ($Requirement in $Requirements) {
+    foreach ($overrideRequirement in $overrideJson) {
+      if ($Requirement.Name -eq $overrideRequirement.Name) {
+        $hashtableReq = ConvertPSObjectToHashtable $overrideRequirement
+        foreach ($element in $hashtableReq.GetEnumerator()) {
+          if ($element.Key -in $Requirement.PSobject.Properties.Name) {
+            $Requirement.($element.Key) = $element.Value
+          }
+        }
+        break
+      }
+    }
+  }
+  
+  return $Requirements
 }
 
 . .\scripts\common.ps1
@@ -384,10 +478,12 @@ $AdminStatus = ([Security.Principal.WindowsPrincipal][Security.Principal.Windows
 if (-not $AdminStatus) {
   $Description.AppendText("PLEASE OPEN POWERSHELL AS ADMINISTRATOR!!!")
   Show-Buttons @('$DoneButton')
-} elseif (-not $InternetStatus) {
+}
+elseif (-not $InternetStatus) {
   $Description.AppendText("PLEASE CONNECT TO INTERNET!!!")
   Show-Buttons @('$DoneButton')
-} else {
+}
+else {
   # Resolve the Requirement's dependencies
   $RequirementsJsonPath = ".\requirements.json"
 
@@ -397,7 +493,9 @@ if (-not $AdminStatus) {
     $RequirementsList[$i].Dependencies = (Resolve-Dependencies $RequirementsList[$i].Dependencies) | Select-Object -Unique
   }
 
-  $RequirementsList = @($RequirementsList | Sort-Object -Property {$_.Dependencies.Count})
+  $RequirementsList = @($RequirementsList | Sort-Object -Property { $_.Dependencies.Count })
+
+  $RequirementsList = Override-Requirement -Requirements $RequirementsList
 
   $RequirementsNotMetList = Invoke-CheckRequirements $RequirementsList
 
@@ -411,8 +509,8 @@ if (-not $AdminStatus) {
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU3Z9rnbuTgYTQ0CGuquQDuz5E
-# zEyggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUxg2mq5oq5zVoFwLI6bItIWbX
+# PIqggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -580,30 +678,30 @@ if (-not $AdminStatus) {
 # U2FsZm9yZDEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSQwIgYDVQQDExtTZWN0
 # aWdvIFJTQSBDb2RlIFNpZ25pbmcgQ0ECEA7nuDfFiGka9mWZXtAMyYwwCQYFKw4D
 # AhoFAKCBhDAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgEL
-# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUHpVUAQqi5B2zEvzMqljJ
-# yFZZUOwwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
-# hkiG9w0BAQEFAASCAQBMi/jFsyD/p/BEwUajBcYkDrh+07tFFXpA7EfOz6R0ocuX
-# 0DzHmcFz10VhXn3f+CwcVtxKDDzUxLn0Z5zCvnbpDWn3tprVDB26t7gp7C5KMVdR
-# d9jmswh4HLnWods9yLv0Y6sPl9xUTo1IUicRzAdqt/SZichHdkHs78150EC5twpe
-# r+GmaH1e4en6pRbp4MsDEoVLh7djk6QiZqLKcTNa3hJ2JkDzM2Oy1jY/e/7SJyXh
-# 2uRYu+6tRVLgemREHK7B8USZID+V+VkAQeCqo+KtFO9iktsApjh4Mio75iu+8kox
-# mR+uyEAyY6Dkxhv+5c6BgzKzXTVPskghSd2DGPxboYIDTDCCA0gGCSqGSIb3DQEJ
+# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUO8t+4gDFPr7Ogo1X9/JO
+# ocQe2jQwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
+# hkiG9w0BAQEFAASCAQAyrPdw3jhPb6E3OzV1qQA4pNWd0Z4jhiRzVg9GMoQ20Dp4
+# Fol8ns2K7MXBlpP695q05tf2ufj2U9OQysT3YmlM7fHuMbMIp+dVapdtlfGzhYCF
+# MLX/wBX3TKIK6Ll0Vy/SjcAN8tUtwsZjr5oN2E+UC0YNdhfwacKrSMRJnSGs3naf
+# vlLhhlCT2V/NhZWcLceKVVMQuamMQoYA9O5rTj/sQrGwXpKwiH8AqM8bM4YSpL5J
+# XhhQEEWfOgPeRxeNwFZIMtmUZPOvdCF6iUIOVpZnepo05OB4nyYDj4W5wuTls+zy
+# jZ1RtLSc6LT484VwC96QP0V8sQlvv73ZkP1efutuoYIDTDCCA0gGCSqGSIb3DQEJ
 # BjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVy
 # IE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28g
 # TGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBTdGFtcGluZyBDQQIR
 # AJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAYBgkqhkiG9w0BCQMx
-# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMzAxMjcxNDA4MjhaMD8GCSqG
-# SIb3DQEJBDEyBDAeo5OTWQEu0O8B9/M0BUpFmTMDOa3tG0FleOrhvixKBXWaBmW4
-# 2j9FvVQlCPPtDWcwDQYJKoZIhvcNAQEBBQAEggIATkILI9AJiomLMInX1NZrySEK
-# EhI9Cj5FWZr/azZ9RuWS8MFkmOAzA/+OIfJm9IwpKph8nkmX+fZFVT97JcYLKT7r
-# /EnA7SUKzdMqydohWgIt++zFYCASyjHwsmnhIxvE4AyOdqJpiyzGJAwmnSaUCA2R
-# rPSPj8gz5uL+ssQdsGsw2xV2zA/h6Ezrd9zaPj7ILd7BlNbqsu3zBilLjCkQCmox
-# nt1593QEKz+XbHTMo2Gp1omS5FhfRLhwHTSSJlvdJNDF1SVDGZtWMiuk1dgmM0/p
-# VA9OqYXaHAJ+Ur1xKAXXDrtH9escdpPQOWQyQ1HZLgbwwzpUYjqBM37cBKcYBwYH
-# dTusec9UlvQWVWSgsLrwV5/1c0Rz4o/IEVqSaIB8QUgU9hZp+QBwuY9Ed9Ut+BGr
-# c6KtYCrNcJCanZzUYchuHAYPcRMq1KIM14VB8e6sALPRE5oqQz/Bc0ZhXvOBPRcQ
-# mMD5F+5cqiTj6/fWqZIikLoroeoyLeAQX8vicdA+I4JVNLfn1RZIZt/dJ/3Vtox+
-# 4ixGNR9cuRkPU5ZwRfZo0wnHc8zvyRzwNrC7vEGwgdrL9u+PU7pDP8fg5RUUhLz2
-# hstqg1B8oytX81oeZ4m9iK5sr0pCQaq8CI3dY72xqKOKUwkPaBJDqyiQ4SeOb6xX
-# bgoCbdJxlsbqrMzttmc=
+# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMzAyMDgwOTM4NTdaMD8GCSqG
+# SIb3DQEJBDEyBDA8+VLOaYL0l8998ketYLBfEYvDEQG7IBCq8yrS2yH5gE0OODss
+# aqWBqJhqz6HIpMswDQYJKoZIhvcNAQEBBQAEggIAGID7RQCJ/OlUYrnyseiVy54n
+# +OhpPwMNPRU85wsJ8hODX8oPsSZQSixpln7Ld8Hs2cVuKyLD2K0+gkkEWMXQUPWa
+# 0G1ToYOqcRG6enUGoCKfOUI3R+ezVe/J9aVK3NT9nAJ9RzPVqmIUketWDEB6yOAD
+# Ddfat14IpdtdhEc8jwapV/wV+kYhWkniX0Eb1a1mVFp+eMmK7tfIfp1uxFJpMrVK
+# DIDtCkmXMrKCWJgLTW4icUfS5VWS/j7R43EwWrQrWxT+/F3HAey6u4XBYFLEHQxi
+# 7GZtw2wB79JA26EVtX/z+g4uiwL2YKp09VBR3pOKwU0F0dTaM0qepGh5HMPCsWL/
+# cDvsiPqAuxUV3p1pNrch1TfupYxpz0F8wMH0/kRNokGLs90LgXzYtWg6aZ/AP0Ks
+# ePrRaZ5JyoF6K2x0rf30oXCZGer3Eoa8XvQlEZAeVB75xGSv+j01+07m+vuxlcQl
+# mI/A5Fq59JY+qo/0yKWOKxbUD4RdRu9Hr3IrbY4YwAMJ8WqKNLoXoIkm0kDti9AE
+# s3otusQj14nGJs+mgAHWF+T3Xb8AZM1XI7JuVX2CjbWe3Tp7eyWMbrPoTsUYcfux
+# Fz3EU68Xf70F0gaaNvQeIL9NxmDydtK5O3CvXX42KaKMDKtOZrJowonSkSWoPKu0
+# V7N5WUjJUzxjJVCtPjs=
 # SIG # End signature block
