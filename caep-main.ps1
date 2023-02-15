@@ -83,7 +83,7 @@ function Invoke-AcceptRequirement {
   if ($CurrentRequirement.PostAction) {
     Show-ButtonsPostAction $CurrentRequirement.PostAction
   }
-  # Once everything has been done the index of the current requirement will be incrementedF
+  # Once everything has been done the index of the current requirement will be incremented
   $script:IndexRequirement++
 }
 
