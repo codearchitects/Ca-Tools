@@ -83,7 +83,7 @@ function Invoke-AcceptRequirement {
   if ($CurrentRequirement.PostAction) {
     Show-ButtonsPostAction $CurrentRequirement.PostAction
   }
-  # Once everything has been done the index of the current requirement will be incremented
+  # Once everything has been done the index of the current requirement will be incrementedF
   $script:IndexRequirement++
 }
 
@@ -260,20 +260,19 @@ function Invoke-AppendRequirementDescription {
   foreach ($Item in $RequirementsList) {
     $NumberSpaces = 26 - ($Item.Name | Measure-Object -Character).Characters
     $DescriptionMessage = "$($Item.Name) $(' ' * $NumberSpaces) |"
+    $Description.SelectionStart = $Description.TextLength
+    $Description.SelectionLength = 0
+    
     if ($RequirementsNotMetList.Contains($Item)) {
-      $Description.SelectionStart = $Description.TextLength
-      $Description.SelectionLength = 0
       $Description.SelectionColor = "Red"
       $Description.AppendText("$DescriptionMessage   KO   |")
-      $Description.AppendText([Environment]::NewLine)
     }
     else {
-      $Description.SelectionStart = $Description.TextLength
-      $Description.SelectionLength = 0
       $Description.SelectionColor = "Green"
       $Description.AppendText("$DescriptionMessage   OK   |")
-      $Description.AppendText([Environment]::NewLine)
     }
+
+    $Description.AppendText([Environment]::NewLine)
   }
 }
 function Invoke-NameLogfile($Requirement) {
@@ -406,6 +405,7 @@ function Download-ScarConfigJson {
 
   Write-Host "downloading $ScarConfig"
   $ScarConfigObj = (Invoke-WebRequest -Uri $ScarConfig -UseBasicParsing).Content | ConvertFrom-Json
+  Set-Content -Path $scarConfigPath -Value $scarConfigObj
 
   if ($ScarConfigObj.overrideRequirement) {
     Write-Host "downloading " + $ScarConfigObj.overrideRequirement
