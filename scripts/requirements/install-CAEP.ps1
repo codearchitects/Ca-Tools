@@ -1,7 +1,8 @@
 Write-Host 'Searching for npm-login.ps1...'
 $caPath = "C:\Program Files\Ca-Tools\npm-login.ps1"
-if ( !(Get-Content -Path $caPath) ) {
-	Write-Host "npm-login.ps1 not found!"
+
+if ( !( Test-Path $caPath ) ) {
+    Write-Host "npm-login.ps1 not found!"
     return @($true, 'KO')
 }
 

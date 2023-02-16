@@ -40,6 +40,9 @@ function Invoke-ActivityAction {
   if ($ResultActivity[0]) {
     switch ($ResultActivity[1]) {
       'OK' {
+        if (!($Requirement.ActivityOKCommand)) { 
+          break
+        }
         Invoke-Expression (New-CommandString $Requirement.ActivityOKCommand)
         break
       }

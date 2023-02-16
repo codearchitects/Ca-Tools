@@ -4,7 +4,9 @@ param(
     [string]$reqArgList
 )
 
-$ScarConfigObj = Get-Content -Path $scarConfigPath | ConvertFrom-Json
+$InstallationEnded = $false
+$scarConfigPathJson = "C:\dev\scarface\scarface.config.json"
+$ScarConfigObj = Get-Content -Path $scarConfigPathJson | ConvertFrom-Json
 $MaxDate = 0
 $TokenPath = "~/.token.json"
 $TokenList = Get-Content $TokenPath | ConvertFrom-Json
@@ -20,21 +22,21 @@ $ScarConfigObj.user = $TokenObj.user
 if ($ScarVersion -ne '') {
     $ScarConfigObj.version = $ScarVersion
 }
-$ScarConfigObj | ConvertTo-Json | Set-Content -Path $scarConfigPath
-$Description.Text += 'Downloading the file scarface.config.json...'
-$Description.Text += 'Download complete.'
+$ScarConfigObj | ConvertTo-Json | Set-Content -Path $scarConfigPathJson
+$Description.Text += "Downloading the file scarface.config.json..."
+$Description.Text += "`nDownload complete."
 
 # Execute ca scar
 $killCheck = {
-    while ( !(Get-Process -name Code) ) {
-        Start-Sleep -Seconds 30
+    while (!$InstallationEnded) {
+         Start-Sleep -Seconds 15
+        if (Get-Process -name Code) { Stop-Process -name Code -Force }
     }
-    Stop-Process -name Code -Force
 }
 
 Start-Job $killCheck -Name "killVScode"
 
-$Description.Text += '`nExecuting the command ca scar...'
+$Description.Text += "`nExecuting the command ca scar..."
 
 Set-Location 'C:\dev\scarface'
 $env:NG_CLI_ANALYTICS = "ci"
@@ -42,7 +44,10 @@ $env:NG_CLI_ANALYTICS = "ci"
 Write-Host "Executing ca scar:setup..."
 Start-Process "$reqPathFile" -ArgumentList 'scar:setup' -NoNewWindow -Wait
 Start-Process "$reqPathFile" -ArgumentList "$reqArgList" -NoNewWindow -Wait
-$Description.Text += 'The command ca scar was executed correctly.`r`nPress the End button to conclude the installation.'
+Write-Host ("The command ca scar was executed correctly.`r`nPress the End button to conclude the installation.").ToUpper()
+$Description.Text += "`nThe command ca scar was executed correctly.`r`nPress the End button to conclude the installation."
+$InstallationEnded = $true
+Write-Host $InstallationEnded
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

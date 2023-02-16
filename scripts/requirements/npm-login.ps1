@@ -4,22 +4,29 @@ param(
 
 $capturedPath = "~\.ca\$currentDate-npmErrCheck.txt"
 Write-Host "Generate npm log for npm view commands in $capturedPath ..."
-npm view @ca/cli  2>&1 > $capturedPath
-npm view @ca-codegen/core 2>&1 >> $capturedPath
 
-$npmErrCheck = Get-Content $capturedPath
+try {
+    npm view @ca/cli  2>&1 > $capturedPath
+    npm view @ca-codegen/core 2>&1 >> $capturedPath
+
+    $npmErrCheck = Get-Content $capturedPath
    
-$result = @($true, 'OK')
-Write-Host "$capturedPath content: "
-Write-Host $npmErrCheck.ToString()
-foreach ($item in $npmErrCheck) {
-    if ( ($item -like '*ERR!*') -or ($item -like '*error*') ) {
-        $result = @($true, 'KO')
-        break
+    $result = @($true, 'OK')
+    Write-Host "$capturedPath content: "
+    Write-Host $npmErrCheck.ToString()
+    
+    foreach ($item in $npmErrCheck) {
+        if ( ($item -like '*ERR!*') -or ($item -like '*error*') ) {
+            $result = @($true, 'KO')
+            break
+        }
     }
-}
 
-return $result
+    return $result
+}
+catch {
+    return @($true, 'KO')
+}
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

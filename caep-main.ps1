@@ -96,8 +96,11 @@ function Step-NextAction {
   #>
   if ($IndexRequirement -lt $RequirementsList.Count) {
     $Description.Text = "$($RequirementsList[$IndexRequirement].QuestionMessage)`r`n"
-    Show-Buttons @('$AcceptButton', '$DeclineButton')
   }
+  else{
+    $Description.Text = "$($RequirementsList.QuestionMessage)`r`n"
+  }
+  Show-Buttons @('$AcceptButton', '$DeclineButton')
 }
 function Invoke-DeclineRequirement {
   <#
@@ -263,7 +266,7 @@ function Invoke-AppendRequirementDescription {
     $Description.SelectionStart = $Description.TextLength
     $Description.SelectionLength = 0
     
-    if ($RequirementsNotMetList.Contains($Item)) {
+    if (($RequirementsNotMetList -is [array] -and $RequirementsNotMetList.Contains($Item)) -or $RequirementsNotMetList.Name -eq $Item.Name) {
       $Description.SelectionColor = "Red"
       $Description.AppendText("$DescriptionMessage   KO   |")
     }
@@ -404,8 +407,9 @@ function Download-ScarConfigJson {
   New-Item -Path $scarConfigPath -Force | Out-Null
 
   Write-Host "downloading $ScarConfig"
-  $ScarConfigObj = (Invoke-WebRequest -Uri $ScarConfig -UseBasicParsing).Content | ConvertFrom-Json
+  $ScarConfigObj = (Invoke-WebRequest -Uri $ScarConfig -UseBasicParsing).Content
   Set-Content -Path $scarConfigPath -Value $scarConfigObj
+  $scarConfigObj = $ScarConfigObj | ConvertFrom-Json
 
   if ($ScarConfigObj.overrideRequirement) {
     Write-Host "downloading " + $ScarConfigObj.overrideRequirement
