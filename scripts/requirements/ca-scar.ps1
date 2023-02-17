@@ -1,38 +1,37 @@
-
 $backOfficeClientPath = "C:\dev\scarface\back-office\client"
-$backOfficeDistPath = Join-Path $backOfficeClientPath "dist"
+$backOfficeBundlePath = Join-Path $backOfficeClientPath "dist\back-office"
 $backOfficeNodeModulesPath = Join-Path $backOfficeClientPath "node_modules"
-$backOfficeBundlePath = Join-Path $backOfficeDistPath "back-office"
 
 Write-Host 'Checking if back-office sample project is generated...'
 
-if (Test-Path $backOfficeNodeModulesPath) {
-    if ( !( (Get-ChildItem $backOfficeNodeModulesPath -Recurse -Filter *.js).Count ) ) {
-        Write-Host "node modules in $backOfficeNodeModulesPath not found!"
-        return @($true, 'KO')
-    }
-    else {
-        Write-Host "*js files in $backOfficeBundlePath found!"
-        return @($true, 'OK')
-    }
-
-    if ( !( Test-Path -Path $backOfficeBundlePath*.js ) ) {
-        Write-Host "*js files in $backOfficeBundlePath not found!"
-        return @($true, 'KO')
-    }
-    else {
-        Write-Host "*js files in $backOfficeBundlePath found!"
-        return @($true, 'OK')
-    }
-} else {
+if (!(Test-Path $backOfficeNodeModulesPath)) {
     Write-Host 'node_modules not found!'
     return @($true, 'KO')
 }
+
+$Result = (Get-ChildItem $backOfficeNodeModulesPath -Recurse -Filter *.js).Count
+if ($Result) {
+    Write-Host "*js files in $backOfficeBundlePath found!"
+}
+else {
+    Write-Host "node modules in $backOfficeNodeModulesPath not found!"
+}
+
+$Result2 = (Test-Path -Path $backOfficeBundlePath*.js)
+if ($Result2) {
+    Write-Host "*js files in $backOfficeBundlePath found!"
+}
+else {
+    Write-Host "*js files in $backOfficeBundlePath not found!"
+}
+
+$ReturnValue = $(if ($Result -and $Result2) {"OK"} else {"KO"})
+return @($true, $ReturnValue)
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUZuvJIXeKBTZ0E1tX5UN+09CU
-# NUyggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUnuTX/2TqOcIT27xKMlR8cncS
+# MUuggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -200,30 +199,30 @@ if (Test-Path $backOfficeNodeModulesPath) {
 # U2FsZm9yZDEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSQwIgYDVQQDExtTZWN0
 # aWdvIFJTQSBDb2RlIFNpZ25pbmcgQ0ECEA7nuDfFiGka9mWZXtAMyYwwCQYFKw4D
 # AhoFAKCBhDAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgEL
-# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQURqrX9cPPMM3FlMuY7RgG
-# Ohi7lq0wJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
-# hkiG9w0BAQEFAASCAQBi4agAWAmE70A1Xlp57Yk+IMBs8qDLi/NCS/inrb6stifz
-# hj9Qukysf3l2UwJuSJneAS/VYHwWW7G/gh9ufCQ2mGoiKGNmUVkCj8rIIZyblrRg
-# TgpUzUqtq1y7JC/jXu8vpEFqFCqU+ao3ECrX2viw9n6NUf0HJuiTw5A8jPrQQzRc
-# pmf+d868O/rFhQ0VJplCnCWpv1tyzsrvl0XQXQrYTcuLfqEwGeFmM0C0VhugwGQ7
-# icC1jufgeL7anOPmlO1H5vKfdXj7cGGJ1GxAEF4V9Ey1X4njTEe4tUzjT/1jqarw
-# PGbxf2trsyZvTuO6BRRSegTtjMt0JQQJskfiiwzLoYIDTDCCA0gGCSqGSIb3DQEJ
+# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUnmr63v21MNfUO7aQJoHd
+# 4jwz44swJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
+# hkiG9w0BAQEFAASCAQBPssrcDX/mDwTCGjW5tc7O+To3H4+ShF4FpdTI0J+VNHaB
+# OF5zxYh9WtGKdLx5Cm9eIahwlVgYSW9uUm08pzbjoklo2xJ8DO3tYdLUY5HUOWsV
+# ppUG+iiiZpCKiZ/cdE0+bxjsKQ/0+MvxKjiDaQ/BbSI7Yva9MsVlDDcPoZ2JUmbn
+# SH5ufTPKRcvQsMWv5fTrz7KIim7U+drK9VfqJ9/MpMmFY1COmIPmOGab7bCN//DR
+# g/YQa8RaAfGzMmwO8EAzoKZVQ2MhzJCVaw06Ryy9nooON0qx94mHMbXSMsUL5uES
+# C37PCaaVL0cNblYfRsZlIbFhsckRIDI5yqYeHtiWoYIDTDCCA0gGCSqGSIb3DQEJ
 # BjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVy
 # IE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28g
 # TGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBTdGFtcGluZyBDQQIR
 # AJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAYBgkqhkiG9w0BCQMx
-# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMjExMjkxMzQwNDJaMD8GCSqG
-# SIb3DQEJBDEyBDB9xMjSqxe0ho4dHzvL0Ga9TEJqY0/+2hAfSFkG2K12naUmqxdv
-# gXBcMXKbIKjHtc4wDQYJKoZIhvcNAQEBBQAEggIAb240p0eDrDnOpZKr5NAQBj+N
-# qkLZZB3vpWkqYaCJm6bTGyXU6R8d6k9hbAWOnfxUrX+JCCyw/ghRjmDmtzHFs7Km
-# UyK021UxokxPF8rJ0dQqnbhrqatlH/qkiSQ0FcBXX61jzb/oDj6u2g+2+TDGERzX
-# GSlPtRyIaZooDfRJQvcgx3UGskWGKOOEuUiV5PXHse6AAVQWBYQDWrreLdBm8oqE
-# Bol5XVmpa9m2eqVIvxVxRHZQVmFHLnfSYcSdxL7SIJLylWr281Xcm5kmMVl0Odel
-# dTxdoK1DvVEXTv+3rgf0n3WA0t2tyfeRPCqsXuU+9WmlI0BIVcGQ9cTy89ob511/
-# Q5S9cCWEpK69NF6diZgPAB8E3B7yUKrpSjLhp8PnIgN8k6Gy+GwuzG6/e4GurfmA
-# UV1iZsPagtXx8wmaG474b2uir7CWtzCL8GqeTbk/NC8gfXWNwjiO6n0bNkaWZel2
-# i8ZK109NIqTgyTXVEwnNOduy5+U3g1jvmzhSeC+ub5HK/sAcy7ohAjVJzUazB8rv
-# JFGUxEGCXbB05h+ZYQZac9t7NgFjA/3KtoDUN4uaEzy+iluw75Uo/7Yhn4C/Yjg2
-# pzRbjwYoccqmoquq2/X534JkmKXeNmBKLPSxUZza6HnEMB5GCBEUj+ISYO+2kWaR
-# GDs0vyu15y19lSwYDH0=
+# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMzAyMTcwOTM0MTJaMD8GCSqG
+# SIb3DQEJBDEyBDAnFSOUlQLLRXc8Qjy60pLYAdhfSJEUjJlgpMGVFCIv1//9GZxd
+# oxAUueGpE5VSDU4wDQYJKoZIhvcNAQEBBQAEggIAFBRLT5ujw7c0tr7J+gHAw1by
+# gdZHmkcBO115CetZ0wuKRmp98983TMswA58Wy/bdpHFkVul/9r3lswzxHqVITS9Z
+# y0LTb1/szXOPBWr8g++7+oZ6vPyJnDJUJhfziG/q7fC474/thSB91dFStX7V3CWY
+# pDdj5GWqk1wx0gucKEvYEowmYhIqtrXEbmCCIZOxRDwGsbg9Epx0UMPJJUIyHP4y
+# wQERt5ZhhvspLR3i5aaaliGiD9oPWe/QdJ7F47bkxR6kGwd4QmS+qqoI7/tahKNI
+# FW9qKyyKSxWGsQXrXp5odynLd3JorJr/GXElBzIZCIJza8otzKUdgAU+sNafOCUq
+# zJRJnoI+w5ymy7TofoYDw3hnsp168vW0sEW18/f21gnbwg6Rsf7qOdNMfHudFbbb
+# ORCUVu28rPsgEi9SFPYmVbNXx0JcDCA88mAC77p4OoOFRjmOComKr7kWQOVKltxn
+# PpgovN7KsCEE5UBOfXuJR9ytgc0i+Bsj1lyC940imG2OfNp7aazHHI68uOKgmKHE
+# /WUy6r9n1Tb74APil5713rAI+0Bn2AhYJowrSJI2IKelnuIQnl99vMlVfEWw1Akc
+# 5NifsggKDulaQ9v5NhSO3nFF8lYoIq2vQMeCj02ZkiZ3WeHF2zXT6hM8w1DKIMSz
+# hplm3FEvPOi0/Q5PUQQ=
 # SIG # End signature block
