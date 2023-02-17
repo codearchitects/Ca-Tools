@@ -96,8 +96,11 @@ function Step-NextAction {
   #>
   if ($IndexRequirement -lt $RequirementsList.Count) {
     $Description.Text = "$($RequirementsList[$IndexRequirement].QuestionMessage)`r`n"
-    Show-Buttons @('$AcceptButton', '$DeclineButton')
   }
+  else{
+    $Description.Text = "$($RequirementsList.QuestionMessage)`r`n"
+  }
+  Show-Buttons @('$AcceptButton', '$DeclineButton')
 }
 function Invoke-DeclineRequirement {
   <#
@@ -260,20 +263,19 @@ function Invoke-AppendRequirementDescription {
   foreach ($Item in $RequirementsList) {
     $NumberSpaces = 26 - ($Item.Name | Measure-Object -Character).Characters
     $DescriptionMessage = "$($Item.Name) $(' ' * $NumberSpaces) |"
-    if ($RequirementsNotMetList.Contains($Item)) {
-      $Description.SelectionStart = $Description.TextLength
-      $Description.SelectionLength = 0
+    $Description.SelectionStart = $Description.TextLength
+    $Description.SelectionLength = 0
+    
+    if (($RequirementsNotMetList -is [array] -and $RequirementsNotMetList.Contains($Item)) -or $RequirementsNotMetList.Name -eq $Item.Name) {
       $Description.SelectionColor = "Red"
       $Description.AppendText("$DescriptionMessage   KO   |")
-      $Description.AppendText([Environment]::NewLine)
     }
     else {
-      $Description.SelectionStart = $Description.TextLength
-      $Description.SelectionLength = 0
       $Description.SelectionColor = "Green"
       $Description.AppendText("$DescriptionMessage   OK   |")
-      $Description.AppendText([Environment]::NewLine)
     }
+
+    $Description.AppendText([Environment]::NewLine)
   }
 }
 function Invoke-NameLogfile($Requirement) {
@@ -405,7 +407,9 @@ function Download-ScarConfigJson {
   New-Item -Path $scarConfigPath -Force | Out-Null
 
   Write-Host "downloading $ScarConfig"
-  $ScarConfigObj = (Invoke-WebRequest -Uri $ScarConfig -UseBasicParsing).Content | ConvertFrom-Json
+  $ScarConfigObj = (Invoke-WebRequest -Uri $ScarConfig -UseBasicParsing).Content
+  Set-Content -Path $scarConfigPath -Value $scarConfigObj
+  $scarConfigObj = $ScarConfigObj | ConvertFrom-Json
 
   if ($ScarConfigObj.overrideRequirement) {
     Write-Host "downloading " + $ScarConfigObj.overrideRequirement
@@ -509,8 +513,8 @@ else {
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUxg2mq5oq5zVoFwLI6bItIWbX
-# PIqggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUA9SJJMRZwPhlJB0KXLkU832E
+# Xgeggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -678,30 +682,30 @@ else {
 # U2FsZm9yZDEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSQwIgYDVQQDExtTZWN0
 # aWdvIFJTQSBDb2RlIFNpZ25pbmcgQ0ECEA7nuDfFiGka9mWZXtAMyYwwCQYFKw4D
 # AhoFAKCBhDAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgEL
-# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUO8t+4gDFPr7Ogo1X9/JO
-# ocQe2jQwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
-# hkiG9w0BAQEFAASCAQAyrPdw3jhPb6E3OzV1qQA4pNWd0Z4jhiRzVg9GMoQ20Dp4
-# Fol8ns2K7MXBlpP695q05tf2ufj2U9OQysT3YmlM7fHuMbMIp+dVapdtlfGzhYCF
-# MLX/wBX3TKIK6Ll0Vy/SjcAN8tUtwsZjr5oN2E+UC0YNdhfwacKrSMRJnSGs3naf
-# vlLhhlCT2V/NhZWcLceKVVMQuamMQoYA9O5rTj/sQrGwXpKwiH8AqM8bM4YSpL5J
-# XhhQEEWfOgPeRxeNwFZIMtmUZPOvdCF6iUIOVpZnepo05OB4nyYDj4W5wuTls+zy
-# jZ1RtLSc6LT484VwC96QP0V8sQlvv73ZkP1efutuoYIDTDCCA0gGCSqGSIb3DQEJ
+# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUvrZ+kcLE2nkE4ghoP6gk
+# cL0gtL0wJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
+# hkiG9w0BAQEFAASCAQBONq3nsq7PjnaVAGN/bQhk8qEJl9/LCt8xd+8K7aA6bD57
+# n/M5BHvmvk7qX6hB1PEvFxqRc9tm6OxoxJa5iyltdomVruJ8pv6/rNqnQcCucv1M
+# eyiAWQLPQVcEE2WIWunkU6V9p2Jx35tUE2HlT/daf49XWYmJZNeggJQTEoeWLiOC
+# D3MqDyJB5rU6hQB/zVNa2WBOF1RtTScqwSN2JmfRTm6boUE9AgMst+7qdPsrV2qm
+# RqoXZifMeyg+yQPOnJOJbVLmyA5s3euxtIJU6zmbDhS7nHg+W30oHJFZ/rAxexRB
+# a1YuFhU9iiiT0skAWudVQZDDDw6Hs2YK54nYtO12oYIDTDCCA0gGCSqGSIb3DQEJ
 # BjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVy
 # IE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28g
 # TGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBTdGFtcGluZyBDQQIR
 # AJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAYBgkqhkiG9w0BCQMx
-# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMzAyMDgwOTM4NTdaMD8GCSqG
-# SIb3DQEJBDEyBDA8+VLOaYL0l8998ketYLBfEYvDEQG7IBCq8yrS2yH5gE0OODss
-# aqWBqJhqz6HIpMswDQYJKoZIhvcNAQEBBQAEggIAGID7RQCJ/OlUYrnyseiVy54n
-# +OhpPwMNPRU85wsJ8hODX8oPsSZQSixpln7Ld8Hs2cVuKyLD2K0+gkkEWMXQUPWa
-# 0G1ToYOqcRG6enUGoCKfOUI3R+ezVe/J9aVK3NT9nAJ9RzPVqmIUketWDEB6yOAD
-# Ddfat14IpdtdhEc8jwapV/wV+kYhWkniX0Eb1a1mVFp+eMmK7tfIfp1uxFJpMrVK
-# DIDtCkmXMrKCWJgLTW4icUfS5VWS/j7R43EwWrQrWxT+/F3HAey6u4XBYFLEHQxi
-# 7GZtw2wB79JA26EVtX/z+g4uiwL2YKp09VBR3pOKwU0F0dTaM0qepGh5HMPCsWL/
-# cDvsiPqAuxUV3p1pNrch1TfupYxpz0F8wMH0/kRNokGLs90LgXzYtWg6aZ/AP0Ks
-# ePrRaZ5JyoF6K2x0rf30oXCZGer3Eoa8XvQlEZAeVB75xGSv+j01+07m+vuxlcQl
-# mI/A5Fq59JY+qo/0yKWOKxbUD4RdRu9Hr3IrbY4YwAMJ8WqKNLoXoIkm0kDti9AE
-# s3otusQj14nGJs+mgAHWF+T3Xb8AZM1XI7JuVX2CjbWe3Tp7eyWMbrPoTsUYcfux
-# Fz3EU68Xf70F0gaaNvQeIL9NxmDydtK5O3CvXX42KaKMDKtOZrJowonSkSWoPKu0
-# V7N5WUjJUzxjJVCtPjs=
+# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMzAyMTcwOTM1NDhaMD8GCSqG
+# SIb3DQEJBDEyBDAn4ikefxue3UryxysDMT+fPG++m4bPcEg2UNoPufYvOsa1hz0K
+# PZt2vnH+ZOGnf24wDQYJKoZIhvcNAQEBBQAEggIAfVsxSpmeJ025rOp1AzawVAcD
+# T6n4SQXBvXI7TvdWyYwhLqEcvGfnqTMsTWnYJJsE3oblnBFBpfuPJehP0+WjXUqS
+# PCdeJqOpMJEZArpV/Rdjoszk95ofTojg17VRAJYeaaOwBEJblOi4G1RPRZ/dPU5T
+# X92Bx1n7iHZrC+Wr/NTiaew7ihavldmMYgxSiE4fTErHbui/xqobrUwheZSaHtl4
+# QsvBN3+xFHpvleSDu3sINieWsUlkwBolpfFQD1gZE+Htgm/L/ERzmECT7qcuwPUh
+# wwdewwh/kUD8M7O207a3gVz7/E75pgonRq5gbXiI4yMgXPKYCiRj5EvU9UuncNoy
+# vyiqQmrhD6/k72qa4ffw+hhcO/nWhhGI/VACtGEjRWXNkbkcWOo1H/gfbzo2lpX4
+# 9pbUFRka1cTqOtrbcgwWKBXjFPIya3Iv1tx8qOlbcMtv6yJSFKfVprS9FWhx4hfT
+# OX6W050jtWDPHabxX5xZFKpWlR8njg3i7SX1bQybB1UXIUHQV6uX8YBNuND1Wdmy
+# OHzLW25Xr5Zyr4/mgZ/73FLw96ksJtMKiNcKrGOkU7JJZK9bermb14TIc56OpL0U
+# sGcPAzucyZDvrkRaX/ZHQAul9zpOhKIp4pn2oVtm+m6yj4AdtXV3RKx8ML1EN/n9
+# bC+hJMnq575CNjUnV9I=
 # SIG # End signature block

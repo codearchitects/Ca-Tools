@@ -4,7 +4,9 @@ param(
     [string]$reqArgList
 )
 
-$ScarConfigObj = Get-Content -Path $scarConfigPath | ConvertFrom-Json
+$InstallationEnded = $false
+$scarConfigPathJson = "C:\dev\scarface\scarface.config.json"
+$ScarConfigObj = Get-Content -Path $scarConfigPathJson | ConvertFrom-Json
 $MaxDate = 0
 $TokenPath = "~/.token.json"
 $TokenList = Get-Content $TokenPath | ConvertFrom-Json
@@ -20,21 +22,21 @@ $ScarConfigObj.user = $TokenObj.user
 if ($ScarVersion -ne '') {
     $ScarConfigObj.version = $ScarVersion
 }
-$ScarConfigObj | ConvertTo-Json | Set-Content -Path $scarConfigPath
-$Description.Text += 'Downloading the file scarface.config.json...'
-$Description.Text += 'Download complete.'
+$ScarConfigObj | ConvertTo-Json | Set-Content -Path $scarConfigPathJson
+$Description.Text += "Downloading the file scarface.config.json..."
+$Description.Text += "`nDownload complete."
 
 # Execute ca scar
 $killCheck = {
-    while ( !(Get-Process -name Code) ) {
-        Start-Sleep -Seconds 30
+    while (!$InstallationEnded) {
+         Start-Sleep -Seconds 15
+        if (Get-Process -name Code) { Stop-Process -name Code -Force }
     }
-    Stop-Process -name Code -Force
 }
 
 Start-Job $killCheck -Name "killVScode"
 
-$Description.Text += '`nExecuting the command ca scar...'
+$Description.Text += "`nExecuting the command ca scar..."
 
 Set-Location 'C:\dev\scarface'
 $env:NG_CLI_ANALYTICS = "ci"
@@ -42,12 +44,15 @@ $env:NG_CLI_ANALYTICS = "ci"
 Write-Host "Executing ca scar:setup..."
 Start-Process "$reqPathFile" -ArgumentList 'scar:setup' -NoNewWindow -Wait
 Start-Process "$reqPathFile" -ArgumentList "$reqArgList" -NoNewWindow -Wait
-$Description.Text += 'The command ca scar was executed correctly.`r`nPress the End button to conclude the installation.'
+Write-Host ("The command ca scar was executed correctly.`r`nPress the End button to conclude the installation.").ToUpper()
+$Description.Text += "`nThe command ca scar was executed correctly.`r`nPress the End button to conclude the installation."
+$InstallationEnded = $true
+Write-Host $InstallationEnded
 # SIG # Begin signature block
 # MIIkygYJKoZIhvcNAQcCoIIkuzCCJLcCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU0587s+y77CzVz+civ6Of3KoQ
-# Rbqggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUy6kdIlTigALmZM0VicbgiI41
+# Kt2ggh6lMIIFOTCCBCGgAwIBAgIQDue4N8WIaRr2ZZle0AzJjDANBgkqhkiG9w0B
 # AQsFADB8MQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3JlYXRlciBNYW5jaGVzdGVy
 # MRAwDgYDVQQHEwdTYWxmb3JkMRgwFgYDVQQKEw9TZWN0aWdvIExpbWl0ZWQxJDAi
 # BgNVBAMTG1NlY3RpZ28gUlNBIENvZGUgU2lnbmluZyBDQTAeFw0yMTAxMjUwMDAw
@@ -215,30 +220,30 @@ $Description.Text += 'The command ca scar was executed correctly.`r`nPress the E
 # U2FsZm9yZDEYMBYGA1UEChMPU2VjdGlnbyBMaW1pdGVkMSQwIgYDVQQDExtTZWN0
 # aWdvIFJTQSBDb2RlIFNpZ25pbmcgQ0ECEA7nuDfFiGka9mWZXtAMyYwwCQYFKw4D
 # AhoFAKCBhDAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgEL
-# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUOJykKbWctMVP/s6cxInu
-# 4mIlTGowJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
-# hkiG9w0BAQEFAASCAQAW9JQZ34ZOWUSAEb3Kje9o1XL93cPekJt6LqTKKVYDP1US
-# bNMF6URRcIkS7Dq7PBNgX7WMDd+569iifWNny093Ava2QdqyuJAQ5UcPAZgR58lI
-# OWncGjKKUitBEEwW4rPKu2EYSGS8tlWSo+Lcv2vhzc1/eU7Gb5+7Avhssq9BKvGb
-# osLlsGAcpErVhN9mpVwY9UJ+ZkNPPBvybGSySzinKe4VVx5nL7WC52gogPHwLnmz
-# bzoYYj0ejJm6+3cVHph2kLQoJmMDcGC8qwc0RS8Z2YhdN7/uAYLgdcpjAv9ztJ8M
-# fuPMEZ0CpLdr6EnuKRPQ2kpR++RRtNTNgnMa2dHxoYIDTDCCA0gGCSqGSIb3DQEJ
+# MQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQUY8ZIZ5ICwqjz1fYYn1ew
+# j+0sVzQwJAYKKwYBBAGCNwIBDDEWMBSgEoAQAEMAQQAgAFQAbwBvAGwAczANBgkq
+# hkiG9w0BAQEFAASCAQC0A+RDsod7NobUY0zs8z/kCZqF7XJLc05NQxNmM3RH54lN
+# QCdKgBdB6b8Q4xA6c+0fqzy8hfUtSwuQJdz+vo648bIVN8iZdQz4w4GM0GtYoR6T
+# tJqI+9C2Zp3PfCBpr1Mog9nhuU6SGLmOCm8MsfV5gj0Q0e9KSsmwe52cBRvPPiZc
+# xhkWKT2Z82ebpzQo+bzT2WX9RlHEj558vQFFs061p+lKJpnva3n5w6eXcApgPk4u
+# mB08m2hdm00bJHd50A3Rofp7yA30IcuUq7iJbxwDeqsAt1h7IPGTebXBblpUV0Bt
+# Nc3dGc94Owic7IyzeDQc444r/VFRgh8EAZeNyHeDoYIDTDCCA0gGCSqGSIb3DQEJ
 # BjGCAzkwggM1AgEBMIGSMH0xCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVy
 # IE1hbmNoZXN0ZXIxEDAOBgNVBAcTB1NhbGZvcmQxGDAWBgNVBAoTD1NlY3RpZ28g
 # TGltaXRlZDElMCMGA1UEAxMcU2VjdGlnbyBSU0EgVGltZSBTdGFtcGluZyBDQQIR
 # AJA5f5rSSjoT8r2RXwg4qUMwDQYJYIZIAWUDBAICBQCgeTAYBgkqhkiG9w0BCQMx
-# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMzAyMDgwOTQwMTJaMD8GCSqG
-# SIb3DQEJBDEyBDA9dwKaDAkYnpbzHH7qgcHQbxB46az4woVt7ohFA+uxgp+q/8Nz
-# pVFsaqar2ZenON0wDQYJKoZIhvcNAQEBBQAEggIAIRR4jhJP/67shO4UTMQLvcFn
-# QvnZn0jz0B7m/PZdcXQ4l1x4KTe0GPeX4THDuRE2XqrkRb2qJDKaRRVe5YN3vxZe
-# 5jWSL3HiEA8X6Nanw0ZhetF4PDgEl+bEVvTUAu65vpKL0K1ZxoUGSKec5C+tKutS
-# Zs62LdrZeI0P05+KSv4bwt0Ocr3NublqS7HVqGQ72WiNGy06v3CMr6Tu7MJmy8Jm
-# A6IE2GUPqXbXlF1gbi+4MatJ6O7gTNwpirrLlCPEgOyKpwNMD64oDE+R2g3f9Z/j
-# rulRaE5wwKPOUoA55dbrRElDstv8cTMQmnXG1+cXX+Z8xy+OTeLm/kNEQKvmqTX9
-# G2SpYCKTope5yLTAnDFjLsDrvfPAICD57CDi1gK2s8qt+FZHzMDXLSoteY5/7y49
-# PAzInQrNXddZuk93bEuA8fi1rOgIta5ENe2oIYD70vRT8TnXsDFVwzgGb6GpC3Sa
-# Dg0+lRs3tpReCrwgOshmyDlM0dEJRajqofJ1AVYUWfpco5kTqwulG2WkHXtokTRh
-# /ML36lE/IuhwiOLDIJsn/16k+U/NbO+c0iJtIzmF8RlOhpghxufF3TOGfYCy7JJO
-# n6pBKSfEItvJKYzUTSEgITSAzQdqpgVALy/+Tr7/i7TPZSHlqvGO56zbqYclLKx7
-# +BB3Vm66PjwDl2LYRTQ=
+# CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yMzAyMTcwOTMzMDhaMD8GCSqG
+# SIb3DQEJBDEyBDBGz5gWrDkroOQTqg7QM1koG0u3uj76shf/1B95tIik3Pr3bnE5
+# bPUDrCoCZNCS/eIwDQYJKoZIhvcNAQEBBQAEggIAgqYjVpeFajjbZKIPOCpb0Jfu
+# uepzUAiZozVG6jFJBRGT1UCitSO6Ei8LODhP1vJ93faIanvlc66KXsRoAWPujAat
+# YUBjFXILdrSYsHq5oYcpmlFmAUnTAfPmx++jNKhNkhOiSbCkzBOUYU+VGsqHFfNQ
+# cVwl3HMsEM1RBp+nJWphS0DXnvV/EWmB4z79JfHlfs2PF2nN0WkQnpHQ6mz65XwA
+# DHSjvE6bdf785ou3Gz8iLQz2NAuQ03kR3EjTWJFjlOAGMTW66+saUV2KpKrvZUeC
+# zBX8AONcGCXNGDWrOtqQHOi5jlfzTq7VjGV3bT+3Zc5pkdbqzAtOlfPYM92v7vZ3
+# olDcg/PZ33pnhPWKCPZOK6p62h6efrcBBWKUTUReus/qowwmb5ifyPqEcv4cnFKv
+# c1nXLBVxJOVHWDWWE/jySZgQiXOB7W6/wePitV6r/oRI3a+csY+tA4EELZsARN9Q
+# uVCtDW808EvurCgZrwCera5dsPpjtv1DeXUjYojhOyszAr2nx8lB8Kbyw7WKU16p
+# /wsASQmtlyRVDXefU/hMEvZw4nZayt+mONyaY8N8xqBd8WbvtcLbvWD/aXqZJIbi
+# WVB103ejsPCcanf3v5qiWls98/+dVexG1/kSdmTSecMwzIApRq/hONVizAyMhpoJ
+# ZBLqpueFU7i1di48ftU=
 # SIG # End signature block
