@@ -466,8 +466,9 @@
         "QuestionMessage": "Press 'Accept' to install the Code Architects Enterprise Platform (CAEP)",
         "PathFile": "C:\\Program Files\\Ca-Tools\\setup-ca-platform.exe",
         "ArgumentList": "-s",
+        "PluginVersion": "0.2.25",
         "ActivityOKCommand": "",
-        "ActivityKOCommand": "./scripts/activityKoCommand/install-CAEP.ps1",
+        "ActivityKOCommand": "./scripts/activityKoCommand/install-CAEP.ps1 -pluginVersion $($Requirement.PluginVersion)",
         "DeclineMessage": "return `\"You have declined to automatically install CAEP.`r`nTo continue with the installation check the documentation https://caep.codearchitects.com/docs/framework/caep-code-architects-enterprise-platform/`\"",
         "CheckRequirement": "return ./scripts/requirements/install-CAEP.ps1",
         "PostAction": ""
