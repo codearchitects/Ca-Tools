@@ -318,7 +318,7 @@
         ],
         "QuestionMessage": "Press 'Accept' to download and install Docker Desktop.",
         "MinVersion": "20.0.0",
-        "MaxVersion": "20.10.8",
+        "MaxVersion": "30.10.8",
         "MajorVersion": "",
         "DownloadLink": "https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe",
         "DownloadOutfile": "C:\\dev\\scarface\\download\\$RandomCode-Docker-x64.exe",
